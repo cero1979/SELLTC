@@ -1,15 +1,7 @@
-\documentclass[11pt,twoside,leqno]{article}
-
-% --- Encoding / Fonts ---
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage{lmodern}
-
-% --- Geometry ---
-\usepackage[a4paper,margin=1in]{geometry}
+\documentclass{lmcs}
 
 % --- Math ---
-\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools}
+\usepackage{amsmath,amsfonts,amssymb,mathtools}
 \usepackage{stmaryrd}
 
 % --- Lists / Tables ---
@@ -27,30 +19,10 @@
 \usepackage{algpseudocode}
 \usepackage{float}
 
-% --- Hyperref ---
-\usepackage[colorlinks=true,allcolors=blue]{hyperref}
+% --- Hyperref (loaded by lmcs.cls; add for arXiv compatibility) ---
+\usepackage{hyperref}
 
-% --- Theorem environments (as requested) ---
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}[section]
-\newtheorem{example}[definition]{Example}
-
-\theoremstyle{plain}
-\newtheorem{theorem}[definition]{Theorem}
-\newtheorem{lemma}[definition]{Lemma}
-\newtheorem{proposition}[definition]{Proposition}
-\newtheorem{corollary}[definition]{Corollary}
-
-\theoremstyle{remark}
-\newtheorem{remark}[definition]{Remark}
-
-% --- Macros (as requested) ---
-\newcommand{\Atr}{\mathrm{Atr}}
-\newcommand{\Pre}{\mathrm{Pre}}
-\newcommand{\CPre}{\mathrm{CPre}}
-\newcommand{\lfp}{\mathrm{lfp}}
-\newcommand{\fun}{\mathrm{fun}}
-\newcommand{\Pow}{\mathcal{P}}
+% --- Macros ---
 \newcommand{\N}{\mathbb{N}}
 
 % --- Extra macros for this paper ---
@@ -69,13 +41,17 @@
   \fbox{\parbox[c][2.2in][c]{0.9\linewidth}{\centering #1}}%
 }
 
-\title{Certified Hybrid Decoding of Binary LDPC Codes over the BEC\\
-via Subexponential Linear Logic (SELL)}
-\author{Carlos Ernesto Ram\'irez Ovalle}
-\date{\today}
+\keywords{LDPC codes, binary erasure channel, peeling decoder,
+  linear logic with subexponentials, multiset rewriting, certified decoding,
+  proof-carrying code, Lean~4 mechanization}
 
 \begin{document}
-\maketitle
+
+\title[Certified Hybrid LDPC Decoding via SELL]{Certified Hybrid Decoding of
+  Binary LDPC Codes over the BEC\\
+  via Subexponential Linear Logic (SELL)}
+
+\author[C.~E.~Ram\'irez~Ovalle]{Carlos Ernesto Ram\'irez Ovalle}
 
 \begin{abstract}
 We develop a proof-theoretic certification layer for hybrid LDPC decoding over the binary erasure channel (BEC).
@@ -91,6 +67,7 @@ Because the adequacy proof proceeds entirely by structural induction over multis
 A companion Python implementation and reproducibility notebook are provided so that the certificate format and the checker algorithm can be inspected and executed independently.
 \end{abstract}
 
+\maketitle
 
 % =========================================================
 \section{Introduction}
@@ -181,7 +158,7 @@ one only has to solve for the erased coordinates. The hybrid structure studied l
 Phase~I (peeling) exploits the graph sparsity and resolves variables whenever some parity equation contains exactly one unknown;
 phase~II solves the residual linear system when locality alone is no longer enough.
 
-\begin{example}[A tiny residual-system example]
+\begin{exa}[A tiny residual-system example]
 Suppose a codeword satisfies two parity equations over $\Ftwo$:
 \[
 x_1\xor x_2 = 0,
@@ -192,14 +169,14 @@ Assume that $x_1$ is known and that $x_2,x_3$ are erased. Then the decoding prob
 If, for instance, the first equation becomes an equation with exactly one unknown, then peeling can determine that variable immediately.
 If not, one keeps the resulting small linear system and solves it algebraically.
 This is the basic pattern that the whole paper formalizes and certifies.
-\end{example}
+\end{exa}
 
 % =========================================================
 \section{Phase I: peeling decoding and stopping sets}
 \label{sec:phase1}
 
 \subsection{State}
-\begin{definition}[Peeling state]
+\begin{defi}[Peeling state]
 A peeling state is $\sigma=(K,U,s,d)$ where
 \begin{itemize}[leftmargin=*]
 \item $K:\Var\rightharpoonup\Ftwo$ is a partial assignment (known variables);
@@ -207,9 +184,9 @@ A peeling state is $\sigma=(K,U,s,d)$ where
 \item $s:\Chk\to\Ftwo$ is the residual right-hand-side (XOR of known neighbors);
 \item $d:\Chk\to\N$ is the residual degree $d(j)=|\Nb(j)\cap U|$.
 \end{itemize}
-\end{definition}
+\end{defi}
 
-\begin{definition}[Initialization from $y$]
+\begin{defi}[Initialization from $y$]
 Let $K_0(i)=y_i$ if $y_i\in\Ftwo$ and undefined otherwise; $U_0=\Var\setminus \mathrm{dom}(K_0)$.
 For each check $j$ define
 \[
@@ -218,7 +195,7 @@ s_0(j)=\bigxor_{i\in \Nb(j)\cap \mathrm{dom}(K_0)} K_0(i),
 d_0(j)=|\Nb(j)\cap U_0|.
 \]
 Let $\sigma_0=(K_0,U_0,s_0,d_0)$.
-\end{definition}
+\end{defi}
 
 \subsection{Stopping sets}
 Before giving the formal definition, it is helpful to isolate the intuition.
@@ -227,20 +204,20 @@ A stopping set is precisely a pattern of erased variables that blocks this mecha
 every check touching the pattern still sees at least two unknowns, so no local step can start.
 In that sense, stopping sets are the combinatorial obstruction to phase~I.
 
-\begin{definition}[Stopping set \cite{DiEtAl2002Stopping}]
+\begin{defi}[Stopping set \cite{DiEtAl2002Stopping}]
 A set $S\subseteq \Var$ is a stopping set if every check adjacent to $S$
 has at least two neighbors in $S$:
 \[
 \forall j\in\Chk\ \bigl(\Nb(j)\cap S\neq \emptyset \Rightarrow |\Nb(j)\cap S|\ge 2\bigr).
 \]
-\end{definition}
+\end{defi}
 
-\begin{theorem}[Peeling stalls iff a stopping set remains]
+\begin{thm}[Peeling stalls iff a stopping set remains]
 \label{thm:stopping}
 Let $\sigma=(K,U,s,d)$ be a state reachable from $\sigma_0$ by valid peeling steps.
 Peeling stalls in $\sigma$ (i.e.\ $U\neq\emptyset$ and no check $j$ has $d(j)=1$) if and only if $U$ is a nonempty stopping set.
 In particular, peeling starting from $\sigma_0$ fully decodes if and only if the initial erasure set $U_0$ contains no nonempty stopping set.
-\end{theorem}
+\end{thm}
 
 \begin{proof}
 \textbf{Stalling implies stopping set.}
@@ -282,23 +259,23 @@ d'(\ell)=
 \]
 
 \subsection{Certificates}
-\begin{definition}[Phase-I trace]
+\begin{defi}[Phase-I trace]
 A peeling trace is a finite list
 \[
 T=[(j_1,i_1,b_1),\dots,(j_t,i_t,b_t)],
 \]
 intended to be replayed from $y$ by the checker.
-\end{definition}
+\end{defi}
 
-\begin{definition}[Success certificate]
+\begin{defi}[Success certificate]
 A \emph{success certificate} is a pair $(T,\rho)$ where $T$ is a peeling trace and
 $\rho:U_t\to\Ftwo$ assigns values to the unknown set $U_t$ remaining after replaying $T$.
-\end{definition}
+\end{defi}
 
-\begin{definition}[Failure certificate]
+\begin{defi}[Failure certificate]
 A \emph{failure certificate} is a pair $(T,\omega)$ where $T$ is a peeling trace and
 $\omega\in\Ftwo^m$ is an infeasibility witness for the residual system after replaying $T$.
-\end{definition}
+\end{defi}
 
 \subsection{Hybrid decoder}
 The hybrid decoder is the computational core of the proposal. It is allowed to use any efficient linear-algebra routine in phase II; the correctness burden is shifted to the certificate and to the checker. This is why the algorithm below is best read as an \emph{untrusted producer} of either a solution witness or an infeasibility witness.
@@ -378,7 +355,7 @@ For each check $j\in\Chk$, define the residual parity equation
 \end{equation}
 These $m$ equations form a linear system over $\Ftwo$ in the unknowns $x_U := (x_i)_{i\in U}$.
 
-\begin{definition}[Residual matrix from the state]
+\begin{defi}[Residual matrix from the state]
 \label{def:HU-from-state}
 Define $H_U \in \Ftwo^{m\times |U|}$ by restricting the columns of $H$ to indices in $U$.
 Let $r\in\Ftwo^m$ be the vector with coordinates $r_j := s(j)$.
@@ -387,9 +364,9 @@ Then \eqref{eq:row-residual} is equivalent to
 \label{eq:HU}
 H_U x_U^\top \;=\; r.
 \end{equation}
-\end{definition}
+\end{defi}
 
-\begin{lemma}[Meaning of the state components after replay]
+\begin{lem}[Meaning of the state components after replay]
 \label{lem:state-meaning}
 Let $y\in(\Ftwo\cup\{\starE\})^n$ be a received word and let $\sigma=(K,U,s,d)$ be the state obtained after replaying a valid peeling trace from $y$.
 Then, for every check $j\in\Chk$,
@@ -399,7 +376,7 @@ Then, for every check $j\in\Chk$,
  s(j)=\bigxor_{i\in \Nb(j)\cap \mathrm{dom}(K)} K(i).
 \]
 In words, $d(j)$ is the number of still-unknown neighbors of $j$, and $s(j)$ is the XOR of the neighbors of $j$ that have already been fixed.
-\end{lemma}
+\end{lem}
 
 \begin{proof}
 We argue by induction on the length of the replayed trace.
@@ -422,7 +399,7 @@ Moreover $i_0$ moves from the unknown set to the known set with value $b$, so by
 Thus the claim also holds after the step. The induction is complete.
 \end{proof}
 
-\begin{lemma}[State residual equals the standard algebraic residual]
+\begin{lem}[State residual equals the standard algebraic residual]
 \label{lem:residual-equivalence}
 Let $y\in(\Ftwo\cup\{\starE\})^n$ be a received word and let $\sigma=(K,U,s,d)$ be the state obtained
 after replaying a valid peeling trace.
@@ -432,7 +409,7 @@ Then the residual system \eqref{eq:HU} is equivalent to the standard restriction
 H_U x_U^\top \;=\; H_K x_K^\top
 \]
 obtained by splitting $x=(x_K,x_U)$ in $Hx^\top=0$ (cf.\ \eqref{eq:residual}).
-\end{lemma}
+\end{lem}
 
 \begin{proof}
 Fix a check (row) $j$. The parity constraint is
@@ -456,14 +433,14 @@ The equality with $H_K x_K^\top$ is the same statement in matrix form.
 \label{sec:guarantees}
 
 \subsection{Soundness of success certificates}
-\begin{theorem}[Soundness of success certificates]
+\begin{thm}[Soundness of success certificates]
 \label{thm:sound}
 If Algorithm~\ref{alg:checker} accepts a success certificate $(T,\rho)$ for $(H,y)$ and outputs $x$, then:
 \begin{enumerate}[label=(\alph*),leftmargin=*]
 \item $x_i=y_i$ for all $i$ with $y_i\in\Ftwo$ (channel consistency);
 \item $Hx^\top=0$ (thus $x\in C$).
 \end{enumerate}
-\end{theorem}
+\end{thm}
 
 \begin{proof}
 Channel consistency is checked explicitly.
@@ -483,14 +460,14 @@ The checker enforces $\bigxor_{i\in\Nb(j)\cap U}\rho(i)=s(j)$, hence
 Thus every parity equation holds and $Hx^\top=0$.
 \end{proof}
 
-\begin{remark}[Brevity of the proof is the point]
+\begin{rem}[Brevity of the proof is the point]
 The proof of Theorem~\ref{thm:sound} is short because the checker is designed to be directly verifiable: it makes the correctness argument one-step. This brevity is the primary technical virtue of the certification approach, not a sign of triviality. If the checker were complex---say, a full decoder operating independently---its own correctness would require a separate proof of comparable difficulty, defeating the purpose of separating the untrusted solver from the trusted kernel.
-\end{remark}
+\end{rem}
 
 \subsection{Soundness of failure certificates (infeasibility witnesses)}
 We formalize what it means for a residual system to be inconsistent and how to certify this.
 
-\begin{lemma}[Infeasibility witness]
+\begin{lem}[Infeasibility witness]
 \label{lem:unsat-witness-sound}
 Let $A\in\Ftwo^{m\times t}$ and $b\in\Ftwo^m$.
 If there exists $\omega\in\Ftwo^m$ such that
@@ -499,7 +476,7 @@ If there exists $\omega\in\Ftwo^m$ such that
 \omega^\top A = 0 \quad\text{and}\quad \omega^\top b = 1,
 \end{equation}
 then the linear system $Ax=b$ has no solution in $\Ftwo^t$.
-\end{lemma}
+\end{lem}
 
 \begin{proof}
 Assume for contradiction that $x\in\Ftwo^t$ satisfies $Ax=b$.
@@ -511,11 +488,11 @@ The left-hand side is $(\omega^\top A)x = 0\cdot x = 0$, while the right-hand si
 This contradiction shows no such $x$ exists.
 \end{proof}
 
-\begin{lemma}[Completeness of infeasibility witnesses]
+\begin{lem}[Completeness of infeasibility witnesses]
 \label{lem:unsat-witness-complete}
 Let $A\in\Ftwo^{m\times t}$ and $b\in\Ftwo^m$.
 If the system $Ax=b$ has no solution, then there exists $\omega\in\Ftwo^m$ satisfying \eqref{eq:witness}.
-\end{lemma}
+\end{lem}
 
 \begin{proof}
 Let $\mathcal{C}=\mathrm{Col}(A)\subseteq \Ftwo^m$ be the column space of $A$.
@@ -538,7 +515,7 @@ Finally, $\omega\in\mathcal{C}^\perp$ implies $\omega^\top c=0$ for every column
 Equivalently $\omega^\top A = 0$. Thus \eqref{eq:witness} holds.
 \end{proof}
 
-\begin{proposition}[Witness extraction from row reduction]
+\begin{prop}[Witness extraction from row reduction]
 \label{prop:witness-extraction}
 Let $A\in\Ftwo^{m\times t}$ and $b\in\Ftwo^m$. Suppose a sequence of elementary row operations over $\Ftwo$
 is represented by an invertible matrix $U\in\Ftwo^{m\times m}$ and transforms the augmented matrix $[A\mid b]$ into
@@ -550,7 +527,7 @@ If the $r$-th row of $R$ is the zero row and $c_r=1$, then the row vector
 \omega^{\mathrm{row}} := e_r^\top U
 \]
 satisfies $\omega^{\mathrm{row}}A=0$ and $\omega^{\mathrm{row}}b=1$.
-\end{proposition}
+\end{prop}
 
 \begin{proof}
 By definition of $U$, the $r$-th row of $[R\mid c]$ is obtained by applying the row combination $e_r^\top U$ to the original augmented matrix.
@@ -567,16 +544,16 @@ Writing $\omega^{\mathrm{row}}:=e_r^\top U$, this gives
 Since the $r$-th row of $R$ is zero and $c_r=1$, we obtain $\omega^{\mathrm{row}}A=0$ and $\omega^{\mathrm{row}}b=1$.
 \end{proof}
 
-\begin{remark}
+\begin{rem}
 Proposition~\ref{prop:witness-extraction} is the algebraic reason why an implementation of phase II can return a concrete failure witness rather than merely reporting that Gaussian elimination found a contradiction. The checker never needs to trust the row-reduction routine itself; it only needs to verify the resulting vector $\omega^{\mathrm{row}}$.
-\end{remark}
+\end{rem}
 
-\begin{theorem}[Soundness of failure certificates]
+\begin{thm}[Soundness of failure certificates]
 \label{thm:unsat-certificate-sound}
 Let $(H,y)$ be an instance and let the checker accept a failure certificate $(T,\omega)$.
 Let $\sigma=(K,U,s,d)$ be the state obtained after replaying $T$ from $y$, and let $H_U x_U^\top=r$ be the induced residual system.
 Then there is \emph{no} completion $x\in\Ftwo^n$ such that $Hx^\top=0$ and $x_i=y_i$ for all non-erased positions $i$.
-\end{theorem}
+\end{thm}
 
 \begin{proof}
 Because the checker accepts $(T,\omega)$, it verified $\omega^\top H_U = 0$ and $\omega^\top r = 1$.
@@ -587,12 +564,12 @@ Hence no such completion exists.
 \end{proof}
 
 \subsection{ML optimality on the BEC}
-\begin{theorem}[Accepted completions are ML on the BEC]
+\begin{thm}[Accepted completions are ML on the BEC]
 \label{thm:ml}
 Assume the ideal BEC model: each coordinate is independently erased with probability $\epsilon$ and non-erased coordinates are received without error.
 Any $x\in C$ consistent with the non-erased positions of $y$ is a maximum-likelihood (ML) solution.
 In particular, any output accepted by the success checker is ML.
-\end{theorem}
+\end{thm}
 
 \begin{proof}
 For the ideal BEC with parameter $\epsilon\in(0,1)$, the channel transition probability for a received word $y$ given a transmitted codeword $x$ is
@@ -608,19 +585,19 @@ where $K_y$ and $B_y$ are the known and erased index sets of $y$.  This probabil
 By Theorem~\ref{thm:sound}, any output accepted by the success checker is (i) a codeword in $C$ and (ii) consistent with all non-erased positions of $y$.  It is therefore ML.
 \end{proof}
 
-\begin{remark}[ML does not imply uniqueness on the BEC]
+\begin{rem}[ML does not imply uniqueness on the BEC]
 The statement of Theorem~\ref{thm:ml} is deliberately modest. On the BEC there may be several codewords consistent with the non-erased coordinates, and all of them have the same likelihood. The theorem therefore asserts membership in the ML set, not uniqueness of the decoded word.
-\end{remark}
+\end{rem}
 
-\begin{remark}[Scope: BEC versus other channels]
+\begin{rem}[Scope: BEC versus other channels]
 The equal-likelihood argument used in the proof of Theorem~\ref{thm:ml} is specific to the BEC. On the binary symmetric channel (BSC), for example, the likelihood of a codeword depends on its Hamming distance from $y$, so two different consistent completions can have different likelihoods, and the ML criterion selects the closest one. In that setting, certifying ML optimality would require the certificate to carry distance information, not merely a consistency witness. The present framework does not cover the BSC or AWGN channels; this is a genuine limitation rather than an oversight.
-\end{remark}
+\end{rem}
 
 \subsection{Checker complexity (why certification is useful)}
-\begin{proposition}[Checker runs in time linear in the Tanner graph size]
+\begin{prop}[Checker runs in time linear in the Tanner graph size]
 \label{prop:checker-linear}
 Let $|\Edges|$ be the number of Tanner edges (equivalently, the number of nonzero entries of $H$).  The success checker runs in $O(|\Edges| + n)$ time. The failure checker runs in $O(|\Edges| + m)$ time. Both bounds are tight up to constant factors.
-\end{proposition}
+\end{prop}
 
 \begin{proof}
 \textbf{Success case.}
@@ -679,7 +656,7 @@ Subexponential zones:
 \end{itemize}
 
 \subsection{Encoding of a peeling state}
-\begin{definition}[State encoding]
+\begin{defi}[State encoding]
 \label{def:state-encoding}
 Given $\sigma=(K,U,s,d)$, define the multiset $\llbracket \sigma\rrbracket$ by
 \begin{align*}
@@ -690,15 +667,15 @@ Given $\sigma=(K,U,s,d)$, define the multiset $\llbracket \sigma\rrbracket$ by
 &\cup\{\, \mathsf{pend}(j,i) \mid (j,i)\in \Edges,\ i\in U\,\}.
 \end{align*}
 Static edges $!^S\mathsf{edge}(j,i)$ are given globally.
-\end{definition}
-\begin{remark}
+\end{defi}
+\begin{rem}
 The static atoms $!^S\mathsf{edge}(j,i)$ make the dependence on the Tanner graph explicit at the logical level.
 In the concrete phase-I clauses below, the indices are already restricted to genuine edges, so these atoms are not consumed during rewriting.
 They remain in the global static context and record the graph structure with respect to which the trace is interpreted.
-\end{remark}
+\end{rem}
 
 \subsection{Program clauses}
-\begin{definition}[Peeling clauses in SELL]
+\begin{defi}[Peeling clauses in SELL]
 \label{def:sell-clauses}
 For all suitable indices:
 \[
@@ -714,10 +691,10 @@ For all suitable indices:
 &\quad\otimes\ \mathsf{step}(j,i,p)\ \otimes\ \mathsf{rem}(j,0,0).
 \end{aligned}
 \]
-\end{definition}
+\end{defi}
 
 \subsection{Well-formed multisets and state extraction}
-\begin{definition}[Well-formed multiset]
+\begin{defi}[Well-formed multiset]
 \label{def:wf}
 A multiset $M$ of atoms is \emph{well-formed} if:
 \begin{enumerate}[label=(WF\arabic*),leftmargin=*]
@@ -729,19 +706,19 @@ A multiset $M$ of atoms is \emph{well-formed} if:
   \end{itemize}
 \item For each $j\in\Chk$, the pending set $P_j(M):=\{\, i\mid \mathsf{pend}(j,i)\in M\,\}$ satisfies $|P_j(M)|=k$ where $\mathsf{rem}(j,k,p)\in M$.
 \end{enumerate}
-\end{definition}
+\end{defi}
 
-\begin{definition}[State extracted from a multiset]
+\begin{defi}[State extracted from a multiset]
 \label{def:state-extract}
 Given a well-formed $M$, define $\mathcal{S}(M)=(K,U,s,d)$ by:
 \begin{itemize}[leftmargin=*]
 \item $U=\{\, i \mid \mathsf{unk}(i)\in M \,\}$ and $\mathrm{dom}(K)=\Var\setminus U$ with $K(i)=b$ iff $!^K\mathsf{val}(i,b)$ holds.
 \item For each $j$, if $\mathsf{rem}(j,k,p)\in M$ then set $d(j)=k$ and $s(j)=p$.
 \end{itemize}
-\end{definition}
+\end{defi}
 
 \subsection{Preservation lemmas}
-\begin{lemma}[Propagate preserves well-formedness and matches the state update]
+\begin{lem}[Propagate preserves well-formedness and matches the state update]
 \label{lem:propagate-wf}
 Let $M$ be well-formed and suppose \textbf{(Propagate)} applies, yielding $M'$.
 Then $M'$ is well-formed, and the extracted states satisfy:
@@ -750,7 +727,7 @@ Then $M'$ is well-formed, and the extracted states satisfy:
 s'(j)=s(j)\xor b,\ d'(j)=d(j)-1
 \]
 for the unique check $j$ rewritten, and all other checks are unchanged.
-\end{lemma}
+\end{lem}
 
 \begin{proof}
 Only the triple $(\mathsf{pend}(j,i),\mathsf{rem}(j,k,p))$ is rewritten into $\mathsf{rem}(j,k-1,p\xor b)$.
@@ -762,12 +739,12 @@ No $\mathsf{unk}$ or $!^K\mathsf{val}$ facts are changed, so (WF2) remains true.
 The extracted update is immediate from Definition~\ref{def:state-extract}.
 \end{proof}
 
-\begin{lemma}[Solve preserves well-formedness and emits a step]
+\begin{lem}[Solve preserves well-formedness and emits a step]
 \label{lem:solve-wf}
 Let $M$ be well-formed and suppose \textbf{(Solve)} applies, yielding $M'$.
 Then $M'$ is well-formed, $\mathsf{step}(j,i,p)\in M'$, $\mathsf{unk}(i)\notin M'$, and the extracted state
 $\mathcal{S}(M')$ corresponds to adding the assignment $i\mapsto p$ and setting the solved check to $(d(j)=0,s(j)=0)$.
-\end{lemma}
+\end{lem}
 
 \begin{proof}
 The rule consumes $\mathsf{unk}(i)$ and $\mathsf{pend}(j,i)$ and replaces $\mathsf{rem}(j,1,p)$ by $\mathsf{rem}(j,0,0)$,
@@ -781,24 +758,24 @@ The state claims follow from Definition~\ref{def:state-extract}.
 \end{proof}
 
 \subsection{Adequacy (phase I) with a complete proof}
-\begin{definition}[Rewrite relation]
+\begin{defi}[Rewrite relation]
 Write $M\Rightarrow M'$ when $M'$ is obtained from $M$ by one application of either \textbf{(Propagate)} or \textbf{(Solve)}.
 Write $M\Rightarrow^* M'$ for the reflexive-transitive closure of this relation.
-\end{definition}
+\end{defi}
 
-\begin{definition}[Trace extracted from a derivation]
+\begin{defi}[Trace extracted from a derivation]
 \label{def:extracted-trace}
 Fix a derivation $D$ built from applications of \textbf{(Propagate)} and \textbf{(Solve)}.
 The \emph{trace extracted from $D$} is the ordered list of triples $(j,i,p)$ attached to the successive occurrences of \textbf{(Solve)} in $D$.
 Applications of \textbf{(Propagate)} do not contribute entries to the trace.
 Thus the extracted trace depends only on the order of the \textbf{(Solve)} steps in the derivation.
-\end{definition}
+\end{defi}
 
-\begin{remark}
+\begin{rem}
 A terminal multiset by itself does not record the order in which its $\mathsf{step}$-atoms were created. The certificate trace is therefore extracted from the \emph{derivation}, not from the terminal multiset alone. This distinction matters in the adequacy theorem and is the reason why we speak explicitly about the trace of a derivation.
-\end{remark}
+\end{rem}
 
-\begin{theorem}[Adequacy for phase I (peeling as multiset rewriting)]
+\begin{thm}[Adequacy for phase I (peeling as multiset rewriting)]
 \label{thm:adequacy-complete}
 Let $\sigma_0$ be the initial peeling state extracted from the received word $y$, and let $M_0=\llbracket \sigma_0\rrbracket$.
 \begin{enumerate}[label=(\roman*),leftmargin=*]
@@ -818,7 +795,7 @@ T=[(j_1,i_1,b_1),\dots,(j_t,i_t,b_t)],
 \]
 then $T$ is a valid peeling trace, in the sense that Algorithm~\ref{alg:checker} can replay it from $y$ without failing any local check.
 \end{enumerate}
-\end{theorem}
+\end{thm}
 
 \begin{proof}
 \noindent\textbf{(i) Completeness.}
@@ -900,15 +877,15 @@ Therefore $D_{\mathrm{post}}$ starts from a multiset encoding the checker-update
 By the induction hypothesis, that suffix trace is replayable from the updated state. Hence the whole trace $T$ is replayable from $y$.
 \end{proof}
 
-\begin{remark}[Focusing is optional for soundness, helpful for presentation]
+\begin{rem}[Focusing is optional for soundness, helpful for presentation]
 The adequacy theorem is proved entirely at the level of multiset rewriting induced by the SELL clauses above.
 A focused calculus (SELLF) provides a standard way to package these rewriting steps as disciplined macro-actions
 \cite{Andreoli1992Focusing,NigamMiller2009SELL}, but no appeal to that additional metatheory is needed for the correctness claims established in this paper.
-\end{remark}
+\end{rem}
 
-\begin{remark}[Non-trivial content of the adequacy theorem]
+\begin{rem}[Non-trivial content of the adequacy theorem]
 A hostile reading of Theorem~\ref{thm:adequacy-complete} might be that the SELL clauses are designed to mirror the decoder, so proving they do mirror it is a tautology. The non-trivial content lies in two directions. In completeness, one must show that for \emph{every} valid operational trace $T$, \emph{some} derivation exists that extracts exactly $T$---not a different trace, not a supersequence. This requires the specific commutation argument for \textbf{(Propagate)} steps (each propagation touches a distinct pending incidence, so their order does not affect the extracted trace) and the fact that the \textbf{(Solve)}-then-\textbf{(Propagate)} block faithfully mirrors the state update. In soundness, one must show that \emph{no} derivation can produce a trace that the checker would reject. This is non-trivial because, a priori, a derivation could attempt to apply \textbf{(Solve)} when $d(j)>1$, or to resolve the same variable twice, or to use a $\mathsf{val}$ atom that was not yet produced. Well-formedness invariance (Lemmas~\ref{lem:propagate-wf} and~\ref{lem:solve-wf}) rules all these out. Without the $!^K$ zone, $\mathsf{val}(i,b)$ would be a linear resource and could not be reused; a derivation could legally \emph{fail to propagate} to some adjacent check, leaving the extracted state inconsistent with the operational state. The $!^K$ structure ensures that propagation to \emph{all} adjacent checks is complete before the encoding of the state is correct, and the adequacy theorem exploits this.
-\end{remark}
+\end{rem}
 
 % =========================================================
 \section{Threat model and robustness}
