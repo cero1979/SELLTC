@@ -1,131 +1,123 @@
-# Lean 4 Mechanization Plan
+# Lean 4 Mechanization — SELLCert
 
-This directory will contain a Lean 4 formalization of the main results from the paper
+This directory contains the Lean 4 formalization of the main results from the paper
 *Certified Hybrid Decoding of Binary LDPC Codes over the BEC via Subexponential Linear Logic*.
 
-No Lean code has been written yet. This document records the formalization plan
-so that progress can be tracked and contributions can be coordinated.
+The library currently comprises **~650 lines** (994 including blank lines and comments)
+organized in six modules.
 
 ---
 
-## Target theorems
+## Proof status
 
-| Label in paper | Description | Estimated effort |
-|---|---|---|
-| `thm:adequacy-complete` | Full adequacy of the SELL-style specification | 400–800 lines |
-| `thm:sound` | Soundness of success certificates | 100–200 lines |
-| `lem:unsat-witness-sound` | Soundness of failure certificates | 50–100 lines |
-| `lem:unsat-witness-complete` | Completeness of failure certificates | 100–200 lines |
+| Lean identifier | Paper label | Module | Status |
+|---|---|---|---|
+| `syndrome_invariant` | Lem. 4.5 | PeelingState | ✅ Complete |
+| `propagate_wf` | Lem. 6.6 | Rewriting | ✅ Complete |
+| `solve_wf` | Lem. 6.7 | Rewriting | ✅ Complete |
+| `lem_unsat_witness_sound` | Lem. 5.3 | Soundness | ✅ Complete |
+| `thm_sound_success` | Thm. 5.1 | Soundness | ✅ Complete (1 admit†) |
+| `thm_ml` | Thm. 5.8 | Soundness | ✅ Complete (BEC axiom‡) |
+| `lem_unsat_witness_complete` | Lem. 5.4 | Soundness | ⚠️ Admitted (a) |
+| `thm_sound_failure` | Thm. 5.7 | Soundness | ⚠️ Admitted (b) |
+| `adequacy_completeness` | Thm. 6.11 (→) | Adequacy | ⚠️ Admitted (c) |
+| `adequacy_soundness` | Thm. 6.11 (←) | Adequacy | ⚠️ Admitted (d) |
+
+†  One helper connecting `replayFull` to `SyndromeInv`; ~30 lines.
+‡  `bec_equal_likelihood` is a genuine **axiom** (not an `admit`): it asserts the
+   equal-likelihood property of the ideal BEC channel, which requires a real-valued
+   probability model to formalize.
+(a) Double-dual argument over GF(2); ~80 lines.
+(b) Residual-system connection via `lem_residual_equivalence`; ~30 lines.
+(c) Propagate-commutation inductive argument; ~120 lines.
+(d) Uniqueness via `wf_pend` count invariant; ~200 lines.
 
 ---
 
-## Planned file structure
+## File structure
 
 ```
 lean4/
-  SELLCert.lean           -- Top-level imports and module summary
-  PeelingState.lean       -- PeelingState record, WFMultiset, Step inductive
-  Rewriting.lean          -- Propagate/Solve rules, ReflTransClosure, WF preservation
-  Checker.lean            -- check_success / check_failure pure functions
-  Soundness.lean          -- Theorems thm:sound, lem:unsat-witness-sound/complete
-  Adequacy.lean           -- Theorem thm:adequacy-complete (completeness + soundness)
-  lakefile.lean           -- Lake build file
+  SELLCert.lean                -- Top-level imports
+  SELLCert/
+    Basic.lean        -- PCMatrix, ReceivedWord, isCW, isConsistent over ZMod 2
+    PeelingState.lean -- PeelingState record, ValidStep, ValidTrace, syndrome_invariant
+    Rewriting.lean    -- Atom, Context, encodeState, propagate, solve, WFContext,
+                      --   propagate_wf, solve_wf
+    Checker.lean      -- checkSuccess, checkFailure pure functions
+    Soundness.lean    -- lem_unsat_witness_sound/complete, thm_sound_success/failure,
+                      --   bec_equal_likelihood axiom, thm_ml
+    Adequacy.lean     -- RewStep, RewStar, extractedTrace,
+                      --   adequacy_completeness, adequacy_soundness
+  lakefile.lean
 ```
 
 ---
 
-## Core type encodings
+## Remaining admitted steps
 
-### `PeelingState`
-```lean
-structure PeelingState where
-  K    : Finmap (Fin n) (Fin 2)   -- partial assignment of erased positions
-  s    : Fin n → Fin 2            -- received word (known positions)
-  deg  : Fin m → ℕ               -- current degree of each check node
-```
+### (a) `lem_unsat_witness_complete` — ~80 lines
 
-### `Atom`
-Three atom kinds appear in the SELL multiset:
-```lean
-inductive Atom (n m : ℕ) where
-  | Edge  : Fin n → Fin m → Atom n m    -- !^G: static edge
-  | Known : Fin n → Fin 2 → Atom n m    -- !^K: known assignment
-  | Check : Fin m → List (Fin n) → Atom n m  -- linear residual check (one-use)
-```
+**Claim**: If `Ax = b` has no solution over GF(2), there exists `ω` with
+`ω^T A = 0` and `ω^T b = 1`.
 
-### `WFMultiset`
-```lean
-structure WF (M : Multiset (Atom n m)) : Prop where
-  wf1 : ...   -- each variable appears in at most one Known atom
-  wf2 : ...   -- each Check atom's variable list is a subset of unknown variables
-  wf3 : ...   -- Edge atoms are consistent with the Tanner graph H
-```
+**Proof plan**:
+1. Let `C = Submodule.span (ZMod 2) (Set.range Aᵀ)` — column space of `A`.
+2. `hno` implies `b ∉ C` (else `b = Ax` for some `x`).
+3. By `Subspace.orthogonal_orthogonal` over a finite-dimensional space over a field,
+   `(C^⊥)^⊥ = C`. Since `b ∉ C`, the linear map `φ : C^⊥ → ZMod 2, ω ↦ ω^T b`
+   is nonzero, so there exists `ω ∈ C^⊥` with `ω^T b = 1`.
+4. `ω ∈ C^⊥` means `ω^T A = 0`. ∎
 
-### `Step`
-```lean
-inductive Step : Multiset (Atom n m) → Multiset (Atom n m) → Prop where
-  | propagate : ...   -- fires when a check has degree one
-  | solve     : ...   -- fires when all checks are resolved
-```
+**Key Mathlib lemma**: `Subspace.orthogonal_orthogonal`.
+
+> **Correction to old README**: An earlier version of this file mentioned
+> `Subspace.exists_dual_map_eq_bot_of_nmem`. That name was based on a preliminary
+> design; the correct lemma in the current Mathlib is `Subspace.orthogonal_orthogonal`.
 
 ---
 
-## Adequacy proof plan
+### (b) `thm_sound_failure` — ~30 lines
 
-**Completeness** (`peeling_trace → derivation`):
-- Induction on `|T|` (length of trace).
-- Each step: show that the peeling step for variable `v` corresponds to
-  one `Step.propagate` application followed by zero or more `Step.propagate`
-  applications on neighboring checks.
-- Key lemma: `propagate_commutes` — two `Step.propagate` applications on
-  disjoint checks commute (proved by `Finmap.disjoint_update`).
+**Claim**: If `checkFailure H y T ω = true`, no codeword is consistent with `y`.
 
-**Soundness** (`derivation → peeling_trace`):
-- Induction on `ReflTransClosure Step`.
-- Base case: empty derivation = empty trace.
-- Inductive step: peel off the first `Step.solve` (find it using
-  `exists_solve_step`), identify the corresponding operational step,
-  apply IH to the suffix.
+**Proof plan**: The checker verifies `ω^T H_U = 0` and `ω^T r = 1`. If a consistent
+codeword `x` existed, then `H_U x_U = r` (by `lem_residual_equivalence`), giving
+`ω^T r = ω^T H_U x_U = 0`, contradicting `ω^T r = 1`.
+
+**Key Mathlib lemmas**: `Finset.sum_congr`, `Finset.sum_add_distrib`.
 
 ---
 
-## Mathlib dependencies
+### (c) `adequacy_one_step` (used by `adequacy_completeness`) — ~120 lines
 
-All of the following are already in Mathlib 4:
+**Claim**: One operational peeling step induces a `RewStar` derivation.
 
-| Concept | Mathlib location |
-|---|---|
-| Finmap (partial maps) | `Mathlib.Data.Finmap` |
-| Multiset operations | `Mathlib.Data.Multiset.Basic` |
-| GF(2) arithmetic | `Mathlib.Algebra.Field.Basic` + `ZMod 2` |
-| Sparse matrices over GF(2) | `Mathlib.LinearAlgebra.Matrix.DotProduct` |
-| Finite-dim Hahn–Banach over finite field | `Mathlib.LinearAlgebra.Dual` |
-| Reflexive-transitive closure | `Mathlib.Order.RelClasses` |
+**Proof plan**: Apply `(Propagate)` for each known neighbor of `stp.j` in any order,
+then `(Solve)`. Order-independence follows from `Multiset.erase_comm` (two erases on
+distinct atoms commute).
 
----
-
-## Getting started with Lean 4
-
-1. Install `elan` (the Lean version manager):
-   ```bash
-   curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
-   ```
-2. From the `lean4/` directory, run:
-   ```bash
-   lake update
-   lake build
-   ```
-   The `lakefile.lean` (to be written) will declare the Mathlib dependency.
+> **Correction to old README**: An earlier version mentioned `Finmap.insert_insert_of_ne`.
+> The current implementation uses `Multiset` throughout (not `Finmap`), so the relevant
+> commutativity lemma is `Multiset.erase_comm`.
 
 ---
 
-## Open questions
+### (d) `adequacy_soundness` — ~200 lines
 
-- The commutation lemma for `Step.propagate` is the most delicate part. The
-  argument requires showing that two `Finmap.insert` operations on disjoint
-  keys produce the same result regardless of order. This should follow from
-  `Finmap.insert_insert_of_ne`.
-- `lem:unsat-witness-complete` (completeness of failure certificates) uses
-  the finite-dimensional Farkas lemma over GF(2). The precise Mathlib lemma
-  to use is `Subspace.exists_dual_map_eq_bot_of_nmem`; confirm this is
-  available in the target Mathlib version.
+**Claim**: Every `RewStar` derivation from the encoded initial state extracts a valid trace.
+
+**Proof plan**: Induction on derivation length, using `wf_pend` to show the only
+applicable `(Solve)` step at each point corresponds to a unique valid peeling step,
+and `wf_rem` to maintain the `rem(j, ·, ·)` uniqueness invariant.
+
+---
+
+## Building
+
+```bash
+cd lean4
+lake build
+```
+
+Requires Lean 4 and Mathlib4. The `lakefile.lean` specifies the Mathlib revision.
