@@ -67,7 +67,8 @@ We prove soundness of success certificates---any accepted output is a codeword c
 The checker runs in time $O(|\mathcal{E}|+n)$, linear in the Tanner graph.
 
 The four results together form a self-contained pipeline from specification to certification.
-Because the adequacy proof proceeds entirely by structural induction over multiset-rewriting derivations, its inductive skeleton maps directly onto the tactic language of contemporary proof assistants, making mechanization in Lean~4 or Coq a concrete near-term goal.
+Because the adequacy proof proceeds entirely by structural induction over multiset-rewriting derivations, its inductive skeleton maps directly onto the tactic language of contemporary proof assistants.
+A companion Lean~4 library of approximately 650 lines formalizes all type definitions, the rewriting rules, and the well-formedness preservation lemmas; the adequacy and soundness theorems are stated and proved up to four admitted helper steps, each annotated with the corresponding Mathlib API and a line-count estimate.
 A companion Python implementation and reproducibility notebook are provided so that the certificate format and the checker algorithm can be inspected and executed independently.
 \end{abstract}
 
@@ -593,6 +594,10 @@ By Theorem~\ref{thm:sound}, any output accepted by the success checker is (i) a 
 The statement of Theorem~\ref{thm:ml} is deliberately modest. On the BEC there may be several codewords consistent with the non-erased coordinates, and all of them have the same likelihood. The theorem therefore asserts membership in the ML set, not uniqueness of the decoded word.
 \end{rem}
 
+\begin{rem}[Why state an essentially immediate result]
+For the ideal BEC, the equal-likelihood of all consistent codewords makes Theorem~\ref{thm:ml} nearly immediate: any consistent codeword is ML by definition. The value of the theorem is not its depth but its role in the pipeline---it makes explicit that the accepted output of the checker is not merely a valid codeword but an ML solution, without any additional assumption on the decoder. Removing it would leave a gap between the soundness guarantee (``outputs a codeword'') and the standard performance criterion (``outputs an ML solution'') that a reader might otherwise have to fill in themselves.
+\end{rem}
+
 \begin{rem}[Scope: BEC versus other channels]
 The equal-likelihood argument used in the proof of Theorem~\ref{thm:ml} is specific to the BEC. On the binary symmetric channel (BSC), for example, the likelihood of a codeword depends on its Hamming distance from $y$, so two different consistent completions can have different likelihoods, and the ML criterion selects the closest one. In that setting, certifying ML optimality would require the certificate to carry distance information, not merely a consistency witness. The present framework does not cover the BSC or AWGN channels; this is a genuine limitation rather than an oversight.
 \end{rem}
@@ -613,6 +618,11 @@ Computing $\omega^\top r$ requires one inner product in $\Ftwo^m$, costing $O(m)
 \textbf{Tightness.}
 A certificate of either type must include, at minimum, one value per resolved variable (in the success trace $T$) or the witness vector $\omega\in\Ftwo^m$. In the worst case every variable is resolved by peeling, so $|T|=n$; the trace alone has size $\Omega(n)$. Verifying even one entry requires at least one parity-update per adjacent check, so reading the trace takes $\Omega(|\Edges|)$. Hence $O(|\Edges|+n)$ is optimal up to constant factors for the success checker, and $O(|\Edges|+m)$ is similarly tight for the failure checker.
 \end{proof}
+
+\begin{rem}[Certificate size]
+\label{rem:cert-size}
+A success certificate $(T,\rho)$ has size $O(n\log n)$ bits: the trace lists $t\leq n$ triples from $[m]\times[n]\times\Ftwo$, each requiring $O(\log n)$ bits to encode. The residual witness $\rho$ contributes at most $|U|\leq n$ bits. A failure certificate $(T,\omega)$ has the same trace component plus an $m$-bit witness vector. In both cases the certificate size is linear in the code length up to a logarithmic factor, which matches the $O(n)$ output size of any reasonable decoder and is consistent with the linear-time checker.
+\end{rem}
 
 % =========================================================
 \section{Clause-based SELL-style specification of phase I (peeling)}
@@ -706,7 +716,7 @@ A multiset $M$ of atoms is \emph{well-formed} if:
 \item For each $i\in\Var$, exactly one of the following holds:
   \begin{itemize}[leftmargin=2em]
   \item $\mathsf{unk}(i)\in M$, or
-  \item there exists $b\in\Ftwo$ such that $!^K\mathsf{val}(i,b)$ holds.
+  \item there exists $b\in\Ftwo$ such that $!^K\mathsf{val}(i,b)\in M$.
   \end{itemize}
 \item For each $j\in\Chk$, the pending set $P_j(M):=\{\, i\mid \mathsf{pend}(j,i)\in M\,\}$ satisfies $|P_j(M)|=k$ where $\mathsf{rem}(j,k,p)\in M$.
 \end{enumerate}
@@ -716,7 +726,7 @@ A multiset $M$ of atoms is \emph{well-formed} if:
 \label{def:state-extract}
 Given a well-formed $M$, define $\mathcal{S}(M)=(K,U,s,d)$ by:
 \begin{itemize}[leftmargin=*]
-\item $U=\{\, i \mid \mathsf{unk}(i)\in M \,\}$ and $\mathrm{dom}(K)=\Var\setminus U$ with $K(i)=b$ iff $!^K\mathsf{val}(i,b)$ holds.
+\item $U=\{\, i \mid \mathsf{unk}(i)\in M \,\}$ and $\mathrm{dom}(K)=\Var\setminus U$ with $K(i)=b$ iff $!^K\mathsf{val}(i,b)\in M$.
 \item For each $j$, if $\mathsf{rem}(j,k,p)\in M$ then set $d(j)=k$ and $s(j)=p$.
 \end{itemize}
 \end{defi}
@@ -1096,9 +1106,53 @@ The checker functions are faithful to Algorithm~\ref{alg:checker}: they only ins
 \subsection{Supplementary experimental data}
 
 A Monte Carlo campaign was run on two LDPC code families (random regular and PEG) at three blocklengths ($n\in\{1000,2000,5000\}$) and seven erasure probabilities around the peeling threshold for the $(3,6)$ degree profile.
-The raw per-trial data and summary statistics are stored in the \texttt{SELLTCFULL\_outputs/} directory and are available in the companion repository.
+The raw per-trial data and summary statistics are stored in the \texttt{\ArtifactDirText/} directory and are available in the companion repository.
 This data is provided as supplementary material for reproducibility; it does not constitute an independent empirical contribution and should not be read as such.
-The false-acceptance rate was zero in all 100 trials at each point, consistent with the soundness theorems.
+
+Figure~\ref{fig:success-prob} shows the peeling and hybrid success probabilities as a function of erasure probability for both code families.
+Figure~\ref{fig:runtime} shows the runtime breakdown between peeling, residual Gaussian elimination, and checking phases.
+Figure~\ref{fig:scaling} confirms the empirical $O(n)$ scaling of the checker.
+Figure~\ref{fig:robustness} shows the behavior of the certificate acceptance rates under visible-bit corruption ($\delta > 0$).
+Table~\ref{tab:decoding-summary} summarises trace lengths, residual system sizes, and overhead ratios.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\linewidth]{\ArtifactDir/fig1_success_probability.png}
+  \caption{Peeling success rate (phase~I only) and hybrid success rate (peeling + residual GE) versus erasure probability $\epsilon$, for PEG and random-regular $(3,6)$ LDPC codes at three blocklengths. The hybrid pipeline achieves a success rate of 1.0 across the entire tested range; peeling alone falls below 1.0 near the iterative-decoding threshold ($\epsilon\approx 0.429$ for this degree profile \cite{DiEtAl2002Stopping}).}
+  \label{fig:success-prob}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\linewidth]{\ArtifactDir/fig2_runtime_breakdown.png}
+  \caption{Mean runtime breakdown per trial (milliseconds) for the peeling phase, residual Gaussian elimination (phase~II), and the independent checker, at $\epsilon=0.40$. The checker cost is consistently below the residual-solve cost.}
+  \label{fig:runtime}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\linewidth]{\ArtifactDir/fig3_checker_scaling.png}
+  \caption{Checker runtime (seconds) versus blocklength $n$ on a log-log scale. The fitted slope is close to 1, confirming the $O(|\Edges|+n)=O(n)$ complexity predicted by Proposition~\ref{prop:checker-linear} for constant degree profile.}
+  \label{fig:scaling}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\linewidth]{\ArtifactDir/fig4_robustness.png}
+  \caption{Proportion of accepted success certificates (solid) and accepted failure certificates (dashed) as a function of the visible-bit corruption rate $\delta$, for PEG and random-regular codes at three blocklengths. The false-acceptance rate is zero at every point, consistent with Theorems~\ref{thm:sound} and~\ref{thm:unsat-certificate-sound}.}
+  \label{fig:robustness}
+\end{figure}
+
+\begin{table}[ht]
+  \centering
+  \caption{Decoding summary statistics averaged over 100 trials at $\epsilon=0.40$. Columns: mean peeling trace length, mean residual system size (number of unknown variables after peeling), mean residual rank, mean residual density, mean phase-I time (ms), mean phase-II time (ms), mean checker time (ms), mean total time (ms), and mean overhead ratio (checker time / total time).}
+  \label{tab:decoding-summary}
+  \input{\ArtifactDir/table1_summary.tex}
+\end{table}
+
+The false-acceptance rate was zero in all 100 trials at each point.
+This is consistent with---and in fact guaranteed by---the soundness theorems (Theorems~\ref{thm:sound} and~\ref{thm:unsat-certificate-sound}): a correct implementation of the checker can never accept an incorrect certificate.
+The experimental runs therefore serve as a functional smoke test for the implementation rather than a statistical estimate of the error rate; no confidence interval is meaningful here because the theorems imply the rate is structurally zero for any correct checker.
 
 \subsection{Running the notebook}
 
@@ -1112,7 +1166,9 @@ The literature relevant to this paper divides into two strands: the coding-theor
 
 \paragraph{LDPC codes, Tanner graphs, and iterative decoding.}
 LDPC codes originate with Gallager \cite{Gallager1962}. Modern accounts and message-passing viewpoints are standard \cite{RichardsonUrbanke2008,MacKay2003,Forney2001}.
-On the BEC, peeling is the canonical iterative decoder and stopping sets characterize exactly when peeling halts \cite{DiEtAl2002Stopping}. The characterization is classical; we review it carefully in Theorem~\ref{thm:stopping} because the proof of the biconditional---not merely the ``stalling implies stopping set'' direction---matters for the adequacy argument.
+On the BEC, peeling is the canonical iterative decoder and stopping sets characterize exactly when peeling halts \cite{DiEtAl2002Stopping}.
+Luby, Mitzenmacher, Shokrollahi, and Spielman give a definitive density-evolution analysis of iterative decoding on the BEC and establish the capacity-approaching thresholds for irregular LDPC ensembles \cite{LubyMitzenmacherShokrollahiSpielman2001}; we work in the finite-length setting and do not appeal to asymptotic threshold results, but that analysis is the proper context for the erasure probability grid used in the experiments.
+The characterization is classical; we review it carefully in Theorem~\ref{thm:stopping} because the proof of the biconditional---not merely the ``stalling implies stopping set'' direction---matters for the adequacy argument.
 
 \paragraph{ML erasure decoding as sparse linear algebra.}
 Over the BEC, ML decoding reduces to solving a sparse linear system over $\Ftwo$.
@@ -1162,6 +1218,11 @@ There are further directions worth pursuing. An extension to the binary symmetri
 We note the limitations of the present work explicitly. The BEC framework exploits the channel's special structure (no-error guarantee on non-erased symbols) in an essential way; the ML claim and the clean adversarial model both depend on it. The Lean~4 mechanization in Section~\ref{sec:lean} has four admitted steps (all annotated with precise gap descriptions); it is a partial artifact, not a complete one. And the framework does not address the question of \emph{how} to efficiently generate a certificate---that burden falls on the untrusted decoder---which means the total cost of certified decoding is the decoder cost plus the checker cost, not just the checker cost alone.
 
 \begin{thebibliography}{99}
+
+\bibitem{LubyMitzenmacherShokrollahiSpielman2001}
+M.~Luby, M.~Mitzenmacher, M.~A.~Shokrollahi, and D.~A.~Spielman.
+\newblock Efficient erasure correcting codes.
+\newblock \emph{IEEE Transactions on Information Theory}, 47(2):569--584, 2001.
 
 \bibitem{Gallager1962}
 R.~G.~Gallager.
