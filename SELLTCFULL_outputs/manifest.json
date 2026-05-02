@@ -1,0 +1,75 @@
+{
+  "campaign": {
+    "dv": 3,
+    "dc": 6,
+    "blocklengths": [
+      1000,
+      2000,
+      5000
+    ],
+    "epsilons": [
+      0.34,
+      0.38,
+      0.4,
+      0.42,
+      0.44,
+      0.46,
+      0.5
+    ],
+    "robustness_deltas": [
+      0.0,
+      0.0001,
+      0.001,
+      0.01
+    ],
+    "clean_trials": 100,
+    "robustness_trials": 100,
+    "hybrid_solver": "sparse",
+    "ge_solver": "dense",
+    "base_seed": 20260427
+  },
+  "families": [
+    {
+      "family": "random_regular",
+      "n": 1000,
+      "dv": 3,
+      "dc": 6,
+      "matrix_seed": 20262427
+    },
+    {
+      "family": "random_regular",
+      "n": 2000,
+      "dv": 3,
+      "dc": 6,
+      "matrix_seed": 20263427
+    },
+    {
+      "family": "random_regular",
+      "n": 5000,
+      "dv": 3,
+      "dc": 6,
+      "matrix_seed": 20266427
+    },
+    {
+      "family": "peg",
+      "n": 1000,
+      "dv": 3,
+      "dc": 6,
+      "matrix_seed": 20263427
+    },
+    {
+      "family": "peg",
+      "n": 2000,
+      "dv": 3,
+      "dc": 6,
+      "matrix_seed": 20264427
+    },
+    {
+      "family": "peg",
+      "n": 5000,
+      "dv": 3,
+      "dc": 6,
+      "matrix_seed": 20267427
+    }
+  ]
+}
