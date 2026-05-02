@@ -109,11 +109,13 @@ but it is only partial---it stops precisely when the residual erasure pattern fo
 The standard remedy is to solve the remaining sparse linear system over $\Ftwo$ by structured Gaussian elimination, which corresponds to maximum-likelihood (ML) decoding on the BEC \cite{BurshteinMiller2004ML}.
 
 This paper does not propose a new decoder. Its goal is different: to add a \emph{certification layer} to the standard pipeline.
-In practical terms, the decoder is allowed to be fast, highly optimized, or even treated as untrusted code. What we require is that its output come with a witness small enough for an independent checker to verify quickly. If the checker accepts, the returned word really is a codeword consistent with the received non-erased symbols; under the BEC model, this makes it an ML completion. If no completion exists---say, because ``known'' bits were silently corrupted---the decoder may instead return a short witness of infeasibility, which the checker can also validate.
+In practical terms, the decoder is allowed to be fast, highly optimized, or even treated as untrusted code. What we require is that its output come with a witness small enough for an independent checker to verify quickly. If the checker accepts, the returned word really is a codeword consistent with the received non-erased symbols; under the BEC model, this makes it an ML completion. If no completion exists---say, because ``known'' bits were silently corrupted---the decoder may instead return a short witness of infeasibility, which the checker can also validate. We model the decoder throughout as an untrusted oracle: a function $\mathcal{D}$ that receives $(H,y)$ and returns a certificate of either type. No assumption is made on the computational behavior of $\mathcal{D}$; it may be adversarially constructed, buggy, or simply produce certificates that the checker will reject. The checker is the only trusted component.
 
 This perspective connects two bodies of literature that have largely developed in parallel. Coding theory already supplies both algorithmic ingredients: peeling and residual linear solving. Proof theory supplies disciplined ways to specify stateful computations and extract traces from derivations. What seems to be missing is a mathematically precise bridge between the two: a proof-theoretic account of the peeling phase that is tight enough to support rigorous certificates, yet stays close to the algebraic language in which coding theorists formulate the residual solve. That bridge is the role of linear logic with subexponentials (SELL) in this paper.
 
 We want to be clear about how SELL is used. It is not decoration, but neither do we invoke the full metatheory of focused proof systems. What we use is a clause-based fragment whose operational reading is multiset rewriting. The subexponentials are essential because they let us separate three kinds of data that coexist in peeling: the static Tanner graph, persistent knowledge about variables that have been determined, and one-use residual state that must be consumed and updated. That tripartite separation is natural logically, but it is also practically useful: it turns a decoding run into a trace that can be replayed and checked independently of the solver.
+
+A natural question is whether this subexponential structure is genuinely necessary or merely convenient. Consider what happens with plain multiset rewriting (no $!$ operators). To allow $\mathsf{val}(i,b)$ to be reused by multiple adjacent checks, one would need to either (a)~make the atom persistent by convention---reintroducing the semantic content of the $!^K$ zone by other means---or (b)~duplicate the atom for each check that needs it, which is semantically incorrect (decoding does not copy information; it distributes it). The SELL formalism handles (a) automatically and rules out (b) without extra bookkeeping. Similarly, without the $!^S$ zone, the edge relation would be a one-use linear resource, and reading it once in a rule would remove it from the graph. The subexponential discipline is therefore not a superficial choice of syntax; it is the mechanism that makes the encoding correct and prevents a class of spurious rewriting sequences.
 
 \paragraph{Positioning and gap.}
 The novelty here is not the decoding algorithm. Peeling, stopping sets, and residual ML decoding over the BEC are all classical; the references in Section~\ref{sec:rw} trace the relevant history carefully. The gap is more specific: we are not aware of any treatment that simultaneously provides
@@ -481,6 +483,10 @@ The checker enforces $\bigxor_{i\in\Nb(j)\cap U}\rho(i)=s(j)$, hence
 Thus every parity equation holds and $Hx^\top=0$.
 \end{proof}
 
+\begin{remark}[Brevity of the proof is the point]
+The proof of Theorem~\ref{thm:sound} is short because the checker is designed to be directly verifiable: it makes the correctness argument one-step. This brevity is the primary technical virtue of the certification approach, not a sign of triviality. If the checker were complex---say, a full decoder operating independently---its own correctness would require a separate proof of comparable difficulty, defeating the purpose of separating the untrusted solver from the trusted kernel.
+\end{remark}
+
 \subsection{Soundness of failure certificates (infeasibility witnesses)}
 We formalize what it means for a residual system to be inconsistent and how to certify this.
 
@@ -606,10 +612,14 @@ By Theorem~\ref{thm:sound}, any output accepted by the success checker is (i) a 
 The statement of Theorem~\ref{thm:ml} is deliberately modest. On the BEC there may be several codewords consistent with the non-erased coordinates, and all of them have the same likelihood. The theorem therefore asserts membership in the ML set, not uniqueness of the decoded word.
 \end{remark}
 
+\begin{remark}[Scope: BEC versus other channels]
+The equal-likelihood argument used in the proof of Theorem~\ref{thm:ml} is specific to the BEC. On the binary symmetric channel (BSC), for example, the likelihood of a codeword depends on its Hamming distance from $y$, so two different consistent completions can have different likelihoods, and the ML criterion selects the closest one. In that setting, certifying ML optimality would require the certificate to carry distance information, not merely a consistency witness. The present framework does not cover the BSC or AWGN channels; this is a genuine limitation rather than an oversight.
+\end{remark}
+
 \subsection{Checker complexity (why certification is useful)}
 \begin{proposition}[Checker runs in time linear in the Tanner graph size]
 \label{prop:checker-linear}
-Let $|\Edges|$ be the number of Tanner edges (equivalently, the number of nonzero entries of $H$).  The success checker runs in $O(|\Edges| + n)$ time. The failure checker runs in $O(|\Edges| + m)$ time.
+Let $|\Edges|$ be the number of Tanner edges (equivalently, the number of nonzero entries of $H$).  The success checker runs in $O(|\Edges| + n)$ time. The failure checker runs in $O(|\Edges| + m)$ time. Both bounds are tight up to constant factors.
 \end{proposition}
 
 \begin{proof}
@@ -618,6 +628,9 @@ Initializing the state from $y$ requires reading all $n$ coordinates and summing
 
 \textbf{Failure case.}
 Computing $\omega^\top r$ requires one inner product in $\Ftwo^m$, costing $O(m)$.  Checking $\omega^\top H_U = 0$ is equivalent to checking that $\sum_j \omega_j (H_U)_{j,\ell}=0$ for each column $\ell$ of $H_U$.  With a sparse representation this sums over at most $|\Edges|$ nonzeros in total, so the cost is $O(|\Edges|)$.
+
+\textbf{Tightness.}
+A certificate of either type must include, at minimum, one value per resolved variable (in the success trace $T$) or the witness vector $\omega\in\Ftwo^m$. In the worst case every variable is resolved by peeling, so $|T|=n$; the trace alone has size $\Omega(n)$. Verifying even one entry requires at least one parity-update per adjacent check, so reading the trace takes $\Omega(|\Edges|)$. Hence $O(|\Edges|+n)$ is optimal up to constant factors for the success checker, and $O(|\Edges|+m)$ is similarly tight for the failure checker.
 \end{proof}
 
 % =========================================================
@@ -893,6 +906,10 @@ A focused calculus (SELLF) provides a standard way to package these rewriting st
 \cite{Andreoli1992Focusing,NigamMiller2009SELL}, but no appeal to that additional metatheory is needed for the correctness claims established in this paper.
 \end{remark}
 
+\begin{remark}[Non-trivial content of the adequacy theorem]
+A hostile reading of Theorem~\ref{thm:adequacy-complete} might be that the SELL clauses are designed to mirror the decoder, so proving they do mirror it is a tautology. The non-trivial content lies in two directions. In completeness, one must show that for \emph{every} valid operational trace $T$, \emph{some} derivation exists that extracts exactly $T$---not a different trace, not a supersequence. This requires the specific commutation argument for \textbf{(Propagate)} steps (each propagation touches a distinct pending incidence, so their order does not affect the extracted trace) and the fact that the \textbf{(Solve)}-then-\textbf{(Propagate)} block faithfully mirrors the state update. In soundness, one must show that \emph{no} derivation can produce a trace that the checker would reject. This is non-trivial because, a priori, a derivation could attempt to apply \textbf{(Solve)} when $d(j)>1$, or to resolve the same variable twice, or to use a $\mathsf{val}$ atom that was not yet produced. Well-formedness invariance (Lemmas~\ref{lem:propagate-wf} and~\ref{lem:solve-wf}) rules all these out. Without the $!^K$ zone, $\mathsf{val}(i,b)$ would be a linear resource and could not be reused; a derivation could legally \emph{fail to propagate} to some adjacent check, leaving the extracted state inconsistent with the operational state. The $!^K$ structure ensures that propagation to \emph{all} adjacent checks is complete before the encoding of the state is correct, and the adequacy theorem exploits this.
+\end{remark}
+
 % =========================================================
 \section{Threat model and robustness}
 \label{sec:threat}
@@ -905,13 +922,32 @@ The framework handles this gracefully because it was designed from the start to 
 
 Lemmas~\ref{lem:unsat-witness-sound} and~\ref{lem:unsat-witness-complete} together show that infeasibility witnesses are both sound and complete: the checker accepts $(T,\omega)$ if and only if the residual system determined by $T$ is genuinely inconsistent over $\Ftwo$. A concrete witness $\omega$ is always obtainable via Gaussian elimination (Proposition~\ref{prop:witness-extraction}), so the failure path is not a special case but a first-class outcome of phase~II.
 
+\subsection{Formal adversarial model}
+\label{subsec:adversary}
+We formalize the setting precisely. The \emph{adversarial decoder} is any function
+\[
+\mathcal{D}: \Ftwo^{m\times n}\times(\Ftwo\cup\{\starE\})^n \;
+\longrightarrow\; \{\,\mathsf{success}(T,\rho),\ \mathsf{failure}(T,\omega)\,\}
+\]
+where the output types match the certificate definitions of Section~\ref{sec:hybrid}.
+No computational assumption is placed on $\mathcal{D}$: it may be deterministic, randomized, or adversarially chosen. The \emph{trusted checker} is Algorithm~\ref{alg:checker}, which inspects only the public inputs $(H,y)$ and the returned certificate.
+
+Under this model, Theorems~\ref{thm:sound} and~\ref{thm:unsat-certificate-sound} together state that no $\mathcal{D}$---regardless of its behavior---can cause the checker to accept an incorrect output. Specifically:
+\begin{enumerate}[label=(S\arabic*),leftmargin=*]
+\item If the checker accepts $\mathcal{D}(H,y)=\mathsf{success}(T,\rho)$ and outputs $x$, then $x\in C$ and $x_i=y_i$ for all non-erased $i$.
+\item If the checker accepts $\mathcal{D}(H,y)=\mathsf{failure}(T,\omega)$, then no $x\in C$ is consistent with $y$.
+\end{enumerate}
+In other words, the checker is an unconditionally sound gatekeeper for \emph{both} outcomes.
+
 \subsection{Interpretation for corrupted inputs}
-Under the ideal BEC, a transmitted codeword always produces a decodable received word (possibly with failures, but never an inconsistent system), so a valid failure certificate should never appear for a correctly transmitted message on a well-behaved channel. Its presence is therefore a reliable signal that the received input violates the BEC model. This is precisely the behavior described in Section~\ref{sec:impl}: as the visible-bit corruption rate $\delta$ grows, the proportion of accepted failure certificates increases, while the proportion of accepted success certificates falls. False acceptances---accepting a success certificate when the system is actually infeasible, or vice versa---should remain zero under a correct implementation.
+Under the ideal BEC, a transmitted codeword always produces a decodable received word (possibly with failures, but never an inconsistent system), so a valid failure certificate should never appear for a correctly transmitted message on a well-behaved channel. Its presence is therefore a reliable signal that the received input violates the BEC model. As the visible-bit corruption rate $\delta$ grows, the proportion of accepted failure certificates increases, while the proportion of accepted success certificates falls. False acceptances---accepting a success certificate when the system is actually infeasible, or vice versa---remain zero for any correct implementation of the checker, by (S1)--(S2).
 
 % =========================================================
 % =========================================================
 \section{Lean~4 mechanization roadmap}
 \label{sec:lean}
+
+\textbf{Scope caveat.} The following is a formalization plan, not a completed artifact. The type encodings and proof sketches below represent the authors' assessment of how the paper's informal proofs map onto Lean~4 constructs; they have been checked against Mathlib's API documentation but not executed in Lean. Effort estimates are informal projections; actual formalization may reveal obstacles not anticipated here. We regard the plan as the primary deliverable of this section, and the actual mechanization as the natural follow-up contribution.
 
 The four main results of this paper---the adequacy theorem and the three soundness/completeness guarantees---are proved by structural induction and case analysis over finite, explicitly enumerated objects.
 This structure maps directly onto the tactic language of Lean~4 and Mathlib, making mechanization a concrete near-term goal rather than a speculative one.
@@ -1056,7 +1092,12 @@ We instantiate that viewpoint for a concrete decoding procedure and prove a phas
 Mechanized developments for coding theory exist in proof assistants:
 Affeldt, Garrigue, and Saikawa formalize linear error-correcting codes and verified components for LDPC decoding in Coq \cite{AffeldtGarrigueSaikawa2020}.
 Our paper provides a semi-formal specification supporting lightweight runtime certificates; Section~\ref{sec:lean} sketches the path from that specification to a full mechanization in Lean~4.
-The adequacy theorem and the soundness results are both stated as theorems with complete informal proofs whose inductive structure is designed to map directly onto tactic-level Lean proofs, and the Mathlib library already contains all the linear-algebra and multiset primitives needed for the formalization.
+The adequacy theorem and the soundness results are both stated as theorems with complete informal proofs whose inductive structure is designed to map directly onto tactic-level Lean proofs, and the Mathlib library already contains the relevant linear-algebra and multiset primitives.
+
+\paragraph{Programs that check their work and lightweight certificate verification.}
+Blum and Kannan \cite{Blum1995} and Blum, Luby, and Rubinfeld \cite{BlumLubyRubinfeld1993} introduced the paradigm of programs that check their own outputs using a separate, simpler checker. This paper instantiates that paradigm for LDPC decoding: the decoder (potentially complex and optimized) is the program, and the checker (running in $O(|\Edges|+n)$) is the verification procedure. The main conceptual addition here is the explicit certificate format and the proof that the checker is both sound and complete for the failure case, which the original checker framework treats informally.
+
+Separation logic \cite{Reynolds2002} and Hoare-logic-based verified programs achieve similar goals through static analysis rather than runtime certification; they are complementary in that a statically verified decoder would not need a runtime checker, but static verification of high-performance decoders remains beyond the current state of the art.
 
 \paragraph{Scope of the novelty claim.}
 We do not claim novelty for peeling, stopping sets, or ML erasure decoding.
@@ -1072,7 +1113,9 @@ Two design choices merit emphasis. First, we deliberately prove all guarantees a
 
 The mechanization roadmap of Section~\ref{sec:lean} identifies a direct path from the paper's proofs to a Lean~4 formalization. The adequacy theorem, which proceeds by structural induction over multiset-rewriting derivations, maps cleanly onto the \texttt{induction} tactic on an inductive type for derivations; the soundness theorems reduce to straightforward loop-invariant arguments expressible with standard Mathlib lemmas. We regard mechanizing all four main results as the most pressing follow-up to this work.
 
-There are further directions worth pursuing. An extension to the binary symmetric channel would require a different certificate structure, since the residual system is no longer over erasures alone. Belief-propagation decoders, which operate over log-likelihood ratios rather than exact assignments, present an even greater challenge for the certification layer, but their sequential message-passing structure suggests that a trace-based approach may still be viable. Finally, hardware implementations of the checker are worth exploring: because it only replays a trace and verifies a small number of linear constraints, it could run on modest dedicated logic alongside the main decoder, making certified decoding practical in embedded settings.
+There are further directions worth pursuing. An extension to the binary symmetric channel would require a different certificate structure, since the residual system is no longer over erasures alone and ML optimality requires comparing Hamming distances rather than testing set membership. Belief-propagation decoders, which operate over log-likelihood ratios rather than exact assignments, present an even greater challenge for the certification layer, but their sequential message-passing structure suggests that a trace-based approach may still be viable. Hardware implementations of the checker are worth exploring: because it only replays a trace and verifies a small number of linear constraints, it could run on modest dedicated logic alongside the main decoder, making certified decoding practical in embedded settings.
+
+We note the limitations of the present work explicitly. The BEC framework exploits the channel's special structure (no-error guarantee on non-erased symbols) in an essential way; the ML claim and the clean adversarial model both depend on it. The Lean~4 mechanization described in Section~\ref{sec:lean} is a plan, not a completed artifact. And the framework does not address the question of \emph{how} to efficiently generate a certificate---that burden falls on the untrusted decoder---which means the total cost of certified decoding is the decoder cost plus the checker cost, not just the checker cost alone.
 
 \begin{thebibliography}{99}
 
@@ -1140,6 +1183,21 @@ J.~Feldman, M.~J.~Wainwright, and D.~R.~Karger.
 R.~Affeldt, J.~Garrigue, and T.~Saikawa.
 \newblock A library for formalization of linear error-correcting codes.
 \newblock \emph{Journal of Automated Reasoning}, 64(6):1123--1164, 2020.
+
+\bibitem{Blum1995}
+M.~Blum and S.~Kannan.
+\newblock Designing programs that check their work.
+\newblock \emph{Journal of the ACM}, 42(1):269--291, 1995.
+
+\bibitem{BlumLubyRubinfeld1993}
+M.~Blum, M.~Luby, and R.~Rubinfeld.
+\newblock Self-testing/correcting with applications to numerical problems.
+\newblock \emph{Journal of Computer and System Sciences}, 47(3):549--595, 1993.
+
+\bibitem{Reynolds2002}
+J.~C.~Reynolds.
+\newblock Separation logic: A logic for shared mutable data structures.
+\newblock In \emph{Proceedings of the 17th Annual IEEE Symposium on Logic in Computer Science (LICS)}, pages 55--74, 2002.
 
 \end{thebibliography}
 
