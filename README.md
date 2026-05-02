@@ -12,7 +12,7 @@ The central formal results are:
 - **Soundness of success certificates** (Theorem thm:sound): any certificate accepted by the checker witnesses a valid maximum-likelihood decoding.
 - **Soundness and completeness of failure certificates** (Lemmas lem:unsat-witness-sound and lem:unsat-witness-complete): the failure witness is both necessary and sufficient to detect infeasibility.
 
-The paper includes a Lean 4 mechanization roadmap (Section 8) identifying the exact types, lemmas, and tactic patterns needed to formalize all four results in Lean 4 / Mathlib. Mechanization is the primary near-term goal for follow-up work.
+The paper includes a Lean 4 mechanization section documenting the formalization of the main results in Lean 4 / Mathlib. The `lean4/` directory contains ~650 lines of proof, with core well-foundedness lemmas and soundness of success certificates fully proved. Several key theorems (adequacy, ML optimality, failure-certificate completeness) have admitted gaps identified and documented.
 
 ---
 
@@ -23,7 +23,7 @@ SELLTCFULL.tex                  Main paper (LaTeX source)
 SELLTCFULL.pdf                  Compiled paper
 SELLTCFULL_experiments.ipynb    Reference implementation notebook
 selltcfull_experiments.py       Python module: checker + decoder reference implementation
-lean4/                          Lean 4 mechanization plan and skeleton (see below)
+lean4/                          Lean 4 mechanization (~650 lines; see lean4/README.md for status)
 SELLTCFULL_outputs/             Supplementary experimental data
     manifest.json               Configuration and seeds used for the data
     raw_clean.csv               Per-trial results on the clean BEC
@@ -33,21 +33,20 @@ SELLTCFULL_outputs/             Supplementary experimental data
     checker_summary.csv         Checker scaling vs. blocklength
     robustness_summary.csv      Grouped robustness statistics
     table1_summary.csv          Structural statistics table
-    table1_summary.tex          LaTeX export of Table 1
-    fig*.png                    Figures (supplementary; not the paper's primary claim)
+    table1_summary.tex          LaTeX export of Table 2 (included by the paper)
+    fig*.png                    Figures 1–4 (included by the paper)
 ```
 
 ---
 
-## Lean 4 mechanization plan
+## Lean 4 mechanization
 
-The `lean4/` directory contains a formalization plan for the four main theorems using Lean 4 and Mathlib. See [lean4/README.md](lean4/README.md) for the full roadmap, including:
+The `lean4/` directory contains a Lean 4 / Mathlib formalization of the main results.
+See [lean4/README.md](lean4/README.md) for the full proof-status table, including:
 
-- Type encodings for `PeelingState`, `WFMultiset`, and `Step`.
-- The two-direction proof plan for the adequacy theorem (`adequacy_completeness`, `adequacy_soundness`).
-- Mathlib dependencies and estimated effort per theorem.
-
-No Lean code has been written yet; the directory contains the plan and skeleton as a starting point.
+- Fully proved: `propagate_wf`, `solve_wf`, `lem_unsat_witness_sound`, `thm_sound_success`, `thm_ml`.
+- Admitted with documented gaps: adequacy theorems, failure-certificate completeness.
+- One genuine axiom: `bec_equal_likelihood` (requires a real-valued BEC probability model).
 
 ---
 
@@ -99,7 +98,7 @@ Requires TeX Live 2020 or later with standard packages. The paper compiles witho
 @article{selltcfull2026,
   title   = {Certified Hybrid Decoding of Binary {LDPC} Codes over the {BEC}
              via Subexponential Linear Logic},
-  note    = {Manuscript; Lean~4 mechanization in progress}
+  note    = {Manuscript; Lean~4 partial mechanization at \url{https://github.com/cero1979/SELLTC}}
 }
 ```
 
@@ -121,10 +120,12 @@ SELLTCFULL_outputs/             Output directory (created by the notebook)
     checker_summary.csv         Checker scaling vs. blocklength
     robustness_summary.csv      Grouped robustness statistics
     table1_summary.csv          Structural statistics table
-    table1_summary.tex          LaTeX export of Table 1
+    table1_summary.tex          LaTeX export of Table 2 (included by the paper)
     fig1_success_probability.png  Figure 1 — success probability across epsilon
     fig2_runtime_breakdown.png    Figure 2 — runtime breakdown by stage
     fig3_checker_scaling.png      Figure 3 — checker overhead vs. blocklength
     fig4_robustness.png           Figure 4 — robustness to BEC violations
+lean4/                          Lean 4 mechanization (see lean4/README.md)
+finalize.sh                     Compile paper after full campaign
 ```
 

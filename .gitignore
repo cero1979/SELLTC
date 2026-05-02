@@ -23,3 +23,7 @@ __pycache__/
 # macOS
 .DS_Store
 lmcs_instructions.tex
+
+# Smoke-test outputs (reproducibility aids, not part of final article)
+SELLTCFULL_outputs/smoke_*
+SELLTCFULL_outputs/smoke_figures/

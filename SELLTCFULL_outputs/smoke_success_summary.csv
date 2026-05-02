@@ -1,5 +1,0 @@
-family,n,epsilon,peeling_success,hybrid_success_accept,ge_success,trials
-peg,1000,0.4,1.0,1.0,1.0,1
-peg,1000,0.44,1.0,1.0,1.0,1
-random_regular,1000,0.4,1.0,1.0,1.0,1
-random_regular,1000,0.44,0.0,1.0,1.0,1
