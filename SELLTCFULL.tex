@@ -37,6 +37,7 @@
 \newcommand{\Edges}{\mathcal{E}}
 \newcommand{\ArtifactDir}{SELLTCFULL_outputs}
 \newcommand{\ArtifactDirText}{SELLTCFULL\_outputs}
+\newcommand{\RepoURL}{\url{https://github.com/cero1979/SELLTC}}
 \newcommand{\artifactplaceholder}[1]{%
   \fbox{\parbox[c][2.2in][c]{0.9\linewidth}{\centering #1}}%
 }
@@ -117,7 +118,7 @@ One could argue that each item individually has appeared somewhere in the litera
 \item We introduce two certificate types---a \emph{success certificate} $(T,\rho)$ pairing a peeling trace with a residual assignment, and a \emph{failure certificate} $(T,\omega)$ pairing a peeling trace with an infeasibility witness---and give a unified checker for both.
 \item We give a SELL-style specification of phase~I in which subexponentials separate static graph structure, persistent decoded values, and one-use residual state, and we work throughout with the induced multiset-rewriting system.
 \item We prove the four main theorems: soundness of success certificates (Theorem~\ref{thm:sound}), soundness and completeness of infeasibility witnesses (Lemmas~\ref{lem:unsat-witness-sound} and~\ref{lem:unsat-witness-complete}), ML optimality on the clean BEC (Theorem~\ref{thm:ml}), and a full adequacy theorem for the peeling phase (Theorem~\ref{thm:adequacy-complete}).
-\item We provide a partial Lean~4 mechanization (Section~\ref{sec:lean}) comprising approximately 650~lines organized in six modules. All type definitions, the rewriting rules, and the well-formedness preservation lemmas are fully proved; the soundness theorems for both certificate types are complete modulo two small admitted helpers (each~$\approx$30 lines of boilerplate). The adequacy theorem has a complete proof skeleton with two admitted steps that are annotated with exact Mathlib API pointers and line-count estimates. We also release a companion Python implementation so that the checker can be executed and inspected independently.
+\item We provide a partial Lean~4 mechanization (Section~\ref{sec:lean}) comprising approximately 650~lines organized in six modules. All type definitions, the rewriting rules, and the well-formedness preservation lemmas are fully proved; the soundness theorems for both certificate types are complete modulo two small admitted helpers (each~$\approx$30 lines of boilerplate). The adequacy theorem has a complete proof skeleton with two admitted steps that are annotated with exact Mathlib API pointers and line-count estimates. We also release a companion Python implementation so that the checker can be executed and inspected independently. All sources (Lean~4 library, Python implementation, and experimental data) are available at \RepoURL.
 \end{enumerate}
 
 \paragraph{Structure of the paper.}
@@ -1095,7 +1096,7 @@ The paper is accompanied by a Python reference implementation whose purpose is d
 
 \subsection{What the implementation provides}
 
-The companion repository contains two files: \texttt{selltcfull\_experiments.py}, a pure Python module implementing the full certified hybrid decoder, and \texttt{SELLTCFULL\_experiments.ipynb}, a Jupyter notebook that exercises the module on small examples and confirms that the checker correctly accepts valid certificates and rejects malformed ones.
+The companion repository (\RepoURL) contains two files: \texttt{selltcfull\_experiments.py}, a pure Python module implementing the full certified hybrid decoder, and \texttt{SELLTCFULL\_experiments.ipynb}, a Jupyter notebook that exercises the module on small examples and confirms that the checker correctly accepts valid certificates and rejects malformed ones.
 
 The module exposes the following functions, each directly traceable to a definition or proposition in the paper:
 \begin{itemize}[leftmargin=*]
@@ -1111,7 +1112,7 @@ The checker functions are faithful to Algorithm~\ref{alg:checker}: they only ins
 \subsection{Supplementary experimental data}
 
 A Monte Carlo campaign was run on two LDPC code families (random regular and PEG) at three blocklengths ($n\in\{1000,2000,5000\}$) and seven erasure probabilities around the peeling threshold for the $(3,6)$ degree profile.
-The raw per-trial data and summary statistics are stored in the \texttt{\ArtifactDirText/} directory and are available in the companion repository.
+The raw per-trial data and summary statistics are stored in the \texttt{\ArtifactDirText/} directory and are available in the companion repository (\RepoURL).
 This data is provided as supplementary material for reproducibility; it does not constitute an independent empirical contribution and should not be read as such.
 
 Figure~\ref{fig:success-prob} shows the peeling and hybrid success probabilities as a function of erasure probability for both code families.
