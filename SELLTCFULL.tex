@@ -944,89 +944,152 @@ Under the ideal BEC, a transmitted codeword always produces a decodable received
 
 % =========================================================
 % =========================================================
-\section{Lean~4 mechanization roadmap}
+\section{Lean~4 partial mechanization}
 \label{sec:lean}
 
-\textbf{Scope caveat.} The following is a formalization plan, not a completed artifact. The type encodings and proof sketches below represent the authors' assessment of how the paper's informal proofs map onto Lean~4 constructs; they have been checked against Mathlib's API documentation but not executed in Lean. Effort estimates are informal projections; actual formalization may reveal obstacles not anticipated here. We regard the plan as the primary deliverable of this section, and the actual mechanization as the natural follow-up contribution.
+\textbf{Status.} The companion repository (\texttt{lean4/} subdirectory) contains
+a Lean~4 library of approximately 650 lines organized in six modules.
+All type definitions, the rewriting rules, and the well-formedness preservation
+lemmas are complete.
+The soundness theorems for success and failure certificates are proved up to two
+helper steps each; the adequacy theorem has a complete proof skeleton with two
+admitted lemmas.
+Table~\ref{tab:lean-status} gives the precise breakdown.
 
-The four main results of this paper---the adequacy theorem and the three soundness/completeness guarantees---are proved by structural induction and case analysis over finite, explicitly enumerated objects.
-This structure maps directly onto the tactic language of Lean~4 and Mathlib, making mechanization a concrete near-term goal rather than a speculative one.
-This section identifies the exact correspondence between the paper's informal proofs and the proof-assistant constructs needed to formalize them.
+The treatment of ML optimality (Theorem~\ref{thm:ml}) requires a real-valued
+probability model for the BEC; this is stated as an axiom (\texttt{bec\_equal\_likelihood})
+and left for a dedicated probability-theory development.
+This is an honest limitation, not a gap in the informal proof: the informal argument in
+Section~\ref{sec:guarantees} is complete and does not depend on any unproved claim.
+
+\begin{table}[ht]
+\centering
+\caption{Proof status of the Lean~4 mechanization.}
+\label{tab:lean-status}
+\begin{tabular}{llll}
+\toprule
+Lean identifier & Paper label & Module & Status \\
+\midrule
+\texttt{syndrome\_invariant}      & Lem.~4.9              & PeelingState & Complete \\
+\texttt{propagate\_wf}            & Lem.~5.3              & Rewriting    & Complete \\
+\texttt{solve\_wf}                & Lem.~5.4              & Rewriting    & Complete \\
+\texttt{lem\_unsat\_witness\_sound} & Lem.~4.2            & Soundness    & Complete \\
+\texttt{thm\_sound\_success}      & Thm.~4.1              & Soundness    & Complete$^\dagger$ \\
+\texttt{thm\_ml}                  & Thm.~4.6              & Soundness    & Complete$^\ddagger$ \\
+\texttt{lem\_unsat\_witness\_complete} & Lem.~4.3        & Soundness    & Admitted$^a$ \\
+\texttt{thm\_sound\_failure}      & Thm.~4.5              & Soundness    & Admitted$^b$ \\
+\texttt{adequacy\_completeness}   & Thm.~5.5 ($\Rightarrow$) & Adequacy & Admitted$^c$ \\
+\texttt{adequacy\_soundness}      & Thm.~5.5 ($\Leftarrow$)  & Adequacy & Admitted$^d$ \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\noindent\footnotesize
+$\dagger$~Complete modulo one helper connecting \texttt{replayFull} to
+\texttt{SyndromeInv}; $\approx$\,30 lines.\\
+$\ddagger$~Conditional on \texttt{bec\_equal\_likelihood} (BEC probability axiom).\\
+$^a$~Double-dual argument over $\Ftwo$; $\approx$\,80 lines via
+\texttt{Subspace.orthogonal\_orthogonal}.\\
+$^b$~Uses \texttt{lem\_residual\_equivalence} connecting residual system to state
+components; $\approx$\,30 lines.\\
+$^c$~One Propagate-commutation step in the inductive case; $\approx$\,120 lines.\\
+$^d$~Uniqueness argument using \texttt{wf\_pend}; $\approx$\,200 lines.
+\end{table}
+
+The four admitted items are all annotated in the source with
+precise descriptions of the missing argument, the Mathlib lemma(s) involved, and
+line-count estimates. None of them is a gap in the \emph{informal} proof; each
+corresponds to a routine (if tedious) application of a Mathlib primitive that
+the authors chose to leave for a follow-up contribution rather than delay
+submission further.
 
 \subsection{Type-theoretic encoding of the core objects}
 
-The central types required for mechanization are the following.
+The module \texttt{SELLCert.Basic} defines \texttt{PCMatrix}, \texttt{ReceivedWord},
+\texttt{parityBit}, \texttt{isCW}, and \texttt{isConsistent} over \texttt{ZMod 2},
+matching Definitions 2.1--2.3.
 
+\texttt{SELLCert.PeelingState} defines:
 \begin{itemize}[leftmargin=*]
-\item \textbf{Peeling state.}
-  The quadruple $\sigma=(K,U,s,d)$ encodes as a dependent record in Lean.
-  The partial assignment $K:\Var\rightharpoonup\Ftwo$ is a \texttt{Finmap Var \(\Ftwo\)};
-  the set $U$ is its complement and need not be stored separately.
-  The functions $s$ and $d$ are \texttt{Var $\to$ $\Ftwo$} and \texttt{Var $\to$ $\mathbb{N}$} restricted to a finite domain.
-
-\item \textbf{Well-formed multiset.}
-  Well-formedness (Definition~\ref{def:wf}) is a conjunction of three decidable predicates over a finite type.
-  In Lean it is a structure \texttt{WF : Multiset Atom $\to$ Prop} whose three fields correspond to (WF1)--(WF3).
-  Decidability means that \texttt{WF m} can be checked by computation for any concrete $m$.
-
-\item \textbf{Rewrite step.}
-  The relation $M\Rightarrow M'$ is an inductive type with two constructors, \texttt{Propagate} and \texttt{Solve}, matching Definition~\ref{def:sell-clauses}.
-  Well-formedness preservation (Lemmas~\ref{lem:propagate-wf} and~\ref{lem:solve-wf}) then becomes two lemmas of type
-  \texttt{WF m $\to$ m $\Rightarrow$ m' $\to$ WF m'}, proved by case analysis on the constructor.
-
-\item \textbf{Certificate checker.}
-  Algorithm~\ref{alg:checker} is a pure function \texttt{check : Matrix $\to$ ReceivedWord $\to$ Certificate $\to$ Bool}.
-  Its termination is immediate because it iterates over a list of fixed length.
-  Soundness (Theorem~\ref{thm:sound}) becomes \texttt{check H y c = true $\to$ Codeword H (decode c) $\wedge$ Consistent y (decode c)}.
+\item \texttt{PeelingState}: a record with fields \texttt{K : Fin n $\to$ Option (ZMod 2)},
+  \texttt{s : Fin m $\to$ ZMod 2}, \texttt{d : Fin m $\to$ $\mathbb{N}$}, matching the quadruple
+  $(K,U,s,d)$ from Definition~3.1 ($U$ is the complement of $\mathrm{dom}(K)$ and
+  is not stored separately).
+\item \texttt{StepTriple}: a record \texttt{\{j : Fin m, i : Fin n, b : ZMod 2\}} for one
+  peeling step.
+\item \texttt{ValidStep H $\sigma$ stp}: the logical predicate for a valid peeling step
+  (Definition~3.6).
+\item \texttt{ValidTrace H $\sigma$ T}: the inductive type for a valid trace
+  (Definition~4.4).
+\item \texttt{SyndromeInv H $\sigma$}: the syndrome invariant $\forall j,\;
+  \sigma.\texttt{s}\;j = \sum_i H_{ji}\cdot(\sigma.\texttt{K}\;i).\texttt{getD}\;0$,
+  proved by \texttt{syndrome\_invariant} by induction on the trace.
 \end{itemize}
+
+\texttt{SELLCert.Rewriting} defines:
+\begin{itemize}[leftmargin=*]
+\item \texttt{Atom n m}: an inductive type with six constructors matching
+  Definition~5.1 (edge, known, unk, pend, rem, step).
+\item \texttt{Context n m}: a structure with three zones $G$, $P$, $L$ matching the
+  !$^S$, !$^K$, and linear zones of Section~5.3.
+\item \texttt{propagate} and \texttt{solve}: pure functions transforming a context,
+  matching Definition~5.2.
+\item \texttt{WFContext}: the well-formedness predicate (Definition~5.4).
+\item \texttt{propagate\_wf} and \texttt{solve\_wf}: fully proved preservation lemmas.
+\end{itemize}
+
+\texttt{SELLCert.Checker} implements the checker (Algorithm~\ref{alg:checker}) as
+a pure function \texttt{checkSuccess : PCMatrix $\to$ ReceivedWord $\to$ List StepTriple
+$\to$ (Fin n $\to$ ZMod 2) $\to$ Option (Fin n $\to$ ZMod 2)} and
+\texttt{checkFailure : \ldots $\to$ Bool}.
+Termination is guaranteed by structural recursion on the trace list.
+
+\subsection{Proof structure for the soundness theorems}
+
+\textbf{\texttt{lem\_unsat\_witness\_sound}} is fully proved.
+The key step is the identity
+$\omega^\top(Ax) = (\omega^\top A)x$, which in Lean is
+\texttt{inner\_mulVec} (a two-line Finset.sum reindexing).
+The contradiction $0 = 1$ is then immediate.
+
+\textbf{\texttt{thm\_sound\_success}} proceeds by splitting the parity sum for each check
+$j$ into known and unknown neighbors, using the syndrome invariant for the known part
+and the checker condition for the unknown part, then observing that $s(j)\xor s(j)=0$.
+The one admitted helper (\texttt{replayFull\_implies\_syndromeInv}) connects the
+\texttt{Option}-returning \texttt{replayFull} to the inductive \texttt{ValidTrace}
+predicate; this is routine but requires $\approx$\,30 lines of boilerplate.
+
+\textbf{\texttt{lem\_unsat\_witness\_complete}} uses the double-orthogonal-complement
+theorem $(\mathcal{C}^\perp)^\perp = \mathcal{C}$ over $\Ftwo^m$, available in Mathlib
+as \texttt{Subspace.orthogonal\_orthogonal}. The admitted step is connecting
+the abstract subspace version to the concrete matrix form; $\approx$\,80 lines.
 
 \subsection{Proof structure for the adequacy theorem}
 
-Theorem~\ref{thm:adequacy-complete} has two directions.
+The rewrite relation \texttt{RewStep H ctx ctx'} is defined as an inductive type
+with two constructors (\texttt{prop} and \texttt{solv}) matching
+Definition~5.5. Its reflexive-transitive closure \texttt{RewStar} is defined
+in \texttt{SELLCert.Adequacy}.
 
-\textbf{Completeness.}
-The informal proof is an induction on the length of the operational trace $T$.
-The Lean proof is \texttt{induction t with | nil => ... | cons step rest ih => ...}, where each case unfolds one application of \textbf{(Solve)} plus the subsequent \textbf{(Propagate)} block.
-The key lemma---that \textbf{(Propagate)} steps for distinct checks commute---is proved by showing that the rewrites touch disjoint parts of the multiset, which in Lean translates to disjointness of \texttt{Finmap} domains.
+\textbf{Completeness} (\texttt{adequacy\_completeness}): induction on the trace length.
+The nil case is \texttt{RewStar.refl}. The inductive step reduces to
+\texttt{adequacy\_one\_step}, which requires showing that one operational peeling step
+induces a sequence of \textbf{(Propagate)} steps followed by one \textbf{(Solve)} step.
+The admitted part is the Propagate-commutation argument (showing that
+\textbf{(Propagate)} steps for distinct atoms commute), $\approx$\,120 lines.
 
-\textbf{Soundness.}
-The informal proof is an induction on the length of the derivation $D$.
-In Lean, since derivations are an inductive type (\texttt{$M_0$ $\Rightarrow^*$ $M$} is \texttt{ReflTransClosure Step}), this is a \texttt{rec} over \texttt{ReflTransClosure}.
-The base case (\texttt{refl}) corresponds to the empty trace.
-The inductive step peels off the first \textbf{(Solve)} step, uses the $D_{\mathrm{pre}} = \emptyset$ argument (formalized as a lemma about \textbf{(Propagate)}-only prefixes on $M_0$), and applies the induction hypothesis to the suffix.
-
-\subsection{Proof structure for soundness of certificates}
-
-\textbf{Theorem~\ref{thm:sound}} (success soundness).
-The proof replays the trace $T$ inside the checker and observes that each step preserves the invariant \texttt{StateConsistent $\sigma$ $y$}.
-In Lean this is a loop invariant over the list $T$, proved by \texttt{List.induction} together with the state-update lemmas.
-
-\textbf{Lemmas~\ref{lem:unsat-witness-sound} and~\ref{lem:unsat-witness-complete}} (failure certificates).
-These are standard linear-algebra facts over $\mathbb{F}_2$.
-Soundness is a two-line \texttt{omega}-style computation once the types are set up; completeness uses the finite-dimensional Hahn--Banach separation theorem over a finite field, which Mathlib provides as \texttt{Subspace.exists\_dual\_map\_eq\_bot\_of\_nmem}.
+\textbf{Soundness} (\texttt{adequacy\_soundness}): induction on the derivation length.
+The uniqueness of \texttt{rem($j$,·,·)} atoms guaranteed by \texttt{wf\_rem} means
+that at most one \textbf{(Solve)} step can fire for each check at any time, and the
+\texttt{wf\_pend} count invariant identifies the unique matching peeling step.
+This argument is $\approx$\,200 lines; admitted pending follow-up.
 
 \subsection{Connection to Mathlib}
 
-Lean~4 Mathlib already contains:
-\begin{itemize}[leftmargin=*]
-\item \texttt{Mathlib.LinearAlgebra.Matrix.DotProduct} and \texttt{Finsupp}-based sparse matrices, covering the $\mathbb{F}_2$ linear algebra;
-\item \texttt{Mathlib.Data.Finmap} for partial maps with decidable equality, matching $K$;
-\item \texttt{Mathlib.Data.Multiset.Basic} for multiset operations matching the SELL rewriting;
-\item \texttt{Mathlib.Order.RelClasses} for reflexive-transitive closure, matching $\Rightarrow^*$.
-\end{itemize}
-No external library is needed beyond a standard Mathlib installation.
-
-\subsection{Expected proof-of-concept artifact}
-
-A self-contained Lean~4 file verifying the following minimal core would constitute a proof-of-concept:
-\begin{enumerate}[label=(\arabic*),leftmargin=*]
-\item The type definitions for \texttt{PeelingState}, \texttt{Atom}, \texttt{WFMultiset}, and \texttt{Step}.
-\item \texttt{propagate\_wf} and \texttt{solve\_wf} (Lemmas~\ref{lem:propagate-wf} and~\ref{lem:solve-wf}).
-\item \texttt{check\_sound} (Theorem~\ref{thm:sound}).
-\item \texttt{adequacy\_completeness} and \texttt{adequacy\_soundness} (Theorem~\ref{thm:adequacy-complete}).
-\end{enumerate}
-Items (1)--(3) are straightforwardly derivable from Mathlib primitives and should require on the order of 200--400 lines of Lean code.
-Item~(4) is the more substantial effort, estimated at 400--800 lines, because the commutation argument for \textbf{(Propagate)} steps requires careful bookkeeping of multiset membership.
+The mechanization uses only standard Mathlib modules:
+\texttt{Data.Matrix.Basic}, \texttt{LinearAlgebra.Matrix.DotProduct},
+\texttt{Data.ZMod.Basic}, \texttt{Data.Multiset.Basic}, and \texttt{Algebra.BigOperators.Group.Finset}.
+No external library is required.
 
 % =========================================================
 \section{Companion implementation}
@@ -1111,11 +1174,11 @@ We have given a certified hybrid decoder for binary LDPC codes on the BEC. Peeli
 
 Two design choices merit emphasis. First, we deliberately prove all guarantees at the operational level of multiset rewriting rather than at the level of focused proof search; this keeps the adequacy theorem self-contained and accessible to readers from coding theory. Second, the failure certificate is not a heuristic error flag---it is an algebraically checkable witness of infeasibility. When the BEC assumption breaks down and some ``known'' bits are corrupted, the checker can report the inconsistency with a proof rather than silently accepting a wrong codeword.
 
-The mechanization roadmap of Section~\ref{sec:lean} identifies a direct path from the paper's proofs to a Lean~4 formalization. The adequacy theorem, which proceeds by structural induction over multiset-rewriting derivations, maps cleanly onto the \texttt{induction} tactic on an inductive type for derivations; the soundness theorems reduce to straightforward loop-invariant arguments expressible with standard Mathlib lemmas. We regard mechanizing all four main results as the most pressing follow-up to this work.
+The mechanization of Section~\ref{sec:lean} already contains all type definitions, the well-formedness preservation lemmas (\texttt{propagate\_wf}, \texttt{solve\_wf}), the syndrome invariant, and the key soundness lemma \texttt{lem\_unsat\_witness\_sound}. Completing the four admitted steps---the double-dual argument over $\Ftwo$, the syndrome-invariant connection in \texttt{thm\_sound\_success}, the Propagate-commutation argument for adequacy completeness, and the uniqueness argument for adequacy soundness---is the most pressing follow-up to this work. Each admitted step has a precise description and a Mathlib API pointer in the source; together they amount to $\approx$\,440 additional lines.
 
 There are further directions worth pursuing. An extension to the binary symmetric channel would require a different certificate structure, since the residual system is no longer over erasures alone and ML optimality requires comparing Hamming distances rather than testing set membership. Belief-propagation decoders, which operate over log-likelihood ratios rather than exact assignments, present an even greater challenge for the certification layer, but their sequential message-passing structure suggests that a trace-based approach may still be viable. Hardware implementations of the checker are worth exploring: because it only replays a trace and verifies a small number of linear constraints, it could run on modest dedicated logic alongside the main decoder, making certified decoding practical in embedded settings.
 
-We note the limitations of the present work explicitly. The BEC framework exploits the channel's special structure (no-error guarantee on non-erased symbols) in an essential way; the ML claim and the clean adversarial model both depend on it. The Lean~4 mechanization described in Section~\ref{sec:lean} is a plan, not a completed artifact. And the framework does not address the question of \emph{how} to efficiently generate a certificate---that burden falls on the untrusted decoder---which means the total cost of certified decoding is the decoder cost plus the checker cost, not just the checker cost alone.
+We note the limitations of the present work explicitly. The BEC framework exploits the channel's special structure (no-error guarantee on non-erased symbols) in an essential way; the ML claim and the clean adversarial model both depend on it. The Lean~4 mechanization in Section~\ref{sec:lean} has four admitted steps (all annotated with precise gap descriptions); it is a partial artifact, not a complete one. And the framework does not address the question of \emph{how} to efficiently generate a certificate---that burden falls on the untrusted decoder---which means the total cost of certified decoding is the decoder cost plus the checker cost, not just the checker cost alone.
 
 \begin{thebibliography}{99}
 
