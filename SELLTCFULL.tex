@@ -691,18 +691,18 @@ They remain in the global static context and record the graph structure with res
 \subsection{Program clauses}
 \begin{defi}[Peeling clauses in SELL]
 \label{def:sell-clauses}
-For all suitable indices, where the (Propagate) clause additionally requires $k\geq 1$:
+For all suitable indices, with $k\geq 1$ required for \textbf{(Propagate)}:
 \[
 \begin{aligned}
 \textbf{(Propagate)}\quad
-!^K \mathsf{val}(i,b)\ \otimes\ \mathsf{pend}(j,i)\ \otimes\ \mathsf{rem}(j,k,p)\ (k\geq 1)
+!^K \mathsf{val}(i,b)\otimes\mathsf{pend}(j,i)\otimes\mathsf{rem}(j,k,p)
 &\multimap \mathsf{rem}(j,k-1,p\xor b),
 \\[0.7ex]
 \textbf{(Solve)}\quad
-\mathsf{rem}(j,1,p)\ \otimes\ \mathsf{pend}(j,i)\ \otimes\ \mathsf{unk}(i)
+\mathsf{rem}(j,1,p)\otimes\mathsf{pend}(j,i)\otimes\mathsf{unk}(i)
 &\multimap !^K \mathsf{val}(i,p)
 \\
-&\quad\otimes\ \mathsf{step}(j,i,p)\ \otimes\ \mathsf{rem}(j,0,0).
+&\quad\otimes\ \mathsf{step}(j,i,p)\otimes\mathsf{rem}(j,0,0).
 \end{aligned}
 \]
 \end{defi}
@@ -1029,9 +1029,12 @@ matching Definitions 2.1--2.3.
 \end{itemize}
 
 \texttt{SELLCert.Checker} implements the checker (Algorithm~\ref{alg:checker}) as
-a pure function \texttt{checkSuccess : PCMatrix $\to$ ReceivedWord $\to$ List StepTriple
-$\to$ (Fin n $\to$ ZMod 2) $\to$ Option (Fin n $\to$ ZMod 2)} and
-\texttt{checkFailure : \ldots $\to$ Bool}.
+a pure function
+\begin{center}
+\texttt{checkSuccess : PCMatrix $\to$ ReceivedWord $\to$ List StepTriple
+$\to$ (Fin n $\to$ ZMod 2) $\to$ Option (Fin n $\to$ ZMod 2)}
+\end{center}
+and \texttt{checkFailure : \ldots $\to$ Bool}.
 Termination is guaranteed by structural recursion on the trace list.
 
 \subsection{Proof structure for the soundness theorems}
@@ -1077,8 +1080,11 @@ This argument is $\approx$\,200 lines; admitted pending follow-up.
 \subsection{Connection to Mathlib}
 
 The mechanization uses only standard Mathlib modules:
-\texttt{Data.Matrix.Basic}, \texttt{LinearAlgebra.Matrix.DotProduct},
-\texttt{Data.ZMod.Basic}, \texttt{Data.Multiset.Basic}, and \texttt{Algebra.BigOperators.Group.Finset}.
+\begin{itemize}[noitemsep,leftmargin=*]
+\item \texttt{Data.Matrix.Basic}, \texttt{Data.ZMod.Basic}, \texttt{Data.Multiset.Basic}
+\item \texttt{LinearAlgebra.Matrix.DotProduct}
+\item \texttt{Algebra.BigOperators.Group.Finset}
+\end{itemize}
 No external library is required.
 
 % =========================================================
@@ -1146,7 +1152,7 @@ Table~\ref{tab:decoding-summary} summarises trace lengths, residual system sizes
   \centering
   \caption{Decoding summary statistics averaged over 100 trials at $\epsilon=0.40$. Columns: mean peeling trace length, mean residual system size (number of unknown variables after peeling), mean residual rank, mean residual density, mean phase-I time (ms), mean phase-II time (ms), mean checker time (ms), mean total time (ms), and mean overhead ratio (checker time / total time).}
   \label{tab:decoding-summary}
-  \input{\ArtifactDir/table1_summary.tex}
+  \resizebox{\linewidth}{!}{\input{\ArtifactDir/table1_summary.tex}}
 \end{table}
 
 The false-acceptance rate was zero in all 100 trials at each point.
