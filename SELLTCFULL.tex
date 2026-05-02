@@ -66,10 +66,10 @@ From any derivation the specification extracts a compact trace; an independent c
 We prove soundness of success certificates---any accepted output is a codeword consistent with the received non-erased symbols and, under the BEC model, is maximum-likelihood---and we prove both soundness and completeness of failure certificates, which witness infeasibility of the residual system when the BEC assumption is violated.
 The checker runs in time $O(|\mathcal{E}|+n)$, linear in the Tanner graph.
 
-The four results together form a self-contained pipeline from specification to certification.
+The four informal results together form a self-contained pipeline: specification, adequacy, certification, and checking.
 Because the adequacy proof proceeds entirely by structural induction over multiset-rewriting derivations, its inductive skeleton maps directly onto the tactic language of contemporary proof assistants.
-A companion Lean~4 library of approximately 650 lines formalizes all type definitions, the rewriting rules, and the well-formedness preservation lemmas; the adequacy and soundness theorems are stated and proved up to four admitted helper steps, each annotated with the corresponding Mathlib API and a line-count estimate.
-A companion Python implementation and reproducibility notebook are provided so that the certificate format and the checker algorithm can be inspected and executed independently.
+To substantiate this claim concretely, we provide a companion Lean~4 library of approximately 650~lines covering all type definitions, the rewriting rules, and the well-formedness preservation lemmas. The soundness theorem for success certificates is proved in Lean~4; the ML optimality theorem is proved conditional on a BEC probability axiom that is stated as a genuine axiom rather than a placeholder. The remaining four admitted steps span two soundness items and two adequacy items; each is annotated with the corresponding Mathlib API and a precise line-count estimate for the remaining work.
+A companion Python implementation and a reproducibility notebook allow the certificate format and checker algorithm to be inspected and executed independently of the proof assistant.
 \end{abstract}
 
 \maketitle
@@ -77,6 +77,8 @@ A companion Python implementation and reproducibility notebook are provided so t
 % =========================================================
 \section{Introduction}
 \label{sec:introduction}
+
+Error-correcting codes transmit information reliably over noisy channels by adding structured redundancy. Among the most successful families are LDPC codes, whose sparse parity-check structure enables efficient iterative decoding. This paper is concerned not with designing a new decoder, but with certifying that an existing one is correct.
 
 Let $H\in\Ftwo^{m\times n}$ be a sparse parity-check matrix and let
 \[
@@ -115,11 +117,11 @@ One could argue that each item individually has appeared somewhere in the litera
 \item We introduce two certificate types---a \emph{success certificate} $(T,\rho)$ pairing a peeling trace with a residual assignment, and a \emph{failure certificate} $(T,\omega)$ pairing a peeling trace with an infeasibility witness---and give a unified checker for both.
 \item We give a SELL-style specification of phase~I in which subexponentials separate static graph structure, persistent decoded values, and one-use residual state, and we work throughout with the induced multiset-rewriting system.
 \item We prove the four main theorems: soundness of success certificates (Theorem~\ref{thm:sound}), soundness and completeness of infeasibility witnesses (Lemmas~\ref{lem:unsat-witness-sound} and~\ref{lem:unsat-witness-complete}), ML optimality on the clean BEC (Theorem~\ref{thm:ml}), and a full adequacy theorem for the peeling phase (Theorem~\ref{thm:adequacy-complete}).
-\item We provide a Lean~4 mechanization roadmap (Section~\ref{sec:lean}) identifying the exact definitions, inductive structures, and tactic patterns needed to formalize the adequacy theorem and the soundness results in a proof assistant. We also release a companion Python implementation so that the checker can be executed and inspected independently.
+\item We provide a partial Lean~4 mechanization (Section~\ref{sec:lean}) comprising approximately 650~lines organized in six modules. All type definitions, the rewriting rules, and the well-formedness preservation lemmas are fully proved; the soundness theorems for both certificate types are complete modulo two small admitted helpers (each~$\approx$30 lines of boilerplate). The adequacy theorem has a complete proof skeleton with two admitted steps that are annotated with exact Mathlib API pointers and line-count estimates. We also release a companion Python implementation so that the checker can be executed and inspected independently.
 \end{enumerate}
 
 \paragraph{Structure of the paper.}
-Section~\ref{sec:preliminaries} fixes notation and recalls coding-theoretic prerequisites. Section~\ref{sec:phase1} formulates phase~I and proves the stopping-set characterization. Section~\ref{sec:hybrid} defines the hybrid decoder and both certificate types. Section~\ref{sec:guarantees} proves the main semantic guarantees. Section~\ref{sec:sell} gives the SELL-style specification and the adequacy theorem. Section~\ref{sec:threat} discusses robustness beyond the ideal BEC model. Section~\ref{sec:lean} gives the Lean~4 mechanization roadmap. Sections~\ref{sec:impl} and~\ref{sec:rw} cover the companion implementation and related work.
+Section~\ref{sec:preliminaries} fixes notation and recalls coding-theoretic prerequisites. Section~\ref{sec:phase1} formulates phase~I and proves the stopping-set characterization. Section~\ref{sec:hybrid} defines the hybrid decoder and both certificate types. Section~\ref{sec:guarantees} proves the main semantic guarantees. Section~\ref{sec:sell} gives the SELL-style specification and the adequacy theorem. Section~\ref{sec:threat} discusses robustness beyond the ideal BEC model. Section~\ref{sec:lean} reports the partial Lean~4 mechanization. Sections~\ref{sec:impl} and~\ref{sec:rw} cover the companion implementation and related work.
 
 % =========================================================
 \section{Preliminaries}
@@ -164,15 +166,13 @@ Phase~I (peeling) exploits the graph sparsity and resolves variables whenever so
 phase~II solves the residual linear system when locality alone is no longer enough.
 
 \begin{exa}[A tiny residual-system example]
-Suppose a codeword satisfies two parity equations over $\Ftwo$:
-\[
-x_1\xor x_2 = 0,
-\qquad
-x_2\xor x_3 = 1.
-\]
-Assume that $x_1$ is known and that $x_2,x_3$ are erased. Then the decoding problem is no longer to solve for all three variables, but only for the erased pair $(x_2,x_3)$ subject to the two residual equations obtained after substituting the known coordinate.
-If, for instance, the first equation becomes an equation with exactly one unknown, then peeling can determine that variable immediately.
-If not, one keeps the resulting small linear system and solves it algebraically.
+Consider a code with parity-check matrix
+$H=\begin{pmatrix}1&1&0\\0&1&1\end{pmatrix}$, so the two parity equations are $x_1\xor x_2=0$ and $x_2\xor x_3=0$.
+Suppose the received word is $y=(0,\starE,\starE)$: variable~$1$ is known ($y_1=0$) and variables~$2,3$ are erased.
+Substituting $x_1=0$ into the first equation leaves $x_2=0$; the residual right-hand side is $s_0(1)=0\xor 0=0$, and the residual degree is $d_0(1)=1$.
+Hence peeling resolves $x_2=0$ immediately from check~$1$.
+After this step, the second equation $x_2\xor x_3=0$ also becomes degree-one with residual RHS $s(2)=0$, so peeling resolves $x_3=0$ as well.
+The resulting trace is $T=[(1,2,0),(2,3,0)]$, and the success certificate is $(T,\rho=\emptyset)$ since no variables remain.
 This is the basic pattern that the whole paper formalizes and certifies.
 \end{exa}
 
@@ -315,7 +315,7 @@ The hybrid decoder is the computational core of the proposal. It is allowed to u
 \end{algorithm}
 
 \subsection{Independent checker}
-The checker is the trusted kernel of the framework. It does not attempt to decode on its own. Instead, it replays the peeling trace, reconstructs the residual system determined by that replay, and then verifies whichever witness was returned by the untrusted solver. In particular, the checker treats success and failure symmetrically: both must come with explicit evidence.
+Rather than attempting to decode, the checker confines itself to verifying the evidence supplied by the untrusted solver. Concretely, it replays the peeling trace from the received word $y$, reconstructs the residual system that the trace determines, and then validates whichever certificate was produced---success or failure. By design, both outcomes require the same replay infrastructure, so the checker is a single, unified algorithm with a branching verification step at the end.
 \begin{algorithm}[H]
 \caption{Checker for success / failure certificates}
 \label{alg:checker}
@@ -616,7 +616,7 @@ Initializing the state from $y$ requires reading all $n$ coordinates and summing
 Computing $\omega^\top r$ requires one inner product in $\Ftwo^m$, costing $O(m)$.  Checking $\omega^\top H_U = 0$ is equivalent to checking that $\sum_j \omega_j (H_U)_{j,\ell}=0$ for each column $\ell$ of $H_U$.  With a sparse representation this sums over at most $|\Edges|$ nonzeros in total, so the cost is $O(|\Edges|)$.
 
 \textbf{Tightness.}
-A certificate of either type must include, at minimum, one value per resolved variable (in the success trace $T$) or the witness vector $\omega\in\Ftwo^m$. In the worst case every variable is resolved by peeling, so $|T|=n$; the trace alone has size $\Omega(n)$. Verifying even one entry requires at least one parity-update per adjacent check, so reading the trace takes $\Omega(|\Edges|)$. Hence $O(|\Edges|+n)$ is optimal up to constant factors for the success checker, and $O(|\Edges|+m)$ is similarly tight for the failure checker.
+For the success checker, consider a code where peeling resolves all $n$ variables. The trace has $|T|=n$ entries. Reading each entry $(j,i,b)$ requires updating all checks adjacent to $i$; summing over all resolved variables, the total work is $\sum_{i=1}^{n}\deg(i)=|\Edges|$. Any algorithm that verifies every trace entry must perform at least this work, giving a lower bound of $\Omega(|\Edges|+n)$. For the failure checker, verifying $\omega^\top H_U=0$ for a dense~$\omega$ and a sparse~$H_U$ requires reading all nonzeros of $H_U$, costing $\Omega(|\Edges|)$; reading~$r$ costs $\Omega(m)$. Hence both bounds are tight.
 \end{proof}
 
 \begin{rem}[Certificate size]
@@ -664,9 +664,9 @@ We use atomic predicates:
 \]
 Subexponential zones:
 \begin{itemize}[leftmargin=*]
-\item $S$: static and unbounded; weakening and contraction are available, so facts of the form $!^S\mathsf{edge}(j,i)$ may be discarded or reused.
-\item $K$: knowledge and unbounded; facts of the form $!^K\mathsf{val}(i,b)$ may also be reused.
-\item $L$: linear and bounded; weakening and contraction are not available, so atoms such as $\mathsf{unk}$, $\mathsf{pend}$, $\mathsf{rem}$, and $\mathsf{step}$ are consumed unless a rule recreates them.
+\item $S$: static and unbounded (the $!^S$ zone); weakening and contraction are available, so facts of the form $!^S\mathsf{edge}(j,i)$ may be discarded or reused at will.
+\item $K$: knowledge and unbounded (the $!^K$ zone); facts of the form $!^K\mathsf{val}(i,b)$ may also be reused.
+\item $\mathit{Lin}$: the linear zone (no subexponential prefix); weakening and contraction are not available, so atoms such as $\mathsf{unk}$, $\mathsf{pend}$, $\mathsf{rem}$, and $\mathsf{step}$ are consumed unless a rule recreates them. We write the linear context simply as a multiset, without an explicit zone label.
 \end{itemize}
 
 \subsection{Encoding of a peeling state}
@@ -691,11 +691,11 @@ They remain in the global static context and record the graph structure with res
 \subsection{Program clauses}
 \begin{defi}[Peeling clauses in SELL]
 \label{def:sell-clauses}
-For all suitable indices:
+For all suitable indices, where the (Propagate) clause additionally requires $k\geq 1$:
 \[
 \begin{aligned}
 \textbf{(Propagate)}\quad
-!^K \mathsf{val}(i,b)\ \otimes\ \mathsf{pend}(j,i)\ \otimes\ \mathsf{rem}(j,k,p)
+!^K \mathsf{val}(i,b)\ \otimes\ \mathsf{pend}(j,i)\ \otimes\ \mathsf{rem}(j,k,p)\ (k\geq 1)
 &\multimap \mathsf{rem}(j,k-1,p\xor b),
 \\[0.7ex]
 \textbf{(Solve)}\quad
@@ -942,9 +942,8 @@ Under the ideal BEC, a transmitted codeword always produces a decodable received
 a Lean~4 library of approximately 650 lines organized in six modules.
 All type definitions, the rewriting rules, and the well-formedness preservation
 lemmas are complete.
-The soundness theorems for success and failure certificates are proved up to two
-helper steps each; the adequacy theorem has a complete proof skeleton with two
-admitted lemmas.
+The soundness theorem for success certificates (\texttt{thm\_sound\_success}) is proved up to one admitted helper; the ML optimality theorem (\texttt{thm\_ml}) is proved conditional on a BEC probability axiom.
+The four admitted items total---two in the soundness module and two in the adequacy module---are each annotated with the missing argument, the relevant Mathlib API, and a line-count estimate.
 Table~\ref{tab:lean-status} gives the precise breakdown.
 
 The treatment of ML optimality (Theorem~\ref{thm:ml}) requires a real-valued
@@ -961,16 +960,16 @@ Section~\ref{sec:guarantees} is complete and does not depend on any unproved cla
 \toprule
 Lean identifier & Paper label & Module & Status \\
 \midrule
-\texttt{syndrome\_invariant}      & Lem.~4.9              & PeelingState & Complete \\
-\texttt{propagate\_wf}            & Lem.~5.3              & Rewriting    & Complete \\
-\texttt{solve\_wf}                & Lem.~5.4              & Rewriting    & Complete \\
-\texttt{lem\_unsat\_witness\_sound} & Lem.~4.2            & Soundness    & Complete \\
-\texttt{thm\_sound\_success}      & Thm.~4.1              & Soundness    & Complete$^\dagger$ \\
-\texttt{thm\_ml}                  & Thm.~4.6              & Soundness    & Complete$^\ddagger$ \\
-\texttt{lem\_unsat\_witness\_complete} & Lem.~4.3        & Soundness    & Admitted$^a$ \\
-\texttt{thm\_sound\_failure}      & Thm.~4.5              & Soundness    & Admitted$^b$ \\
-\texttt{adequacy\_completeness}   & Thm.~5.5 ($\Rightarrow$) & Adequacy & Admitted$^c$ \\
-\texttt{adequacy\_soundness}      & Thm.~5.5 ($\Leftarrow$)  & Adequacy & Admitted$^d$ \\
+\texttt{syndrome\_invariant}      & Lem.~4.5              & PeelingState & Complete \\
+\texttt{propagate\_wf}            & Lem.~6.6              & Rewriting    & Complete \\
+\texttt{solve\_wf}                & Lem.~6.7              & Rewriting    & Complete \\
+\texttt{lem\_unsat\_witness\_sound} & Lem.~5.3            & Soundness    & Complete \\
+\texttt{thm\_sound\_success}      & Thm.~5.1              & Soundness    & Complete$^\dagger$ \\
+\texttt{thm\_ml}                  & Thm.~5.8              & Soundness    & Complete$^\ddagger$ \\
+\texttt{lem\_unsat\_witness\_complete} & Lem.~5.4        & Soundness    & Admitted$^a$ \\
+\texttt{thm\_sound\_failure}      & Thm.~5.7              & Soundness    & Admitted$^b$ \\
+\texttt{adequacy\_completeness}   & Thm.~6.11 ($\Rightarrow$) & Adequacy & Admitted$^c$ \\
+\texttt{adequacy\_soundness}      & Thm.~6.11 ($\Leftarrow$)  & Adequacy & Admitted$^d$ \\
 \bottomrule
 \end{tabular}
 
@@ -978,7 +977,7 @@ Lean identifier & Paper label & Module & Status \\
 \noindent\footnotesize
 $\dagger$~Complete modulo one helper connecting \texttt{replayFull} to
 \texttt{SyndromeInv}; $\approx$\,30 lines.\\
-$\ddagger$~Conditional on \texttt{bec\_equal\_likelihood} (BEC probability axiom).\\
+$\ddagger$~Conditional on \texttt{bec\_equal\_likelihood}. This is a genuine axiom (not a placeholder like \texttt{admit}): it asserts that on the ideal BEC, all codewords consistent with the received erasure pattern achieve equal channel likelihood. The informal proof of Theorem~\ref{thm:ml} in Section~\ref{sec:guarantees} is complete; formalizing it requires a real-valued probability model for the BEC channel, which is a separate development.\\
 $^a$~Double-dual argument over $\Ftwo$; $\approx$\,80 lines via
 \texttt{Subspace.orthogonal\_orthogonal}.\\
 $^b$~Uses \texttt{lem\_residual\_equivalence} connecting residual system to state
@@ -1186,13 +1185,12 @@ Our checker plays the role of the trusted kernel: it does nothing but verify evi
 \paragraph{SELL and focusing as algorithmic specification tools.}
 Linear logic was introduced by Girard \cite{Girard1987} and focusing by Andreoli \cite{Andreoli1992Focusing}.
 Nigam and Miller develop algorithmic specifications in SELL, emphasizing multiset rewriting and localized resource control \cite{NigamMiller2009SELL}.
-We instantiate that viewpoint for a concrete decoding procedure and prove a phase-I adequacy theorem. One difference from typical applications of SELL in specification is that we do not need the full focused proof theory; the multiset-rewriting reading suffices, and we make this restriction explicit.
+Our work instantiates that viewpoint for a concrete decoding procedure. Two aspects distinguish it from the applications surveyed by Nigam and Miller. First, our adequacy theorem is not a meta-level claim about all SELL specifications, but a self-contained structural-induction argument for the specific two-clause system introduced here; this makes it accessible to readers unfamiliar with focused proof theory. Second, we extract from the derivation a concrete, machine-checkable certificate, which Nigam and Miller's framework does not address.
 
 \paragraph{Formal verification of coding theory.}
-Mechanized developments for coding theory exist in proof assistants:
-Affeldt, Garrigue, and Saikawa formalize linear error-correcting codes and verified components for LDPC decoding in Coq \cite{AffeldtGarrigueSaikawa2020}.
-Our paper provides a semi-formal specification supporting lightweight runtime certificates; Section~\ref{sec:lean} sketches the path from that specification to a full mechanization in Lean~4.
-The adequacy theorem and the soundness results are both stated as theorems with complete informal proofs whose inductive structure is designed to map directly onto tactic-level Lean proofs, and the Mathlib library already contains the relevant linear-algebra and multiset primitives.
+Affeldt, Garrigue, and Saikawa formalize linear error-correcting codes and verified components for LDPC decoding in Coq \cite{AffeldtGarrigueSaikawa2020}; their development covers the algebraic structure of linear codes and includes a verified belief-propagation decoder for small instances.
+Our work differs in three respects. We target the BEC specifically, which enables a cleaner separation between the peeling phase (specified in SELL) and the residual algebraic solve; we provide explicit, runtime-checkable certificates rather than static code verification; and we connect the specification language to the operational decoder via a formal adequacy theorem proved directly at the multiset-rewriting level rather than via a Hoare-logic-style derivation.
+The adequacy theorem and the soundness results stated here carry complete informal proofs whose inductive structure maps directly onto tactic-level Lean proofs, with the Mathlib library supplying the required linear-algebra and multiset primitives.
 
 \paragraph{Programs that check their work and lightweight certificate verification.}
 Blum and Kannan \cite{Blum1995} and Blum, Luby, and Rubinfeld \cite{BlumLubyRubinfeld1993} introduced the paradigm of programs that check their own outputs using a separate, simpler checker. This paper instantiates that paradigm for LDPC decoding: the decoder (potentially complex and optimized) is the program, and the checker (running in $O(|\Edges|+n)$) is the verification procedure. The main conceptual addition here is the explicit certificate format and the proof that the checker is both sound and complete for the failure case, which the original checker framework treats informally.
