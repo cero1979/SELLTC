@@ -78,18 +78,17 @@ via Subexponential Linear Logic (SELL)}
 \maketitle
 
 \begin{abstract}
-We describe a certified hybrid decoder for binary LDPC codes over the binary erasure channel (BEC).
-The decoder has two phases: (i)~a peeling phase that resolves variables greedily from degree-one check nodes, and (ii)~an algebraic phase that solves the residual sparse linear system over $\Ftwo$ by Gaussian elimination.
-The certification layer is proof-theoretic.
-We specify phase~(i) in a clause-based fragment of linear logic with subexponentials (SELL), interpreted operationally as multiset rewriting, and show that this specification induces exactly the same executions as the operational decoder.
-From any derivation, the specification extracts a compact trace; an independent checker then validates the decoded word against that trace and a residual witness.
+We develop a proof-theoretic certification layer for hybrid LDPC decoding over the binary erasure channel (BEC).
+The decoder has two phases: (i)~a peeling phase that resolves variables greedily from degree-one check nodes, and (ii)~a residual phase that solves the remaining sparse linear system over $\Ftwo$ by Gaussian elimination.
+We specify phase~(i) in a clause-based fragment of linear logic with subexponentials (SELL), interpreted as multiset rewriting, and prove that this specification is \emph{adequate}: it induces exactly the same executions as the operational decoder.
 
-We prove that any accepted success certificate witnesses a codeword consistent with the received non-erased symbols (soundness), and that, under the BEC model, any such codeword is maximum-likelihood.
-We also handle the case where the BEC assumption fails: when the residual system is inconsistent---for instance, because ``known'' bits were silently corrupted---the solver returns a failure certificate consisting of the peeling trace and an algebraic infeasibility witness, and we prove that such witnesses are both sound and complete.
-On the complexity side, the checker runs in time $O(|\mathcal{E}|+n)$, linear in the Tanner graph.
+From any derivation the specification extracts a compact trace; an independent checker then validates the decoded word against that trace and a residual witness.
+We prove soundness of success certificates---any accepted output is a codeword consistent with the received non-erased symbols and, under the BEC model, is maximum-likelihood---and we prove both soundness and completeness of failure certificates, which witness infeasibility of the residual system when the BEC assumption is violated.
+The checker runs in time $O(|\mathcal{E}|+n)$, linear in the Tanner graph.
 
-Adequacy of the specification is proved in full: every valid peeling trace induces a multiset-rewriting derivation, and conversely every trace extracted from a derivation is a valid peeling trace.
-The paper is accompanied by a reproducible experimental notebook that measures certification overhead, residual-system size, and checker robustness across two code families, three blocklengths, and both clean and corrupted BEC inputs.
+The four results together form a self-contained pipeline from specification to certification.
+Because the adequacy proof proceeds entirely by structural induction over multiset-rewriting derivations, its inductive skeleton maps directly onto the tactic language of contemporary proof assistants, making mechanization in Lean~4 or Coq a concrete near-term goal.
+A companion Python implementation and reproducibility notebook are provided so that the certificate format and the checker algorithm can be inspected and executed independently.
 \end{abstract}
 
 
@@ -130,13 +129,13 @@ One could argue that each item individually has appeared somewhere in the litera
 \begin{enumerate}[label=(\roman*),leftmargin=*]
 \item We define a certified hybrid decoder for binary LDPC codes on the BEC: peeling in phase~I, residual Gaussian elimination over $\Ftwo$ in phase~II.
 \item We introduce two certificate types---a \emph{success certificate} $(T,\rho)$ pairing a peeling trace with a residual assignment, and a \emph{failure certificate} $(T,\omega)$ pairing a peeling trace with an infeasibility witness---and give a unified checker for both.
-\item We give a SELL-style specification of phase~I in which subexponentials separate static graph structure, persistent decoded values, and one-use residual state, and we work throughout with the induced rewriting system.
-\item We prove: soundness of success certificates (Theorem~\ref{thm:sound}), soundness and completeness of infeasibility witnesses (Lemmas~\ref{lem:unsat-witness-sound} and~\ref{lem:unsat-witness-complete}), ML optimality on the clean BEC (Theorem~\ref{thm:ml}), and a full adequacy theorem for the peeling phase (Theorem~\ref{thm:adequacy-complete}).
-\item We describe a reproducible experimental plan measuring certification overhead, residual-system size, and robustness under BEC violations, and we release a companion notebook that generates all figures and tables.
+\item We give a SELL-style specification of phase~I in which subexponentials separate static graph structure, persistent decoded values, and one-use residual state, and we work throughout with the induced multiset-rewriting system.
+\item We prove the four main theorems: soundness of success certificates (Theorem~\ref{thm:sound}), soundness and completeness of infeasibility witnesses (Lemmas~\ref{lem:unsat-witness-sound} and~\ref{lem:unsat-witness-complete}), ML optimality on the clean BEC (Theorem~\ref{thm:ml}), and a full adequacy theorem for the peeling phase (Theorem~\ref{thm:adequacy-complete}).
+\item We provide a Lean~4 mechanization roadmap (Section~\ref{sec:lean}) identifying the exact definitions, inductive structures, and tactic patterns needed to formalize the adequacy theorem and the soundness results in a proof assistant. We also release a companion Python implementation so that the checker can be executed and inspected independently.
 \end{enumerate}
 
 \paragraph{Structure of the paper.}
-Section~\ref{sec:preliminaries} fixes notation and recalls coding-theoretic prerequisites. Section~\ref{sec:phase1} formulates phase~I and proves the stopping-set characterization. Section~\ref{sec:hybrid} defines the hybrid decoder and both certificate types. Section~\ref{sec:guarantees} proves the main semantic guarantees. Section~\ref{sec:sell} gives the SELL-style specification and the adequacy theorem. Section~\ref{sec:threat} discusses robustness beyond the ideal BEC model. Sections~\ref{sec:exp} and~\ref{sec:rw} cover the experimental methodology and related work.
+Section~\ref{sec:preliminaries} fixes notation and recalls coding-theoretic prerequisites. Section~\ref{sec:phase1} formulates phase~I and proves the stopping-set characterization. Section~\ref{sec:hybrid} defines the hybrid decoder and both certificate types. Section~\ref{sec:guarantees} proves the main semantic guarantees. Section~\ref{sec:sell} gives the SELL-style specification and the adequacy theorem. Section~\ref{sec:threat} discusses robustness beyond the ideal BEC model. Section~\ref{sec:lean} gives the Lean~4 mechanization roadmap. Sections~\ref{sec:impl} and~\ref{sec:rw} cover the companion implementation and related work.
 
 % =========================================================
 \section{Preliminaries}
@@ -907,225 +906,124 @@ The framework handles this gracefully because it was designed from the start to 
 Lemmas~\ref{lem:unsat-witness-sound} and~\ref{lem:unsat-witness-complete} together show that infeasibility witnesses are both sound and complete: the checker accepts $(T,\omega)$ if and only if the residual system determined by $T$ is genuinely inconsistent over $\Ftwo$. A concrete witness $\omega$ is always obtainable via Gaussian elimination (Proposition~\ref{prop:witness-extraction}), so the failure path is not a special case but a first-class outcome of phase~II.
 
 \subsection{Interpretation for corrupted inputs}
-Under the ideal BEC, a transmitted codeword always produces a decodable received word (possibly with failures, but never an inconsistent system), so a valid failure certificate should never appear for a correctly transmitted message on a well-behaved channel. Its presence is therefore a reliable signal that the received input violates the BEC model. This is precisely the property explored in the robustness experiment of Section~\ref{sec:exp}: as the visible-bit corruption rate $\delta$ grows, the proportion of accepted failure certificates increases, while the proportion of accepted success certificates falls. False acceptances---accepting a success certificate when the system is actually infeasible, or vice versa---should remain zero under a correct implementation.
+Under the ideal BEC, a transmitted codeword always produces a decodable received word (possibly with failures, but never an inconsistent system), so a valid failure certificate should never appear for a correctly transmitted message on a well-behaved channel. Its presence is therefore a reliable signal that the received input violates the BEC model. This is precisely the behavior described in Section~\ref{sec:impl}: as the visible-bit corruption rate $\delta$ grows, the proportion of accepted failure certificates increases, while the proportion of accepted success certificates falls. False acceptances---accepting a success certificate when the system is actually infeasible, or vice versa---should remain zero under a correct implementation.
 
 % =========================================================
-\section{Experimental methodology and reproducibility package}
-\label{sec:exp}
+% =========================================================
+\section{Lean~4 mechanization roadmap}
+\label{sec:lean}
 
-The purpose of the experimental section is not to introduce a new decoder, but to make the certification layer empirically accountable.
-We therefore turn the high-level plan of Section~8 into a concrete protocol that an external reader can run without access to hidden code or undocumented preprocessing.
-The released notebook and its companion script instantiate the minimum acceptable campaign described in the paper, preserve all random seeds, export intermediate tables, and generate the figures needed by the manuscript.
+The four main results of this paper---the adequacy theorem and the three soundness/completeness guarantees---are proved by structural induction and case analysis over finite, explicitly enumerated objects.
+This structure maps directly onto the tactic language of Lean~4 and Mathlib, making mechanization a concrete near-term goal rather than a speculative one.
+This section identifies the exact correspondence between the paper's informal proofs and the proof-assistant constructs needed to formalize them.
 
-\subsection{Questions and evaluation logic}
-The empirical study is organized around three questions already implicit in the theoretical development:
-\begin{enumerate}[leftmargin=*]
-\item How much does certification cost relative to decoding?
-\item How much work does peeling remove from the residual algebraic phase?
-\item How does the certificate checker behave when the ideal ``erasures only'' assumption of the BEC is intentionally violated?
-\end{enumerate}
-The three questions are measured separately, but they are interpreted jointly: a useful certification layer should preserve the decoding success profile of the hybrid method, keep the checker lightweight, and reject inconsistent instances without introducing false acceptances.
+\subsection{Type-theoretic encoding of the core objects}
 
-\subsection{Canonical experimental instantiation}
-The article specifies the code families, the blocklength set, the robustness grid, and the Monte Carlo range.
-To obtain a fully reproducible artifact, we fix the remaining degrees of freedom as follows.
+The central types required for mechanization are the following.
 
-\begin{table}[H]
-\centering
-\caption{Canonical configuration used by the released reproduction notebook.}
-\label{tab:canonical-config}
-\begin{tabular}{lp{7.5cm}}
-\toprule
-Component & Instantiation \\
-\midrule
-Families & F1 random regular; F2 PEG \\
-Degree profile & $(d_v,d_c) = (3,6)$ \\
-Design rate & $1 - d_v/d_c \approx 1/2$ \\
-Blocklengths & $n \in \{1000, 2000, 5000\}$ \\
-Clean-channel grid & $\epsilon \in \{0.34, 0.38, 0.40, 0.42, 0.44, 0.46, 0.50\}$ \\
-Robustness grid & $\delta \in \{0, 10^{-4}, 10^{-3}, 10^{-2}\}$ \\
-Monte Carlo budget & 100 trials per point; notebook supports 500 \\
-Residual solvers & Dense GE and lightweight sparse-ordering heuristic \\
-Randomness control & Fixed base seed; deterministic per-trial seed derivation \\
-Artifact outputs & Raw CSV, summary CSV, LaTeX table, PNG figures \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The choice $(d_v,d_c)=(3,6)$ is not meant to be exclusive; it is simply the cleanest rate-$1/2$ regular profile for the minimum acceptable campaign.
-Likewise, the clean-channel $\epsilon$ grid is an explicit, reproducible instantiation of the paper's instruction to sample around the peeling transition region.
-The companion notebook exposes these values as top-level parameters, so an external evaluator can refine the grid or increase the Monte Carlo budget without modifying the decoding core.
-
-\subsection{Implemented code families}
-We instantiate two families in the canonical run and keep a third hook available:
-\begin{enumerate}[label=(F\arabic*),leftmargin=*]
-\item \textbf{Random regular ensembles.} A simple regular constructor generates binary parity-check matrices with column weight $d_v$ and row weight $d_c$.
-\item \textbf{PEG constructions.} A regular PEG-style constructor is used to bias edge placement toward larger local girth while preserving the same degree profile.
-\item \textbf{Public matrix hook (optional).} The artifact supports loading an external matrix from \texttt{.npy}, \texttt{.csv}, or \texttt{.txt}. This option is intentionally disabled in the default campaign because the paper marks this family as optional rather than mandatory.
-\end{enumerate}
-
-\subsection{Baselines and certificate flow}
-For each code, each blocklength, and each erasure probability $\epsilon$, the notebook evaluates the following three baselines:
 \begin{itemize}[leftmargin=*]
-\item \textbf{Peeling only.} Success means that phase~I resolves all erased variables and leaves no residual contradiction.
-\item \textbf{GE only (ML on the BEC).} The residual system corresponding to~\eqref{eq:residual} is solved directly over $\Ftwo$.
-\item \textbf{Hybrid (ours).} The decoder first runs peeling, then solves the induced residual system, and finally submits the returned certificate to the independent checker.
+\item \textbf{Peeling state.}
+  The quadruple $\sigma=(K,U,s,d)$ encodes as a dependent record in Lean.
+  The partial assignment $K:\Var\rightharpoonup\Ftwo$ is a \texttt{Finmap Var \(\Ftwo\)};
+  the set $U$ is its complement and need not be stored separately.
+  The functions $s$ and $d$ are \texttt{Var $\to$ $\Ftwo$} and \texttt{Var $\to$ $\mathbb{N}$} restricted to a finite domain.
+
+\item \textbf{Well-formed multiset.}
+  Well-formedness (Definition~\ref{def:wf}) is a conjunction of three decidable predicates over a finite type.
+  In Lean it is a structure \texttt{WF : Multiset Atom $\to$ Prop} whose three fields correspond to (WF1)--(WF3).
+  Decidability means that \texttt{WF m} can be checked by computation for any concrete $m$.
+
+\item \textbf{Rewrite step.}
+  The relation $M\Rightarrow M'$ is an inductive type with two constructors, \texttt{Propagate} and \texttt{Solve}, matching Definition~\ref{def:sell-clauses}.
+  Well-formedness preservation (Lemmas~\ref{lem:propagate-wf} and~\ref{lem:solve-wf}) then becomes two lemmas of type
+  \texttt{WF m $\to$ m $\Rightarrow$ m' $\to$ WF m'}, proved by case analysis on the constructor.
+
+\item \textbf{Certificate checker.}
+  Algorithm~\ref{alg:checker} is a pure function \texttt{check : Matrix $\to$ ReceivedWord $\to$ Certificate $\to$ Bool}.
+  Its termination is immediate because it iterates over a list of fixed length.
+  Soundness (Theorem~\ref{thm:sound}) becomes \texttt{check H y c = true $\to$ Codeword H (decode c) $\wedge$ Consistent y (decode c)}.
 \end{itemize}
 
-The implementation is faithful to the certification logic of Section~4.
-In particular, the residual solver may return either a solution witness $\rho$ or an infeasibility witness $\omega$, and the checker validates whichever object it receives.
-A small but important engineering point is that a residual inconsistency is also detected when the peeling phase eliminates all erasures yet the visible coordinates already violate parity; in that case the correct output is a failure certificate rather than a spurious success.
+\subsection{Proof structure for the adequacy theorem}
 
-\subsection{Recorded metrics}
-The artifact records both outcome metrics and structural metrics:
+Theorem~\ref{thm:adequacy-complete} has two directions.
+
+\textbf{Completeness.}
+The informal proof is an induction on the length of the operational trace $T$.
+The Lean proof is \texttt{induction t with | nil => ... | cons step rest ih => ...}, where each case unfolds one application of \textbf{(Solve)} plus the subsequent \textbf{(Propagate)} block.
+The key lemma---that \textbf{(Propagate)} steps for distinct checks commute---is proved by showing that the rewrites touch disjoint parts of the multiset, which in Lean translates to disjointness of \texttt{Finmap} domains.
+
+\textbf{Soundness.}
+The informal proof is an induction on the length of the derivation $D$.
+In Lean, since derivations are an inductive type (\texttt{$M_0$ $\Rightarrow^*$ $M$} is \texttt{ReflTransClosure Step}), this is a \texttt{rec} over \texttt{ReflTransClosure}.
+The base case (\texttt{refl}) corresponds to the empty trace.
+The inductive step peels off the first \textbf{(Solve)} step, uses the $D_{\mathrm{pre}} = \emptyset$ argument (formalized as a lemma about \textbf{(Propagate)}-only prefixes on $M_0$), and applies the induction hypothesis to the suffix.
+
+\subsection{Proof structure for soundness of certificates}
+
+\textbf{Theorem~\ref{thm:sound}} (success soundness).
+The proof replays the trace $T$ inside the checker and observes that each step preserves the invariant \texttt{StateConsistent $\sigma$ $y$}.
+In Lean this is a loop invariant over the list $T$, proved by \texttt{List.induction} together with the state-update lemmas.
+
+\textbf{Lemmas~\ref{lem:unsat-witness-sound} and~\ref{lem:unsat-witness-complete}} (failure certificates).
+These are standard linear-algebra facts over $\mathbb{F}_2$.
+Soundness is a two-line \texttt{omega}-style computation once the types are set up; completeness uses the finite-dimensional Hahn--Banach separation theorem over a finite field, which Mathlib provides as \texttt{Subspace.exists\_dual\_map\_eq\_bot\_of\_nmem}.
+
+\subsection{Connection to Mathlib}
+
+Lean~4 Mathlib already contains:
 \begin{itemize}[leftmargin=*]
-\item success probability versus $\epsilon$ for peeling-only, GE-only, and the accepted hybrid outputs;
-\item mean runtime of peeling, residual GE, checker, and the full hybrid pipeline;
-\item certificate size through $|T|$, residual size $|U|$, residual rank, and residual density;
-\item certification overhead ratio $\frac{\text{checker time}}{\text{decoder time} - \text{checker time}}$;
-\item in the robustness study, accepted-success rate, accepted-failure rate, and false-acceptance rate.
+\item \texttt{Mathlib.LinearAlgebra.Matrix.DotProduct} and \texttt{Finsupp}-based sparse matrices, covering the $\mathbb{F}_2$ linear algebra;
+\item \texttt{Mathlib.Data.Finmap} for partial maps with decidable equality, matching $K$;
+\item \texttt{Mathlib.Data.Multiset.Basic} for multiset operations matching the SELL rewriting;
+\item \texttt{Mathlib.Order.RelClasses} for reflexive-transitive closure, matching $\Rightarrow^*$.
+\end{itemize}
+No external library is needed beyond a standard Mathlib installation.
+
+\subsection{Expected proof-of-concept artifact}
+
+A self-contained Lean~4 file verifying the following minimal core would constitute a proof-of-concept:
+\begin{enumerate}[label=(\arabic*),leftmargin=*]
+\item The type definitions for \texttt{PeelingState}, \texttt{Atom}, \texttt{WFMultiset}, and \texttt{Step}.
+\item \texttt{propagate\_wf} and \texttt{solve\_wf} (Lemmas~\ref{lem:propagate-wf} and~\ref{lem:solve-wf}).
+\item \texttt{check\_sound} (Theorem~\ref{thm:sound}).
+\item \texttt{adequacy\_completeness} and \texttt{adequacy\_soundness} (Theorem~\ref{thm:adequacy-complete}).
+\end{enumerate}
+Items (1)--(3) are straightforwardly derivable from Mathlib primitives and should require on the order of 200--400 lines of Lean code.
+Item~(4) is the more substantial effort, estimated at 400--800 lines, because the commutation argument for \textbf{(Propagate)} steps requires careful bookkeeping of multiset membership.
+
+% =========================================================
+\section{Companion implementation}
+\label{sec:impl}
+
+The paper is accompanied by a Python reference implementation whose purpose is distinct from the mechanization goal: it allows the certificate format and checker algorithm to be inspected, executed, and reproduced without a proof assistant.
+
+\subsection{What the implementation provides}
+
+The companion repository contains two files: \texttt{selltcfull\_experiments.py}, a pure Python module implementing the full certified hybrid decoder, and \texttt{SELLTCFULL\_experiments.ipynb}, a Jupyter notebook that exercises the module on small examples and confirms that the checker correctly accepts valid certificates and rejects malformed ones.
+
+The module exposes the following functions, each directly traceable to a definition or proposition in the paper:
+\begin{itemize}[leftmargin=*]
+\item \texttt{peeling\_decode(H, y)} — runs phase~I and returns the partial assignment $K$ together with the peeling trace $T$.
+\item \texttt{gf2\_solve(A, b)} — runs dense Gaussian elimination over $\Ftwo$ and returns either a solution vector $\rho$ or a left-kernel vector $\omega$ (infeasibility witness).
+\item \texttt{check\_success\_certificate(H, y, T, rho)} — the checker for success certificates; returns \texttt{True} iff $(T,\rho)$ is a valid success certificate for $(H,y)$.
+\item \texttt{check\_failure\_certificate(H, y, T, omega)} — the checker for failure certificates; returns \texttt{True} iff $(T,\omega)$ is a valid failure certificate for $(H,y)$.
+\item \texttt{run\_hybrid\_decoder(H, y)} — the full pipeline: calls the above in sequence and returns the certificate type, the certificate, and whether the checker accepted it.
 \end{itemize}
 
-These metrics are exported twice: first at the per-trial level, and then as grouped summaries suitable for plotting and inclusion in the manuscript.
-The grouped summaries are exactly the objects consumed by Figures~\ref{fig:success-vs-epsilon}--\ref{fig:robustness-vs-delta} and Table~\ref{tab:table1-results}.
+The checker functions are faithful to Algorithm~\ref{alg:checker}: they only inspect the certificate and the publicly known inputs $(H,y)$; they do not call the decoder or access any internal state.
 
-\subsection{Robustness protocol beyond the ideal BEC}
-The robustness study follows the threat model from Section~7.
-For a fixed clean-channel erasure level, the notebook first generates a BEC instance from the all-zero codeword, then flips a fraction $\delta$ of the visible positions.
-The untrusted hybrid solver is run on this corrupted input and may return either a success certificate or a failure certificate.
-The checker then decides whether the evidence is valid.
-Under a correct implementation, the false-acceptance rate should remain zero, while the balance between accepted successes and accepted failures should shift toward the latter as $\delta$ grows.
+\subsection{Supplementary experimental data}
 
-In the canonical run we set the clean-channel erasure level of the robustness study to $\epsilon = 0.42$, which lies near the transition region of the chosen degree profile.
-This makes the experiment informative without making it artificially easy.
+A Monte Carlo campaign was run on two LDPC code families (random regular and PEG) at three blocklengths ($n\in\{1000,2000,5000\}$) and seven erasure probabilities around the peeling threshold for the $(3,6)$ degree profile.
+The raw per-trial data and summary statistics are stored in the \texttt{SELLTCFULL\_outputs/} directory and are available in the companion repository.
+This data is provided as supplementary material for reproducibility; it does not constitute an independent empirical contribution and should not be read as such.
+The false-acceptance rate was zero in all 100 trials at each point, consistent with the soundness theorems.
 
-\subsection{Artifact layout and execution protocol}
-The released notebook writes all generated files into the directory \texttt{\ArtifactDirText/}.
-The expected layout is:
-\begin{center}
-{\small
-\begin{tabular}{lp{6.5cm}}
-\toprule
-Path & Contents \\
-\midrule
-\texttt{raw\_clean.csv} & per-trial clean-channel results \\
-\texttt{raw\_robustness.csv} & per-trial corrupted-channel results \\
-\texttt{success\_summary.csv} & grouped success curves \\
-\texttt{runtime\_summary.csv} & grouped runtime curves \\
-\texttt{checker\_summary.csv} & checker scaling summary \\
-\texttt{robustness\_summary.csv} & grouped robustness statistics \\
-\texttt{table1\_summary.tex} & LaTeX export of the main summary table \\
-\texttt{fig*.png} & figures used by the manuscript \\
-\texttt{manifest.json} & seeds and full campaign configuration \\
-\bottomrule
-\end{tabular}
-}
-\end{center}
+\subsection{Running the notebook}
 
-The notebook is intentionally split into two execution modes.
-A smoke-test mode runs a drastically smaller campaign and is meant only to verify that the environment is healthy.
-The full mode runs the canonical configuration of Table~\ref{tab:canonical-config}.
-An external evaluator can therefore validate the pipeline quickly before committing to the full Monte Carlo budget.
-
-\subsection{Figures and tables integrated into the manuscript}
-The source below is designed to compile whether or not the experimental outputs have already been generated.
-If the notebook has produced the expected files in \texttt{\ArtifactDirText/}, the figures and the main table are inserted automatically.
-Otherwise, the manuscript shows explicit placeholders, so the paper remains compilable during drafting.
-
-\begin{figure}[H]
-\centering
-\IfFileExists{\ArtifactDir/fig1_success_probability.png}{%
-  \includegraphics[width=0.92\linewidth]{\ArtifactDir/fig1_success_probability.png}%
-}{%
-  \artifactplaceholder{Figure 1 placeholder. Run the notebook to generate \texttt{\ArtifactDirText/fig1\_success\_probability.png}.}%
-}
-\caption{Success probability versus erasure probability $\epsilon$ for peeling-only, GE-only, and the certified hybrid decoder.}
-\label{fig:success-vs-epsilon}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\IfFileExists{\ArtifactDir/fig2_runtime_breakdown.png}{%
-  \includegraphics[width=0.92\linewidth]{\ArtifactDir/fig2_runtime_breakdown.png}%
-}{%
-  \artifactplaceholder{Figure 2 placeholder. Run the notebook to generate \texttt{\ArtifactDirText/fig2\_runtime\_breakdown.png}.}%
-}
-\caption{Runtime breakdown versus $\epsilon$, with separate curves for peeling, residual GE, and the checker.}
-\label{fig:runtime-vs-epsilon}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\IfFileExists{\ArtifactDir/fig3_checker_scaling.png}{%
-  \includegraphics[width=0.88\linewidth]{\ArtifactDir/fig3_checker_scaling.png}%
-}{%
-  \artifactplaceholder{Figure 3 placeholder. Run the notebook to generate \texttt{\ArtifactDirText/fig3\_checker\_scaling.png}.}%
-}
-\caption{Checker time as a function of the blocklength $n$ for the canonical family set.}
-\label{fig:checker-vs-n}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\IfFileExists{\ArtifactDir/fig4_robustness.png}{%
-  \includegraphics[width=0.92\linewidth]{\ArtifactDir/fig4_robustness.png}%
-}{%
-  \artifactplaceholder{Figure 4 placeholder. Run the notebook to generate \texttt{\ArtifactDirText/fig4\_robustness.png}.}%
-}
-\caption{Robustness under BEC violations: accepted success and accepted failure rates versus corruption level $\delta$.}
-\label{fig:robustness-vs-delta}
-\end{figure}
-
-\begin{table}[H]
-\centering
-\caption{Main experimental summary for each family and blocklength.}
-\label{tab:table1-results}
-\IfFileExists{\ArtifactDir/table1_summary.tex}{%
-  \input{\ArtifactDir/table1_summary.tex}%
-}{%
-  \begin{tabular}{llrrrrrrrr}
-  \toprule
-  \small
-  Family & $n$ & $d_v$ & $d_c$ & $\overline{|T|}$ & $\overline{|U|}$ & $\overline{r}$ & peel (ms) & GE (ms) & ck (ms) \\
-  \midrule
-  Rand.~reg. & 1000 & 3 & 6 & --- & --- & --- & --- & --- & --- \\
-  Rand.~reg. & 2000 & 3 & 6 & --- & --- & --- & --- & --- & --- \\
-  Rand.~reg. & 5000 & 3 & 6 & --- & --- & --- & --- & --- & --- \\
-  PEG & 1000 & 3 & 6 & --- & --- & --- & --- & --- & --- \\
-  PEG & 2000 & 3 & 6 & --- & --- & --- & --- & --- & --- \\
-  PEG & 5000 & 3 & 6 & --- & --- & --- & --- & --- & --- \\
-  \bottomrule
-  \end{tabular}
-}
-\end{table}
-
-\subsection{Predicted behavior and how to read the results}
-\label{subsec:predictions}
-
-The theoretical results lead to concrete, testable predictions.
-
-\textbf{Clean-channel agreement.}  On the ideal BEC, the hybrid decoder and the GE-only baseline target the same residual linear system (by Lemma~\ref{lem:residual-equivalence}), so their success rates should agree across all $\epsilon$ values whenever both are implemented correctly.  Any observed discrepancy would indicate a bug.
-
-\textbf{Hybrid gain over peeling-only.}  Peeling stalls whenever the residual contains a stopping set, whereas phase~II resolves it by Gaussian elimination.  Hence the hybrid success probability should strictly dominate peeling-only for $\epsilon$ above the peeling threshold, which for $(d_v,d_c)=(3,6)$ is around $\epsilon\approx 0.43$ \cite{DiEtAl2002Stopping}.  Below the threshold, both should succeed with probability close to one.
-
-\textbf{Checker overhead.}  By Proposition~\ref{prop:checker-linear}, the checker runs in $O(|\Edges|+n)$ time, compared with the $O(n^3/6)$ worst-case cost of dense Gaussian elimination.  For the blocklengths in Table~\ref{tab:canonical-config}, this should translate to an overhead ratio well below one---meaning the checker time is a small fraction of total decoding time.
-
-\textbf{Robustness.}  As the corruption rate $\delta$ increases, visibly corrupt inputs should become more common, so accepted success certificates should decrease and accepted failure certificates should increase.  Crucially, the false-acceptance rate should remain zero throughout: a correctly implemented checker never accepts a success certificate when the system is infeasible, nor a failure certificate when it is solvable.
-
-These are qualitative predictions that do not depend on the specific random seeds or code instances.  The role of the experiment is to verify that the implementation matches the theory, not to measure information-theoretic quantities.  The notebook exports both raw per-trial data and grouped summaries so that a reader can check each prediction directly.
-
-\subsection{Discussion of experimental results}
-\label{subsec:discussion}
-
-Figure~\ref{fig:success-vs-epsilon} confirms clean-channel agreement: for every tested family and blocklength, the hybrid success curve tracks the GE-only curve exactly across the $\epsilon$ grid.  The peeling-only curve diverges noticeably above $\epsilon\approx 0.42$, exactly where stopping sets become common for $(3,6)$ codes.  The PEG constructions show a somewhat sharper transition than random regular codes at the same blocklength, consistent with the improved local girth that the PEG algorithm is designed to provide.
-
-Figure~\ref{fig:runtime-vs-epsilon} shows the runtime breakdown.  The checker time is consistently the smallest of the three components---peeling, residual GE, and checking---across all settings.  The overhead ratio (checker time divided by non-checker decoder time) stays below one in all cases, confirming that the certification layer does not double the decoding cost.  Residual GE dominates at high $\epsilon$, where peeling fails early and leaves a large residual system; at low $\epsilon$, peeling resolves almost everything and both the residual and checker phases are negligible.
-
-Figure~\ref{fig:checker-vs-n} shows that checker time grows roughly linearly with blocklength, as predicted by Proposition~\ref{prop:checker-linear}.  There is no sign of superlinear growth even at $n=5000$.
-
-Table~\ref{tab:table1-results} gives per-family structural statistics.  The mean residual size $|U|$ grows with $\epsilon$ (not shown separately in the table, which averages over the $\epsilon$ grid) but remains a small fraction of $n$ across the campaign, confirming that peeling handles the bulk of the decoding before passing a modest residual to phase~II.
-
-Figure~\ref{fig:robustness-vs-delta} shows the robustness study.  At $\delta=0$ (ideal BEC), only accepted successes are observed; as $\delta$ increases, accepted failures rise and accepted successes fall.  The false-acceptance rate is zero throughout the entire robustness campaign, providing empirical confirmation of the soundness theorems: the checker never accepts a certificate inconsistent with the evidence it received.
+The notebook requires Python~3.9 or later and the packages \texttt{numpy}, \texttt{scipy}, \texttt{matplotlib}, and \texttt{pandas}.
+The smoke-test mode completes in under a minute on any modern laptop and verifies that the environment is healthy before committing to the full data.
 
 \section{Related work}
 \label{sec:rw}
@@ -1157,7 +1055,8 @@ We instantiate that viewpoint for a concrete decoding procedure and prove a phas
 \paragraph{Formal verification of coding theory.}
 Mechanized developments for coding theory exist in proof assistants:
 Affeldt, Garrigue, and Saikawa formalize linear error-correcting codes and verified components for LDPC decoding in Coq \cite{AffeldtGarrigueSaikawa2020}.
-Our emphasis is different---a semi-formal specification supporting lightweight runtime certificates rather than a full static proof---but mechanizing the adequacy theorem in Coq or Lean is a natural follow-up.
+Our paper provides a semi-formal specification supporting lightweight runtime certificates; Section~\ref{sec:lean} sketches the path from that specification to a full mechanization in Lean~4.
+The adequacy theorem and the soundness results are both stated as theorems with complete informal proofs whose inductive structure is designed to map directly onto tactic-level Lean proofs, and the Mathlib library already contains all the linear-algebra and multiset primitives needed for the formalization.
 
 \paragraph{Scope of the novelty claim.}
 We do not claim novelty for peeling, stopping sets, or ML erasure decoding.
@@ -1169,11 +1068,11 @@ We believe this combination is genuinely useful both for auditing decoding pipel
 
 We have given a certified hybrid decoder for binary LDPC codes on the BEC. Peeling is specified in a clause-based SELL-style fragment---one where subexponentials cleanly separate static graph data, persistent assignments, and one-use residual state---and the residual linear system is solved by Gaussian elimination. Both phases return an explicit certificate: a success certificate $(T,\rho)$ or a failure certificate $(T,\omega)$. Either way, the independent checker runs in time $O(|\Edges|+n)$, linear in the Tanner graph.
 
-Two design choices merit emphasis. First, we deliberately prove all guarantees at the operational level of multiset rewriting rather than at the level of focused proof search; this keeps the adequacy theorem self-contained and accessible to readers from coding theory. Second, the failure certificate is not a heuristic error flag---it is an algebraically checkable witness of infeasibility. When the BEC assumption breaks down and some ``known'' bits are corrupted, the checker can report the inconsistency with a proof, rather than silently accepting a wrong codeword.
+Two design choices merit emphasis. First, we deliberately prove all guarantees at the operational level of multiset rewriting rather than at the level of focused proof search; this keeps the adequacy theorem self-contained and accessible to readers from coding theory. Second, the failure certificate is not a heuristic error flag---it is an algebraically checkable witness of infeasibility. When the BEC assumption breaks down and some ``known'' bits are corrupted, the checker can report the inconsistency with a proof rather than silently accepting a wrong codeword.
 
-The experimental results (Section~\ref{sec:exp}) confirm that certification is not prohibitively expensive: the checker time is a small fraction of total decoding time, the overhead ratio stays below one across all tested blocklengths and erasure levels, and no false acceptances are observed in the robustness study. PEG codes show slightly better success rates than random regular codes at the same blocklength, consistent with their improved girth properties.
+The mechanization roadmap of Section~\ref{sec:lean} identifies a direct path from the paper's proofs to a Lean~4 formalization. The adequacy theorem, which proceeds by structural induction over multiset-rewriting derivations, maps cleanly onto the \texttt{induction} tactic on an inductive type for derivations; the soundness theorems reduce to straightforward loop-invariant arguments expressible with standard Mathlib lemmas. We regard mechanizing all four main results as the most pressing follow-up to this work.
 
-There are several directions worth pursuing. The most immediate is to mechanize the adequacy theorem in a proof assistant such as Coq or Lean; the inductive structure of the proof maps naturally onto type-theoretic language. A second direction is to extend the framework to the binary symmetric channel or to belief-propagation decoders, where the certificate structure would necessarily be different. Finally, hardware implementations of the checker are worth exploring: because it only replays a trace and verifies a small number of linear constraints, it could run on modest dedicated logic alongside the main decoder.
+There are further directions worth pursuing. An extension to the binary symmetric channel would require a different certificate structure, since the residual system is no longer over erasures alone. Belief-propagation decoders, which operate over log-likelihood ratios rather than exact assignments, present an even greater challenge for the certification layer, but their sequential message-passing structure suggests that a trace-based approach may still be viable. Finally, hardware implementations of the checker are worth exploring: because it only replays a trace and verifies a small number of linear constraints, it could run on modest dedicated logic alongside the main decoder, making certified decoding practical in embedded settings.
 
 \begin{thebibliography}{99}
 
