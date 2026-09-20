@@ -1,0 +1,8 @@
+lean4/SELLCert/Adequacy.lean:85:  admit
+lean4/SELLCert/Adequacy.lean:104:        admit
+lean4/SELLCert/Adequacy.lean:123:  admit
+lean4/SELLCert/Soundness.lean:86:  admit
+lean4/SELLCert/Soundness.lean:175:    admit
+lean4/SELLCert/Soundness.lean:187:axiom bec_equal_likelihood {n m : ℕ} (H : PCMatrix n m) (y : ReceivedWord n)
+lean4/SELLCert/Soundness.lean:194:    True
+lean4/SELLCert/Soundness.lean:209:      True := by

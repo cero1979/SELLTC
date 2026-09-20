@@ -1,0 +1,16 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "machine": "arm64",
+  "tools": {
+    "lean": null,
+    "lake": null,
+    "elan": null,
+    "curl": "/usr/bin/curl",
+    "git": "/usr/local/bin/git",
+    "zstd": "/usr/local/bin/zstd",
+    "tar": "/usr/bin/tar",
+    "python3": "/Library/Frameworks/Python.framework/Versions/3.8/bin/python3"
+  },
+  "lean_toolchain_file": false,
+  "lake_manifest_file": false
+}

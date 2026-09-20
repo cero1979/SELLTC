@@ -1,0 +1,435 @@
+[
+  {
+    "key": "LubyMitzenmacherShokrollahiSpielman2001",
+    "query": "Efficient erasure correcting codes",
+    "results": [
+      {
+        "title": [
+          "Efficient erasure correcting codes"
+        ],
+        "author": [
+          {
+            "given": "M.G.",
+            "family": "Luby",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "M.",
+            "family": "Mitzenmacher",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "M.A.",
+            "family": "Shokrollahi",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "D.A.",
+            "family": "Spielman",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          }
+        ],
+        "published": {
+          "date-parts": [
+            [
+              2001
+            ]
+          ]
+        },
+        "container-title": [
+          "IEEE Transactions on Information Theory"
+        ],
+        "volume": "47",
+        "issue": "2",
+        "page": "569-584",
+        "DOI": "10.1109/18.910575",
+        "URL": "https://doi.org/10.1109/18.910575",
+        "score": 44.530235
+      },
+      {
+        "title": [
+          "Tail-Erasure-Correcting Codes"
+        ],
+        "author": [
+          {
+            "ORCID": "https://orcid.org/0009-0003-6737-8737",
+            "authenticated-orcid": false,
+            "given": "Boaz",
+            "family": "Moav",
+            "sequence": "first",
+            "affiliation": [
+              {
+                "name": "Henry and Marilyn Taub Faculty of Computer Science, Technion-Israel Institute of Technology, Haifa, Israel"
+              }
+            ],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          },
+          {
+            "ORCID": "https://orcid.org/0000-0002-9197-3371",
+            "authenticated-orcid": false,
+            "given": "Ryan",
+            "family": "Gabrys",
+            "sequence": "additional",
+            "affiliation": [
+              {
+                "name": "California Institute for Telecommunications and Information Technology (Calit2), University of California at San Diego, La Jolla, CA, USA"
+              }
+            ],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          },
+          {
+            "ORCID": "https://orcid.org/0000-0002-9851-5234",
+            "authenticated-orcid": false,
+            "given": "Eitan",
+            "family": "Yaakobi",
+            "sequence": "additional",
+            "affiliation": [
+              {
+                "name": "Henry and Marilyn Taub Faculty of Computer Science, Technion-Israel Institute of Technology, Haifa, Israel"
+              }
+            ],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          }
+        ],
+        "published": {
+          "date-parts": [
+            [
+              2024,
+              12
+            ]
+          ]
+        },
+        "container-title": [
+          "IEEE Transactions on Information Theory"
+        ],
+        "volume": "70",
+        "issue": "12",
+        "page": "8595-8613",
+        "DOI": "10.1109/tit.2024.3453935",
+        "URL": "https://doi.org/10.1109/tit.2024.3453935",
+        "score": 36.9463
+      }
+    ]
+  },
+  {
+    "key": "Gallager1962",
+    "query": "Low-Density Parity-Check Codes",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "RichardsonUrbanke2008",
+    "query": "emphModern Coding Theory",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "MacKay2003",
+    "query": "emphInformation Theory, Inference, and Learning Algorithms",
+    "results": [
+      {
+        "title": [
+          "Information Theory, Inference, and Learning Algorithms"
+        ],
+        "author": [
+          {
+            "given": "Yuhong",
+            "family": "Yang",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          }
+        ],
+        "published": {
+          "date-parts": [
+            [
+              2005,
+              12
+            ]
+          ]
+        },
+        "container-title": [
+          "Journal of the American Statistical Association"
+        ],
+        "volume": "100",
+        "issue": "472",
+        "page": "1461-1462",
+        "DOI": "10.1198/jasa.2005.s54",
+        "URL": "https://doi.org/10.1198/jasa.2005.s54",
+        "score": 29.2426
+      },
+      {
+        "title": [
+          "Information theory, inference, and learning algorithms"
+        ],
+        "author": null,
+        "published": {
+          "date-parts": [
+            [
+              2004,
+              6,
+              1
+            ]
+          ]
+        },
+        "container-title": [
+          "Choice Reviews Online"
+        ],
+        "volume": "41",
+        "issue": "10",
+        "page": "41-5949-41-5949",
+        "DOI": "10.5860/choice.41-5949",
+        "URL": "https://doi.org/10.5860/choice.41-5949",
+        "score": 29.227406
+      }
+    ]
+  },
+  {
+    "key": "Forney2001",
+    "query": "Codes on graphs: normal realizations",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "DiEtAl2002Stopping",
+    "query": "Finite-length analysis of low-density parity-check codes on the binary erasure channel",
+    "results": [
+      {
+        "title": [
+          "Finite-length analysis of low-density parity-check codes on the binary erasure channel"
+        ],
+        "author": [
+          {
+            "family": "Changyan Di",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "D.",
+            "family": "Proietti",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "I.E.",
+            "family": "Telatar",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "T.J.",
+            "family": "Richardson",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "R.L.",
+            "family": "Urbanke",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          }
+        ],
+        "published": {
+          "date-parts": [
+            [
+              2002,
+              6
+            ]
+          ]
+        },
+        "container-title": [
+          "IEEE Transactions on Information Theory"
+        ],
+        "volume": "48",
+        "issue": "6",
+        "page": "1570-1579",
+        "DOI": "10.1109/tit.2002.1003839",
+        "URL": "https://doi.org/10.1109/tit.2002.1003839",
+        "score": 69.89002
+      },
+      {
+        "title": [
+          "Finite-length analysis of various low-density parity-check ensembles for the binary erasure channel"
+        ],
+        "author": [
+          {
+            "given": "T.",
+            "family": "Richrdson",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          },
+          {
+            "given": "A.",
+            "family": "Shokrollahi",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          },
+          {
+            "given": "R.",
+            "family": "Urbanke",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          }
+        ],
+        "published": null,
+        "container-title": [
+          "Proceedings IEEE International Symposium on Information Theory,"
+        ],
+        "volume": null,
+        "issue": null,
+        "page": "1",
+        "DOI": "10.1109/isit.2002.1023273",
+        "URL": "https://doi.org/10.1109/isit.2002.1023273",
+        "score": 60.74617
+      }
+    ]
+  },
+  {
+    "key": "BurshteinMiller2004ML",
+    "query": "An efficient maximum-likelihood decoding of LDPC codes over the binary erasure channel",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "HuEleftheriouArnold2005PEG",
+    "query": "Regular and irregular progressive edge-growth Tanner graphs",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "Girard1987",
+    "query": "Linear logic",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "Andreoli1992Focusing",
+    "query": "Logic programming with focusing proofs in linear logic",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "NigamMiller2009SELL",
+    "query": "Algorithmic specifications in linear logic with subexponentials",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "Necula1997PCC",
+    "query": "Proof-carrying code",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "FeldmanWainwrightKarger2005LP",
+    "query": "Using linear programming to decode binary linear codes",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "AffeldtGarrigueSaikawa2020",
+    "query": "A library for formalization of linear error-correcting codes",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "Blum1995",
+    "query": "Designing programs that check their work",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "BlumLubyRubinfeld1993",
+    "query": "Self-testing/correcting with applications to numerical problems",
+    "error": "HTTP Error 429: Too Many Requests"
+  },
+  {
+    "key": "Reynolds2002",
+    "query": "Separation logic: A logic for shared mutable data structures",
+    "error": "HTTP Error 429: Too Many Requests"
+  }
+]

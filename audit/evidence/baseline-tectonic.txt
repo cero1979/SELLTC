@@ -1,0 +1,444 @@
+note: generating format "latex"
+note: downloading tectonic-format-latex.tex
+note: downloading xelatex.ini
+note: downloading latex.ltx
+note: downloading texsys.cfg
+note: downloading expl3.ltx
+note: downloading expl3-code.tex
+note: downloading cmr10.tfm
+note: downloading UnicodeData.txt
+note: downloading CaseFolding.txt
+note: downloading SpecialCasing.txt
+note: downloading fonttext.cfg
+note: downloading fonttext.ltx
+note: downloading omlenc.def
+note: downloading omsenc.def
+note: downloading ot1enc.def
+note: downloading t1enc.def
+note: downloading ts1enc.def
+note: downloading tuenc.def
+note: downloading tulmr.fd
+note: downloading tulmss.fd
+note: downloading tulmtt.fd
+note: downloading ts1lmr.fd
+note: downloading t1cmr.fd
+note: downloading ot1cmr.fd
+note: downloading ot1cmss.fd
+note: downloading ot1cmtt.fd
+note: downloading fontmath.cfg
+note: downloading fontmath.ltx
+note: downloading omlcmm.fd
+note: downloading omscmsy.fd
+note: downloading omxcmex.fd
+note: downloading ucmr.fd
+note: downloading preload.cfg
+note: downloading preload.ltx
+note: downloading cmex10.tfm
+note: downloading line10.tfm
+note: downloading linew10.tfm
+note: downloading lcircle10.tfm
+note: downloading lcirclew10.tfm
+note: downloading cmr5.tfm
+note: downloading cmr7.tfm
+note: downloading cmmi5.tfm
+note: downloading cmmi7.tfm
+note: downloading cmmi10.tfm
+note: downloading cmsy5.tfm
+note: downloading cmsy7.tfm
+note: downloading cmsy10.tfm
+note: downloading atveryend.sty
+note: downloading atveryend-ltx.sty
+note: downloading atbegshi.sty
+note: downloading atbegshi-ltx.sty
+note: downloading load-unicode-data.tex
+note: downloading hyphen.cfg
+note: downloading xebabel.def
+note: downloading language.dat
+note: downloading hyphen.tex
+note: downloading dumyhyph.tex
+note: downloading zerohyph.tex
+note: downloading dehypht-x-2022-03-16.tex
+note: downloading dehypht-x-2022-03-16.pat
+note: downloading dehyphn-x-2022-03-16.tex
+note: downloading dehyphn-x-2022-03-16.pat
+note: downloading loadhyph-af.tex
+note: downloading hyph-af.tex
+note: downloading hyph-quote-af.tex
+note: downloading loadhyph-grc.tex
+note: downloading hyph-grc.tex
+note: downloading ibyhyph.tex
+note: downloading loadhyph-hy.tex
+note: downloading hyph-hy.tex
+note: downloading loadhyph-eu.tex
+note: downloading hyph-eu.tex
+note: downloading loadhyph-be.tex
+note: downloading hyph-be.tex
+note: downloading hyph-quote-be.tex
+note: downloading loadhyph-bg.tex
+note: downloading hyph-bg.tex
+note: downloading loadhyph-ca.tex
+note: downloading hyph-ca.tex
+note: downloading loadhyph-zh-latn-pinyin.tex
+note: downloading hyph-zh-latn-pinyin.tex
+note: downloading loadhyph-cu.tex
+note: downloading hyph-cu.tex
+note: downloading loadhyph-cop.tex
+note: downloading hyph-cop.tex
+note: downloading loadhyph-hr.tex
+note: downloading hyph-hr.tex
+note: downloading loadhyph-cs.tex
+note: downloading hyph-cs.tex
+note: downloading loadhyph-da.tex
+note: downloading hyph-da.tex
+note: downloading loadhyph-nl.tex
+note: downloading hyph-nl.tex
+note: downloading loadhyph-en-gb.tex
+note: downloading hyph-en-gb.tex
+note: downloading loadhyph-en-us.tex
+note: downloading hyph-en-us.tex
+note: downloading loadhyph-eo.tex
+note: downloading hyph-eo.tex
+note: downloading loadhyph-et.tex
+note: downloading hyph-et.tex
+note: downloading loadhyph-mul-ethi.tex
+note: downloading hyph-mul-ethi.tex
+note: downloading loadhyph-fi.tex
+note: downloading hyph-fi.tex
+note: downloading loadhyph-fi-x-school.tex
+note: downloading hyph-fi-x-school.tex
+note: downloading loadhyph-fr.tex
+note: downloading hyph-fr.tex
+note: downloading hyph-quote-fr.tex
+note: downloading loadhyph-fur.tex
+note: downloading hyph-fur.tex
+note: downloading hyph-quote-fur.tex
+note: downloading loadhyph-gl.tex
+note: downloading hyph-gl.tex
+note: downloading loadhyph-ka.tex
+note: downloading hyph-ka.tex
+note: downloading loadhyph-de-1901.tex
+note: downloading hyph-de-1901.tex
+note: downloading loadhyph-de-1996.tex
+note: downloading hyph-de-1996.tex
+note: downloading loadhyph-de-ch-1901.tex
+note: downloading hyph-de-ch-1901.tex
+note: downloading loadhyph-el-polyton.tex
+note: downloading hyph-el-polyton.tex
+note: downloading loadhyph-el-monoton.tex
+note: downloading hyph-el-monoton.tex
+note: downloading loadhyph-hu.tex
+note: downloading hyph-hu.tex
+note: downloading loadhyph-is.tex
+note: downloading hyph-is.tex
+note: downloading loadhyph-as.tex
+note: downloading hyph-as.tex
+note: downloading loadhyph-bn.tex
+note: downloading hyph-bn.tex
+note: downloading loadhyph-gu.tex
+note: downloading hyph-gu.tex
+note: downloading loadhyph-hi.tex
+note: downloading hyph-hi.tex
+note: downloading loadhyph-kn.tex
+note: downloading hyph-kn.tex
+note: downloading loadhyph-ml.tex
+note: downloading hyph-ml.tex
+note: downloading loadhyph-mr.tex
+note: downloading hyph-mr.tex
+note: downloading loadhyph-or.tex
+note: downloading hyph-or.tex
+note: downloading loadhyph-pi.tex
+note: downloading hyph-pi.tex
+note: downloading loadhyph-pa.tex
+note: downloading hyph-pa.tex
+note: downloading loadhyph-ta.tex
+note: downloading hyph-ta.tex
+note: downloading loadhyph-te.tex
+note: downloading hyph-te.tex
+note: downloading loadhyph-id.tex
+note: downloading hyph-id.tex
+note: downloading loadhyph-ia.tex
+note: downloading hyph-ia.tex
+note: downloading loadhyph-ga.tex
+note: downloading hyph-ga.tex
+note: downloading loadhyph-it.tex
+note: downloading hyph-it.tex
+note: downloading hyph-quote-it.tex
+note: downloading loadhyph-kmr.tex
+note: downloading hyph-kmr.tex
+note: downloading loadhyph-la-x-classic.tex
+note: downloading hyph-la-x-classic.tex
+note: downloading loadhyph-la.tex
+note: downloading hyph-la.tex
+note: downloading loadhyph-la-x-liturgic.tex
+note: downloading hyph-la-x-liturgic.tex
+note: downloading loadhyph-lv.tex
+note: downloading hyph-lv.tex
+note: downloading loadhyph-lt.tex
+note: downloading hyph-lt.tex
+note: downloading loadhyph-mk.tex
+note: downloading hyph-mk.tex
+note: downloading loadhyph-mn-cyrl.tex
+note: downloading hyph-mn-cyrl.tex
+note: downloading loadhyph-mn-cyrl-x-lmc.tex
+note: downloading hyph-mn-cyrl-x-lmc.tex
+note: downloading loadhyph-nb.tex
+note: downloading hyph-nb.tex
+note: downloading hyph-no.tex
+note: downloading loadhyph-nn.tex
+note: downloading hyph-nn.tex
+note: downloading loadhyph-oc.tex
+note: downloading hyph-oc.tex
+note: downloading hyph-quote-oc.tex
+note: downloading loadhyph-pms.tex
+note: downloading hyph-pms.tex
+note: downloading hyph-quote-pms.tex
+note: downloading loadhyph-pl.tex
+note: downloading hyph-pl.tex
+note: downloading loadhyph-pt.tex
+note: downloading hyph-pt.tex
+note: downloading loadhyph-ro.tex
+note: downloading hyph-ro.tex
+note: downloading loadhyph-rm.tex
+note: downloading hyph-rm.tex
+note: downloading hyph-quote-rm.tex
+note: downloading loadhyph-ru.tex
+note: downloading hyph-ru.tex
+note: downloading loadhyph-sa.tex
+note: downloading hyph-sa.tex
+note: downloading loadhyph-sr-latn.tex
+note: downloading hyph-sh-latn.tex
+note: downloading hyph-sh-cyrl.tex
+note: downloading loadhyph-sr-cyrl.tex
+note: downloading loadhyph-sk.tex
+note: downloading hyph-sk.tex
+note: downloading loadhyph-sl.tex
+note: downloading hyph-sl.tex
+note: downloading loadhyph-es.tex
+note: downloading hyph-es.tex
+note: downloading loadhyph-sv.tex
+note: downloading hyph-sv.tex
+note: downloading loadhyph-th.tex
+note: downloading hyph-th.tex
+note: downloading loadhyph-tr.tex
+note: downloading hyph-tr.tex
+note: downloading loadhyph-tk.tex
+note: downloading hyph-tk.tex
+note: downloading loadhyph-uk.tex
+note: downloading hyph-uk.tex
+note: downloading hyph-quote-uk.tex
+note: downloading loadhyph-hsb.tex
+note: downloading hyph-hsb.tex
+note: downloading loadhyph-cy.tex
+note: downloading hyph-cy.tex
+note: downloading latex2e-first-aid-for-external-files.ltx
+note: Running TeX ...
+note: downloading amsart.cls
+note: downloading amsmath.sty
+note: downloading lmroman10-regular.otf
+note: downloading tex-text.tec
+note: downloading amsopn.sty
+note: downloading amstext.sty
+note: downloading amsgen.sty
+note: downloading amsbsy.sty
+note: downloading umsa.fd
+note: downloading amsfonts.sty
+note: downloading cclicenses.sty
+note: downloading rotating.sty
+note: downloading graphicx.sty
+note: downloading keyval.sty
+note: downloading graphics.sty
+note: downloading trig.sty
+note: downloading graphics.cfg
+note: downloading xetex.def
+note: downloading ifthen.sty
+note: downloading enumitem.sty
+note: downloading cleveref.sty
+note: downloading microtype.sty
+note: downloading etoolbox.sty
+note: downloading microtype-xetex.def
+note: downloading microtype.cfg
+note: downloading tikz.sty
+note: downloading pgf.sty
+note: downloading pgfrcs.sty
+note: downloading pgfutil-common.tex
+note: downloading pgfutil-common-lists.tex
+note: downloading pgfutil-latex.def
+note: downloading pgfrcs.code.tex
+note: downloading pgf.revision.tex
+note: downloading pgfcore.sty
+note: downloading pgfsys.sty
+note: downloading pgfsys.code.tex
+note: downloading pgfkeys.code.tex
+note: downloading pgfkeysfiltered.code.tex
+note: downloading pgf.cfg
+note: downloading pgfsys-xetex.def
+note: downloading pgfsys-dvipdfmx.def
+note: downloading pgfsys-common-pdf.def
+note: downloading pgfsyssoftpath.code.tex
+note: downloading pgfsysprotocol.code.tex
+note: downloading xcolor.sty
+note: downloading color.cfg
+note: downloading pgfcore.code.tex
+note: downloading pgfmath.code.tex
+note: downloading pgfmathcalc.code.tex
+note: downloading pgfmathutil.code.tex
+note: downloading pgfmathparser.code.tex
+note: downloading pgfmathfunctions.code.tex
+note: downloading pgfmathfunctions.basic.code.tex
+note: downloading pgfmathfunctions.trigonometric.code.tex
+note: downloading pgfmathfunctions.random.code.tex
+note: downloading pgfmathfunctions.comparison.code.tex
+note: downloading pgfmathfunctions.base.code.tex
+note: downloading pgfmathfunctions.round.code.tex
+note: downloading pgfmathfunctions.misc.code.tex
+note: downloading pgfmathfunctions.integerarithmetics.code.tex
+note: downloading pgfmathfloat.code.tex
+note: downloading pgfint.code.tex
+note: downloading pgfcorepoints.code.tex
+note: downloading pgfcorepathconstruct.code.tex
+note: downloading pgfcorepathusage.code.tex
+note: downloading pgfcorescopes.code.tex
+note: downloading pgfcoregraphicstate.code.tex
+note: downloading pgfcoretransformations.code.tex
+note: downloading pgfcorequick.code.tex
+note: downloading pgfcoreobjects.code.tex
+note: downloading pgfcorepathprocessing.code.tex
+note: downloading pgfcorearrows.code.tex
+note: downloading pgfcoreshade.code.tex
+note: downloading pgfcoreimage.code.tex
+note: downloading pgfcoreexternal.code.tex
+note: downloading pgfcorelayers.code.tex
+note: downloading pgfcoretransparency.code.tex
+note: downloading pgfcorepatterns.code.tex
+note: downloading pgfcorerdf.code.tex
+note: downloading pgfmoduleshapes.code.tex
+note: downloading pgfmoduleplot.code.tex
+note: downloading pgfcomp-version-0-65.sty
+note: downloading pgfcomp-version-1-18.sty
+note: downloading pgffor.sty
+note: downloading pgfkeys.sty
+note: downloading pgfmath.sty
+note: downloading pgffor.code.tex
+note: downloading tikz.code.tex
+note: downloading pgflibraryplothandlers.code.tex
+note: downloading pgfmodulematrix.code.tex
+note: downloading tikzlibrarytopaths.code.tex
+note: downloading color.sty
+note: downloading amsthm.sty
+note: downloading thmtools.sty
+note: downloading thm-patch.sty
+note: downloading parseargs.sty
+note: downloading thm-kv.sty
+note: downloading kvsetkeys.sty
+note: downloading thm-autoref.sty
+note: downloading aliasctr.sty
+note: downloading thm-listof.sty
+note: downloading thm-restate.sty
+note: downloading thm-amsthm.sty
+note: downloading xparse.sty
+note: downloading expl3.sty
+note: downloading l3backend-xetex.def
+note: downloading mathtools.sty
+note: downloading calc.sty
+note: downloading mhsetup.sty
+note: downloading tikzlibrarysvg.path.code.tex
+note: downloading pgflibrarysvg.path.code.tex
+note: downloading pgfmoduleparser.code.tex
+note: downloading amssymb.sty
+note: downloading stmaryrd.sty
+note: downloading booktabs.sty
+note: downloading array.sty
+note: downloading pgflibraryarrows.meta.code.tex
+note: downloading tikzlibrarypositioning.code.tex
+note: downloading algorithm.sty
+warning: algorithm.sty:11: 
+Invalid UTF-8 byte or sequence at line 11 replaced by U+FFFD.
+note: downloading float.sty
+note: downloading algpseudocode.sty
+note: downloading algorithmicx.sty
+note: downloading hyperref.sty
+note: downloading ltxcmds.sty
+note: downloading iftex.sty
+note: downloading pdftexcmds.sty
+note: downloading infwarerr.sty
+note: downloading kvdefinekeys.sty
+note: downloading pdfescape.sty
+note: downloading hycolor.sty
+note: downloading letltxmacro.sty
+note: downloading auxhook.sty
+note: downloading kvoptions.sty
+note: downloading pd1enc.def
+note: downloading intcalc.sty
+note: downloading etexcmds.sty
+note: downloading puenc.def
+note: downloading url.sty
+note: downloading pzdr.tfm
+note: downloading bitset.sty
+note: downloading bigintcalc.sty
+note: downloading hpdftex.def
+error: hpdftex.def:207: Undefined control sequence
+note: Writing `/tmp/selltc-baseline/SELLTCFULL.log` (20.076171875 KiB)
+error: something bad happened inside XeTeX; its output follows:
+
+===============================================================================
+(SELLTCFULL.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2022-02-24> (lmcs.cls
+Document Class: lmcs 2024/09/23 v0.93 LMCS Layout Editor Class
+(amsart.cls
+Document Class: amsart 2020/05/29 v2.20.6
+(amsmath.sty
+For additional information on amsmath, use the `?' option.
+(amstext.sty (amsgen.sty)) (amsbsy.sty) (amsopn.sty)) (umsa.fd) (amsfonts.sty))
+ (cclicenses.sty (rotating.sty (graphicx.sty (keyval.sty) (graphics.sty
+(trig.sty) (graphics.cfg) (xetex.def))) (ifthen.sty))) (enumitem.sty)
+(microtype.sty (etoolbox.sty) (microtype-xetex.def) (microtype.cfg)) (tikz.sty
+(pgf.sty (pgfrcs.sty (pgfutil-common.tex (pgfutil-common-lists.tex))
+(pgfutil-latex.def) (pgfrcs.code.tex (pgf.revision.tex))) (pgfcore.sty
+(pgfsys.sty (pgfsys.code.tex (pgfkeys.code.tex (pgfkeysfiltered.code.tex))
+(pgf.cfg) (pgfsys-xetex.def (pgfsys-dvipdfmx.def (pgfsys-common-pdf.def))))
+(pgfsyssoftpath.code.tex) (pgfsysprotocol.code.tex)) (xcolor.sty (color.cfg))
+(pgfcore.code.tex (pgfmath.code.tex (pgfmathcalc.code.tex (pgfmathutil.code.tex
+) (pgfmathparser.code.tex) (pgfmathfunctions.code.tex
+(pgfmathfunctions.basic.code.tex) (pgfmathfunctions.trigonometric.code.tex)
+(pgfmathfunctions.random.code.tex) (pgfmathfunctions.comparison.code.tex)
+(pgfmathfunctions.base.code.tex) (pgfmathfunctions.round.code.tex)
+(pgfmathfunctions.misc.code.tex) (pgfmathfunctions.integerarithmetics.code.tex)
+)) (pgfmathfloat.code.tex)) (pgfint.code.tex) (pgfcorepoints.code.tex)
+(pgfcorepathconstruct.code.tex) (pgfcorepathusage.code.tex)
+(pgfcorescopes.code.tex) (pgfcoregraphicstate.code.tex)
+(pgfcoretransformations.code.tex) (pgfcorequick.code.tex)
+(pgfcoreobjects.code.tex) (pgfcorepathprocessing.code.tex)
+(pgfcorearrows.code.tex) (pgfcoreshade.code.tex) (pgfcoreimage.code.tex
+(pgfcoreexternal.code.tex)) (pgfcorelayers.code.tex)
+(pgfcoretransparency.code.tex) (pgfcorepatterns.code.tex) (pgfcorerdf.code.tex)
+)) (pgfmoduleshapes.code.tex) (pgfmoduleplot.code.tex)
+(pgfcomp-version-0-65.sty) (pgfcomp-version-1-18.sty)) (pgffor.sty (pgfkeys.sty
+ (pgfkeys.code.tex)) (pgfmath.sty (pgfmath.code.tex)) (pgffor.code.tex
+(pgfmath.code.tex))) (tikz.code.tex (pgflibraryplothandlers.code.tex)
+(pgfmodulematrix.code.tex) (tikzlibrarytopaths.code.tex))) (thmtools.sty
+(thm-patch.sty (parseargs.sty)) (thm-kv.sty (kvsetkeys.sty)) (thm-autoref.sty
+(aliasctr.sty)) (thm-listof.sty) (thm-restate.sty) (thm-amsthm.sty))
+(xparse.sty (expl3.sty (l3backend-xetex.def))) (mathtools.sty (calc.sty)
+(mhsetup.sty)) (tikzlibrarysvg.path.code.tex (pgflibrarysvg.path.code.tex
+(pgfmoduleparser.code.tex)))
+\bibstyle{alphaurl}
+) (amssymb.sty) (stmaryrd.sty) (booktabs.sty) (array.sty)
+(pgflibraryarrows.meta.code.tex) (tikzlibrarypositioning.code.tex)
+(algorithm.sty (float.sty)) (algpseudocode.sty (algorithmicx.sty
+Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
+)
+Document Style - pseudocode environments for use with the `algorithmicx' style
+) (hyperref.sty (ltxcmds.sty) (iftex.sty) (pdftexcmds.sty (infwarerr.sty))
+(kvdefinekeys.sty) (pdfescape.sty) (hycolor.sty) (letltxmacro.sty) (auxhook.sty
+) (kvoptions.sty) (pd1enc.def) (intcalc.sty) (etexcmds.sty) (puenc.def)
+(url.sty) (bitset.sty (bigintcalc.sty)) (atbegshi-ltx.sty)) (hpdftex.def
+(atveryend-ltx.sty)
+! Undefined control sequence.
+l.207 ...f@majorversion{\number\Hy@pdfmajorversion
+                                                  }%
+No pages of output.
+Transcript written on SELLTCFULL.log.
+===============================================================================
+error: the XeTeX engine had an unrecoverable error
+caused by: halted on potentially-recoverable error as specified
