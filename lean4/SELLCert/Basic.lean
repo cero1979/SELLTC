@@ -1,61 +1,41 @@
-/-!
-# SELLCert.Basic
-
-GF(2) arithmetic, Tanner graphs, and the fundamental codeword/consistency predicates.
-We represent GF(2) as `ZMod 2` and use Mathlib's `Matrix` and `dotProduct` infrastructure.
--/
-
 import Mathlib.Data.ZMod.Basic
-import Mathlib.Data.Matrix.Basic
 import Mathlib.LinearAlgebra.Matrix.DotProduct
-import Mathlib.Algebra.BigOperators.Group.Finset
+import Mathlib.Tactic
 
+/-! Finite binary linear algebra. All channel and code predicates are explicit. -/
 namespace SELLCert
-
-open scoped Matrix BigOperators
-
+open scoped BigOperators Matrix
 variable {n m : ℕ}
 
-/-! ### GF(2) arithmetic -/
+abbrev Bit := ZMod 2
+abbrev PCMatrix (n m : ℕ) := Matrix (Fin m) (Fin n) Bit
+abbrev ReceivedWord (n : ℕ) := Fin n → Option Bit
 
-/-- In GF(2), every element is its own additive inverse: x + x = 0. -/
-@[simp]
-lemma add_self_zmod2 (x : ZMod 2) : x + x = 0 := by decide
+@[simp] lemma add_self_zmod2 (x : Bit) : x + x = 0 := by
+  have h : ∀ x : Bit, x + x = 0 := by decide
+  exact h x
 
-/-- In GF(2), 1 ≠ 0. -/
-lemma one_ne_zero_zmod2 : (1 : ZMod 2) ≠ 0 := one_ne_zero
+lemma bit_eq_one (x : Bit) (hx : x ≠ 0) : x = 1 := by
+  have h : ∀ x : Bit, x = 0 ∨ x = 1 := by decide
+  exact (h x).resolve_left hx
 
-/-! ### Tanner graphs -/
+lemma bit_add_eq_zero (a b : Bit) (h : a + b = 0) : a = b := by
+  have h' := congrArg (fun z : Bit => z + b) h
+  simpa [add_assoc] using h'
 
-/-- A parity-check matrix over GF(2). H j i = 1 iff check j is adjacent to variable i. -/
-abbrev PCMatrix (n m : ℕ) := Matrix (Fin m) (Fin n) (ZMod 2)
+def parityBit (H : PCMatrix n m) (x : Fin n → Bit) (j : Fin m) : Bit :=
+  ∑ i, H j i * x i
 
-/-- Received word on the BEC. `none` marks an erasure; `some b` is a known bit. -/
-abbrev ReceivedWord (n : ℕ) := Fin n → Option (ZMod 2)
+def isCW (H : PCMatrix n m) (x : Fin n → Bit) : Prop := H.mulVec x = 0
 
-/-! ### Codeword conditions -/
+def isConsistent (y : ReceivedWord n) (x : Fin n → Bit) : Prop :=
+  ∀ i b, y i = some b → x i = b
 
-/-- The j-th parity check: ∑ᵢ Hⱼᵢ · xᵢ over GF(2). -/
-def parityBit (H : PCMatrix n m) (x : Fin n → ZMod 2) (j : Fin m) : ZMod 2 :=
-  Matrix.dotProduct (H j) x
-
-/-- x is a codeword: every parity check passes. -/
-def isCW (H : PCMatrix n m) (x : Fin n → ZMod 2) : Prop :=
-  H.mulVec x = 0
-
-/-- x is consistent with the non-erased positions of y. -/
-def isConsistent (y : ReceivedWord n) (x : Fin n → ZMod 2) : Prop :=
-  ∀ (i : Fin n) (b : ZMod 2), y i = some b → x i = b
-
-/-- `isCW` stated check-by-check via `parityBit`. -/
-lemma isCW_iff_parityBit (H : PCMatrix n m) (x : Fin n → ZMod 2) :
-    isCW H x ↔ ∀ j : Fin m, parityBit H x j = 0 := by
+lemma isCW_iff_parityBit (H : PCMatrix n m) (x : Fin n → Bit) :
+    isCW H x ↔ ∀ j, parityBit H x j = 0 := by
   simp [isCW, parityBit, Matrix.mulVec, Matrix.dotProduct, funext_iff]
 
-/-- Helper: dot product of zero vector is zero. -/
-@[simp]
-lemma dotProduct_zero_left {α : Type*} [NonUnitalNonAssocSemiring α] [Fintype m]
-    (v : Fin m → α) : Matrix.dotProduct 0 v = 0 := by
-  simp [Matrix.dotProduct]
+instance (y : ReceivedWord n) (x : Fin n → Bit) : Decidable (isConsistent y x) :=
+  inferInstanceAs (Decidable (∀ i b, y i = some b → x i = b))
 
 end SELLCert

@@ -1,154 +1,129 @@
-/-!
-# SELLCert.PeelingState
-
-Operational peeling decoder state, valid steps, peeling traces, and the
-`syndrome_invariant` lemma (Lemma 4.9 in the paper: the `s` component always
-equals the XOR of known-neighbor values).
--/
-
 import SELLCert.Basic
 
+/-! Canonical operational states. Syndrome and degree are computed from K, rather
+than separately cached fields. This avoids admitting inconsistent arbitrary states;
+it does not certify the cached arrays of an independently optimized implementation. -/
 namespace SELLCert
-
 open scoped BigOperators
-
 variable {n m : ℕ}
 
-/-! ### State record -/
-
-/-- The operational state of the peeling decoder. -/
 structure PeelingState (n m : ℕ) where
-  /-- Partial assignment: `K i = some b` means variable `i` has been decoded to `b`. -/
-  K : Fin n → Option (ZMod 2)
-  /-- Residual syndrome: `s j` = XOR of known-neighbor values of check `j`. -/
-  s : Fin m → ZMod 2
-  /-- Residual degree: `d j` = number of unresolved neighbors of check `j`. -/
-  d : Fin m → ℕ
+  K : ReceivedWord n
 
-/-- A peeling step triple (j, i, b): check `j` forces variable `i` to value `b`. -/
 structure StepTriple (n m : ℕ) where
   j : Fin m
   i : Fin n
-  b : ZMod 2
+  b : Bit
   deriving DecidableEq
 
-/-! ### Initialization -/
+def unknownNbrs (H : PCMatrix n m) (σ : PeelingState n m) (j : Fin m) : Finset (Fin n) :=
+  Finset.univ.filter (fun i => H j i ≠ 0 ∧ σ.K i = none)
 
-/-- Initialize the peeling state from received word `y` and parity-check matrix `H`. -/
-def initState (H : PCMatrix n m) (y : ReceivedWord n) : PeelingState n m where
-  K := y
-  -- s₀(j) = ∑ᵢ H[j,i] · known_val(i), where unknown positions contribute 0
-  s := fun j => ∑ i : Fin n, H j i * (y i).getD 0
-  -- d₀(j) = |{i : H[j,i] ≠ 0 ∧ y i = none}|
-  d := fun j => (Finset.univ.filter (fun i : Fin n => H j i ≠ 0 ∧ y i = none)).card
+def syndrome (H : PCMatrix n m) (σ : PeelingState n m) (j : Fin m) : Bit :=
+  ∑ i, H j i * (σ.K i).getD 0
 
-/-! ### Single step -/
+def degree (H : PCMatrix n m) (σ : PeelingState n m) (j : Fin m) : ℕ :=
+  (unknownNbrs H σ j).card
 
-/-- Apply one peeling step `stp` to state `σ`. No validity check here. -/
-def applyStep (H : PCMatrix n m) (σ : PeelingState n m) (stp : StepTriple n m) :
-    PeelingState n m where
-  K := fun i' => if i' = stp.i then some stp.b else σ.K i'
-  s := fun j' => if H j' stp.i ≠ 0 then σ.s j' + stp.b else σ.s j'
-  d := fun j' => if H j' stp.i ≠ 0 then σ.d j' - 1     else σ.d j'
+def initState (_H : PCMatrix n m) (y : ReceivedWord n) : PeelingState n m := ⟨y⟩
 
-/-- Logical predicate: `stp` is a valid peeling step in state `σ` under graph `H`. -/
+def applyStep (_H : PCMatrix n m) (σ : PeelingState n m) (stp : StepTriple n m) :
+    PeelingState n m := ⟨Function.update σ.K stp.i (some stp.b)⟩
+
 def ValidStep (H : PCMatrix n m) (σ : PeelingState n m) (stp : StepTriple n m) : Prop :=
-  -- check j has exactly one unknown neighbor
-  σ.d stp.j = 1 ∧
-  -- variable i is currently unknown
-  σ.K stp.i = none ∧
-  -- i is the unique unknown neighbor of j
-  (∀ i' : Fin n, H stp.j i' ≠ 0 → σ.K i' = none → i' = stp.i) ∧
-  -- b equals the residual syndrome of j
-  stp.b = σ.s stp.j
+  unknownNbrs H σ stp.j = {stp.i} ∧ stp.b = syndrome H σ stp.j
 
-/-! ### Traces -/
+instance (H : PCMatrix n m) (σ : PeelingState n m) (stp : StepTriple n m) :
+    Decidable (ValidStep H σ stp) := by unfold ValidStep; infer_instance
 
-/-- A list of triples forms a valid peeling trace starting from state `σ`. -/
+lemma valid_unknown (H : PCMatrix n m) (σ : PeelingState n m) (stp : StepTriple n m)
+    (hv : ValidStep H σ stp) : σ.K stp.i = none := by
+  have hm : stp.i ∈ unknownNbrs H σ stp.j := by rw [hv.1]; simp
+  exact (Finset.mem_filter.mp hm).2.2
+
+lemma valid_edge (H : PCMatrix n m) (σ : PeelingState n m) (stp : StepTriple n m)
+    (hv : ValidStep H σ stp) : H stp.j stp.i = 1 := by
+  have hm : stp.i ∈ unknownNbrs H σ stp.j := by rw [hv.1]; simp
+  exact bit_eq_one _ (Finset.mem_filter.mp hm).2.1
+
 inductive ValidTrace (H : PCMatrix n m) : PeelingState n m → List (StepTriple n m) → Prop where
-  | nil  : ∀ σ, ValidTrace H σ []
-  | cons : ∀ σ stp T,
-      ValidStep H σ stp →
-      ValidTrace H (applyStep H σ stp) T →
+  | nil : ∀ σ, ValidTrace H σ []
+  | cons : ∀ σ stp T, ValidStep H σ stp → ValidTrace H (applyStep H σ stp) T →
       ValidTrace H σ (stp :: T)
 
-/-- Fold a trace over a starting state (unchecked). -/
 def foldTrace (H : PCMatrix n m) (σ : PeelingState n m) (T : List (StepTriple n m)) :
-    PeelingState n m :=
-  T.foldl (applyStep H) σ
+    PeelingState n m := T.foldl (applyStep H) σ
 
-/-! ### Key invariant -/
+/-- Every known assignment agrees with the candidate x. -/
+def Extends (σ : PeelingState n m) (x : Fin n → Bit) : Prop :=
+  ∀ i b, σ.K i = some b → x i = b
 
-/-- **Syndrome invariant** (Lemma 4.9 in paper):
-For any state `σ` that satisfies the syndrome invariant, after applying any valid
-peeling step the invariant is preserved.
-The invariant is: `σ.s j = ∑ i, H j i * (σ.K i).getD 0` for all `j`. -/
-def SyndromeInv (H : PCMatrix n m) (σ : PeelingState n m) : Prop :=
-  ∀ j : Fin m, σ.s j = ∑ i : Fin n, H j i * (σ.K i).getD 0
+/-- Known and unknown contributions partition each parity equation. -/
+lemma row_decomposition (H : PCMatrix n m) (σ : PeelingState n m) (x : Fin n → Bit)
+    (hx : Extends σ x) (j : Fin m) :
+    parityBit H x j = syndrome H σ j +
+      ∑ i, H j i * (if σ.K i = none then x i else 0) := by
+  rw [syndrome, ← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro i _
+  cases h : σ.K i with
+  | none => simp [h]
+  | some b => simp [h, hx i b h]
 
-/-- The initial state satisfies the syndrome invariant. -/
-lemma initState_syndrome_inv (H : PCMatrix n m) (y : ReceivedWord n) :
-    SyndromeInv H (initState H y) := by
-  intro j
-  simp [initState, SyndromeInv]
+lemma forced_value (H : PCMatrix n m) (σ : PeelingState n m) (stp : StepTriple n m)
+    (hv : ValidStep H σ stp) (x : Fin n → Bit) (hcw : isCW H x)
+    (hx : Extends σ x) : x stp.i = stp.b := by
+  have hrow := row_decomposition H σ x hx stp.j
+  have hsum : (∑ i, H stp.j i * (if σ.K i = none then x i else 0)) = x stp.i := by
+    rw [Finset.sum_eq_single stp.i]
+    · simp [valid_unknown H σ stp hv, valid_edge H σ stp hv]
+    · intro i _ hi
+      by_cases he : H stp.j i = 0
+      · simp [he]
+      · have hn : σ.K i ≠ none := by
+          intro hk
+          have hm : i ∈ unknownNbrs H σ stp.j := by simp [unknownNbrs, he, hk]
+          rw [hv.1] at hm
+          exact hi (Finset.mem_singleton.mp hm)
+        simp [hn]
+    · simp
+  rw [hsum, (isCW_iff_parityBit H x).mp hcw stp.j] at hrow
+  exact (bit_add_eq_zero _ _ hrow.symm).symm.trans hv.2.symm
 
-/-- A single valid step preserves the syndrome invariant. -/
-lemma applyStep_syndrome_inv (H : PCMatrix n m) (σ : PeelingState n m)
-    (stp : StepTriple n m) (hv : ValidStep H σ stp) (hinv : SyndromeInv H σ) :
-    SyndromeInv H (applyStep H σ stp) := by
-  intro j
-  simp only [applyStep, SyndromeInv] at *
-  -- The new K' satisfies: K' stp.i = some stp.b, K' i' = K i' for i' ≠ stp.i
-  -- The new s'(j) = if H j stp.i ≠ 0 then σ.s j + stp.b else σ.s j
-  -- We need: s'(j) = ∑ i, H j i * (K' i).getD 0
-  -- Key facts from hv:
-  have hKi : σ.K stp.i = none := hv.2.1
-  -- ∑ i, H j i * (K' i).getD 0
-  --   = ∑ i, H j i * (if i = stp.i then stp.b else (K i).getD 0)
-  --   = H j stp.i * stp.b + ∑ i ≠ stp.i, H j i * (K i).getD 0
-  -- Since (K stp.i).getD 0 = 0  (because K stp.i = none):
-  --   = H j stp.i * stp.b + ∑ i, H j i * (K i).getD 0
-  --   = H j stp.i * stp.b + σ.s j  (by IH = hinv j)
-  -- The lhs (by definition of applyStep.s):
-  --   = if H j stp.i ≠ 0 then σ.s j + stp.b else σ.s j
-  -- Case H j stp.i = 0: both sides equal σ.s j ✓
-  -- Case H j stp.i ≠ 0: lhs = σ.s j + stp.b,
-  --   rhs = H j stp.i * stp.b + σ.s j = 1 * stp.b + σ.s j = stp.b + σ.s j ✓
-  conv_rhs =>
-    rw [show (fun i : Fin n => H j i * (if i = stp.i then some stp.b else σ.K i).getD 0)
-          = (fun i => H j i * (if i = stp.i then stp.b else (σ.K i).getD 0)) from by
-        ext i; simp [Option.getD]; split_ifs <;> simp]
-  rw [show ∑ i : Fin n, H j i * (if i = stp.i then stp.b else (σ.K i).getD 0)
-        = H j stp.i * stp.b + ∑ i : Fin n, H j i * (σ.K i).getD 0 from by
-      rw [← Finset.add_sum_erase _ _ (Finset.mem_univ stp.i)]
-      simp only [if_true, Finset.mem_erase, ne_eq]
-      congr 1
-      · simp
-      · apply Finset.sum_congr rfl
-        intro i hi
-        simp [Finset.mem_erase] at hi
-        simp [hi.1]]
-  rw [← hinv j, show (σ.K stp.i).getD 0 = 0 from by simp [hKi]]
-  simp only [mul_zero, Finset.sum_const_zero, add_zero] at *
-  split_ifs with h
-  · ring
-  · -- H j stp.i = 0
-    have : H j stp.i = 0 := by
-      by_contra hc
-      exact h hc
-    simp [this]
+lemma applyStep_extends (H : PCMatrix n m) (σ : PeelingState n m) (stp : StepTriple n m)
+    (hv : ValidStep H σ stp) (x : Fin n → Bit) (hcw : isCW H x)
+    (hx : Extends σ x) : Extends (applyStep H σ stp) x := by
+  intro i b hb
+  by_cases hi : i = stp.i
+  · subst i
+    simp [applyStep] at hb
+    subst b
+    exact forced_value H σ stp hv x hcw hx
+  · exact hx i b (by simpa [applyStep, hi] using hb)
 
-/-- **Lemma 4.9**: the syndrome invariant holds for any reachable state. -/
-theorem syndrome_invariant (H : PCMatrix n m) (y : ReceivedWord n)
-    (T : List (StepTriple n m)) (hT : ValidTrace H (initState H y) T) :
-    SyndromeInv H (foldTrace H (initState H y) T) := by
-  induction T with
-  | nil => exact initState_syndrome_inv H y
-  | cons stp T ih =>
-    simp only [foldTrace, List.foldl]
-    cases hT with
-    | cons σ stp' T' hv hT' =>
-      apply ih
-      · exact hT'
+lemma trace_extends (H : PCMatrix n m) (σ : PeelingState n m)
+    (T : List (StepTriple n m)) (hT : ValidTrace H σ T)
+    (x : Fin n → Bit) (hcw : isCW H x) (hx : Extends σ x) :
+    Extends (foldTrace H σ T) x := by
+  induction hT with
+  | nil σ => exact hx
+  | cons σ stp T hv hT ih =>
+      exact ih (applyStep_extends H σ stp hv x hcw hx)
+
+/-- The canonical syndrome agrees with the incremental XOR update on every row. -/
+lemma applyStep_syndrome_update (H : PCMatrix n m) (σ : PeelingState n m)
+    (stp : StepTriple n m) (hk : σ.K stp.i = none) (j : Fin m) :
+    syndrome H (applyStep H σ stp) j = syndrome H σ j + H j stp.i * stp.b := by
+  calc
+    syndrome H (applyStep H σ stp) j =
+        ∑ k, (H j k * (σ.K k).getD 0 + if k = stp.i then H j stp.i * stp.b else 0) := by
+      apply Finset.sum_congr rfl
+      intro k _
+      by_cases hki : k = stp.i
+      · subst k; simp [applyStep, hk]
+      · simp [applyStep, hki]
+    _ = syndrome H σ j + H j stp.i * stp.b := by
+      rw [Finset.sum_add_distrib]
+      simp [syndrome]
 
 end SELLCert

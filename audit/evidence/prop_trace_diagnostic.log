@@ -1,0 +1,15 @@
+../../evidence/PropTraceDiagnostic.lean:7:2: error: tactic 'cases' failed, nested error:
+tactic 'induction' failed, recursor 'AuditReach.casesOn' can only eliminate into Prop
+x✝³ x✝² : Nat
+x✝¹ : AuditReach x✝³ x✝²
+motive : (x x_1 : Nat) → AuditReach x x_1 → Sort ?u.259
+h_1 : (x : Nat) → motive x x ⋯
+h_2 : (x x_1 y : Nat) → (rest : AuditReach y x_1) → motive x x_1 ⋯
+a✝¹ a✝ : Nat
+x✝ : AuditReach a✝¹ a✝
+⊢ x✝³ = a✝¹ → x✝² = a✝ → HEq x✝¹ x✝ → motive x✝³ x✝² x✝¹ after processing
+  _, _, _
+the dependent pattern matcher can solve the following kinds of equations
+- <var> = <term> and <term> = <var>
+- <term> = <term> where the terms are definitionally equal
+- <constructor> = <constructor>, examples: List.cons x xs = List.cons y ys, and List.cons x xs = List.nil

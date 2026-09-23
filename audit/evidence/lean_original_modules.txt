@@ -1,0 +1,7 @@
+✖ [2/3] Building SELLCert
+trace: .> LEAN_PATH=././.lake/packages/Cli/.lake/build/lib:././.lake/packages/batteries/.lake/build/lib:././.lake/packages/Qq/.lake/build/lib:././.lake/packages/aesop/.lake/build/lib:././.lake/packages/proofwidgets/.lake/build/lib:././.lake/packages/importGraph/.lake/build/lib:././.lake/packages/LeanSearchClient/.lake/build/lib:././.lake/packages/plausible/.lake/build/lib:././.lake/packages/mathlib/.lake/build/lib:././.lake/build/lib DYLD_LIBRARY_PATH= /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/toolchains/lean-4.14.0-darwin_aarch64/bin/lean ././././SELLCert.lean -R ./././. -o ././.lake/build/lib/SELLCert.olean -i ././.lake/build/lib/SELLCert.ilean -c ././.lake/build/ir/SELLCert.c --json
+error: ././././SELLCert.lean:35:0: invalid 'import' command, it must be used in the beginning of the file
+error: Lean exited with code 1
+Some required builds logged failures:
+- SELLCert
+error: build failed

@@ -1,0 +1,34 @@
+import SELLCert
+
+/-! Exact principal theorem signatures for the verification report. -/
+#check SELLCert.replayFull_eq_some_iff
+#check SELLCert.forced_value
+#check SELLCert.trace_extends
+#check SELLCert.applyStep_syndrome_update
+#check SELLCert.applyStep_degree_update
+#check SELLCert.lem_unsat_witness_sound
+#check SELLCert.lem_unsat_witness_complete
+#check SELLCert.thm_sound_success
+#check SELLCert.thm_sound_failure
+#check SELLCert.residual_unsat_iff_witness
+#check SELLCert.thm_complete_failure
+#check SELLCert.thm_complete_success
+#check SELLCert.bec_completion_maximizes
+#check SELLCert.thm_ml
+#check SELLCert.propagate_wf
+#check SELLCert.solve_wf
+#check SELLCert.solve_valid
+#check SELLCert.propagate_syndrome
+#check SELLCert.solve_selected_syndrome
+#check SELLCert.solve_other_syndrome
+#check SELLCert.propagate_commute
+#check SELLCert.rewstar_sound
+#check SELLCert.rewstar_wf
+#check SELLCert.rewstar_observation
+#check SELLCert.propagation_normalization
+#check SELLCert.propagation_normal_form_unique
+#check SELLCert.propagation_confluence
+#check SELLCert.adequacy_one_step
+#check SELLCert.adequacy_completeness
+#check SELLCert.adequacy_soundness
+#check SELLCert.thm_adequacy_complete

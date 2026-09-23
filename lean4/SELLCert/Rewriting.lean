@@ -1,279 +1,191 @@
-/-!
-# SELLCert.Rewriting
-
-SELL-style multiset rewriting for phase I (peeling decoding).
-
-We define:
-- `Atom n m` — the six atom kinds used in the SELL encoding
-- `Context n m` — a tripartite context with !^S, !^K, and linear zones
-- `encodeState` — encode a `PeelingState` as a `Context`
-- `propagate`, `solve` — the two rewriting rules as context transformers
-- `WFContext` — the well-formedness predicate
-- `propagate_wf`, `solve_wf` — preservation lemmas (Lemmas 5.3 and 5.4 in paper)
-
-The rewriting rules are:
-
-  **(Propagate)**: !^K val(i,b) ⊗ pend(j,i) ⊗ rem(j,k,p) ⊸ rem(j,k-1,p+b)
-
-  **(Solve)**:     rem(j,1,p) ⊗ pend(j,i) ⊗ unk(i)
-                     ⊸ !^K val(i,p) ⊗ step(j,i,p) ⊗ rem(j,0,0)
--/
-
 import SELLCert.PeelingState
 
+/-! Canonical asynchronous contexts. K is functional and Q is a finite set for each
+check, so each value/status/pending incidence has exact multiplicity. The rem degree
+and syndrome are derived. `trace` is the external chronological event observer;
+its multiset image corresponds to the unordered step atoms of the manuscript.
+This is a SELL-style event semantics, not a formal SELL sequent calculus. -/
 namespace SELLCert
-
+open scoped BigOperators
 variable {n m : ℕ}
 
-/-! ### Atoms -/
+@[ext] structure Context (n m : ℕ) where
+  state : PeelingState n m
+  pending : Fin m → Finset (Fin n)
+  trace : List (StepTriple n m)
 
-/-- The six atom kinds in the SELL encoding. -/
-inductive Atom (n m : ℕ) where
-  /-- `!^S edge(j,i)` — static Tanner edge (S zone; weakening and contraction available). -/
-  | edge  : Fin m → Fin n → Atom n m
-  /-- `!^K val(i,b)` — persistent decoded value (K zone; weakening and contraction available). -/
-  | known : Fin n → ZMod 2 → Atom n m
-  /-- `unk(i)` — variable `i` not yet resolved (linear zone, one-use). -/
-  | unk   : Fin n → Atom n m
-  /-- `pend(j,i)` — variable `i` is a pending unknown of check `j` (linear zone). -/
-  | pend  : Fin m → Fin n → Atom n m
-  /-- `rem(j,k,p)` — check `j` has `k` remaining unknowns and residual syndrome `p` (linear zone). -/
-  | rem   : Fin m → ℕ → ZMod 2 → Atom n m
-  /-- `step(j,i,b)` — log atom recording that variable `i` was resolved to `b` via check `j`. -/
-  | step  : Fin m → Fin n → ZMod 2 → Atom n m
-  deriving DecidableEq, Repr
+def encodeLogged (H : PCMatrix n m) (σ : PeelingState n m)
+    (T : List (StepTriple n m)) : Context n m := ⟨σ, unknownNbrs H σ, T⟩
 
-/-! ### Context (tripartite) -/
+def encodeState (H : PCMatrix n m) (σ : PeelingState n m) : Context n m :=
+  encodeLogged H σ []
 
-/-- A SELL context with the three zones from the paper. -/
-structure Context (n m : ℕ) where
-  /-- !^S zone: static Tanner graph (never consumed). -/
-  G : PCMatrix n m
-  /-- !^K zone: persistent known assignments (can be reused). -/
-  P : Multiset (Fin n × ZMod 2)
-  /-- Linear zone: one-use atoms (unk, pend, rem, step). -/
-  L : Multiset (Atom n m)
+def pendingSyndrome (H : PCMatrix n m) (C : Context n m) (j : Fin m) : Bit :=
+  ∑ i, if i ∈ C.pending j then 0 else H j i * (C.state.K i).getD 0
 
-/-! ### State encoding -/
+/-- Every unknown incidence is pending; all pending incidences are graph edges.
+Known incidences may still be pending: this is essential for arbitrary interleaving. -/
+def WFContext (H : PCMatrix n m) (C : Context n m) : Prop :=
+  ∀ j, unknownNbrs H C.state j ⊆ C.pending j ∧
+    ∀ i ∈ C.pending j, H j i ≠ 0
 
-/-- Encode a peeling state `σ` as a SELL context under graph `H`. -/
-def encodeState (H : PCMatrix n m) (σ : PeelingState n m) : Context n m where
-  G := H
-  -- K zone: one (i, b) entry for each resolved variable
-  P := (Finset.univ.filter (fun i : Fin n => (σ.K i).isSome)).val.map
-         (fun i => (i, (σ.K i).getD 0))
-  -- Linear zone: unk atoms + rem atoms + pend atoms
-  L :=  -- unk(i) for each unknown variable
-        (Finset.univ.filter (fun i : Fin n => σ.K i = none)).val.map (Atom.unk) ++
-        -- rem(j, d(j), s(j)) for each check
-        (Finset.univ : Finset (Fin m)).val.map (fun j => Atom.rem j (σ.d j) (σ.s j)) ++
-        -- pend(j, i) for each (j, i) edge where i is still unknown
-        ((Finset.univ : Finset (Fin m × Fin n)).filter
-           (fun p => H p.1 p.2 ≠ 0 ∧ σ.K p.2 = none)).val.map
-          (fun p => Atom.pend p.1 p.2)
+lemma encode_wf (H : PCMatrix n m) (σ : PeelingState n m) (T : List (StepTriple n m)) :
+    WFContext H (encodeLogged H σ T) := by
+  intro j
+  refine ⟨fun _ h => h, ?_⟩
+  intro i hi
+  exact (Finset.mem_filter.mp hi).2.1
 
-/-! ### Rewriting rules -/
+def propagate (C : Context n m) (j : Fin m) (i : Fin n) : Context n m :=
+  { C with pending := Function.update C.pending j ((C.pending j).erase i) }
 
-/-- **(Propagate)**: consume `pend(j,i)` and `rem(j,k,p)`, produce `rem(j,k-1,p+b)`.
-    Preconditions: the atoms are present in the linear zone and `(i,b) ∈ P`. -/
-def propagate (ctx : Context n m) (j : Fin m) (i : Fin n) (b : ZMod 2)
-    (k : ℕ) (p : ZMod 2) (hk : 0 < k)
-    (hpend  : Atom.pend j i ∈ ctx.L)
-    (hrem   : Atom.rem j k p ∈ ctx.L)
-    (hknown : (i, b) ∈ ctx.P) : Context n m where
-  G := ctx.G
-  P := ctx.P                            -- K zone: unchanged
-  L := (ctx.L.erase (Atom.pend j i)).erase (Atom.rem j k p) |>.cons
-         (Atom.rem j (k - 1) (p + b))  -- linear zone: updated
+def solve (H : PCMatrix n m) (C : Context n m) (stp : StepTriple n m) : Context n m :=
+  ⟨applyStep H C.state stp,
+   Function.update C.pending stp.j ((C.pending stp.j).erase stp.i), C.trace ++ [stp]⟩
 
-/-- **(Solve)**: consume `rem(j,1,p)`, `pend(j,i)`, `unk(i)`;
-    produce `(i,p)` in K zone, `step(j,i,p)` and `rem(j,0,0)` in linear zone. -/
-def solve (ctx : Context n m) (j : Fin m) (i : Fin n) (p : ZMod 2)
-    (hrem  : Atom.rem j 1 p ∈ ctx.L)
-    (hpend : Atom.pend j i ∈ ctx.L)
-    (hunk  : Atom.unk i ∈ ctx.L) : Context n m where
-  G := ctx.G
-  P := ctx.P.cons (i, p)                             -- K zone: add new assignment
-  L := ((ctx.L.erase (Atom.rem j 1 p)).erase
-           (Atom.pend j i)).erase (Atom.unk i)
-         |>.cons (Atom.rem j 0 0)
-         |>.cons (Atom.step j i p)
+def SolveEnabled (H : PCMatrix n m) (C : Context n m) (stp : StepTriple n m) : Prop :=
+  C.pending stp.j = {stp.i} ∧ C.state.K stp.i = none ∧ stp.b = pendingSyndrome H C stp.j
 
-/-! ### Well-formedness -/
+lemma unknown_applyStep (H : PCMatrix n m) (σ : PeelingState n m)
+    (stp : StepTriple n m) (j : Fin m) :
+    unknownNbrs H (applyStep H σ stp) j = (unknownNbrs H σ j).erase stp.i := by
+  ext i
+  by_cases hi : i = stp.i
+  · subst i; simp [unknownNbrs, applyStep]
+  · simp [unknownNbrs, applyStep, hi, hi]
 
-/-- Well-formedness of a context: it correctly encodes some peeling state. -/
-structure WFContext (H : PCMatrix n m) (ctx : Context n m) : Prop where
-  wf_graph : ctx.G = H
-  /-- Each check `j` has exactly one `rem(j,·,·)` atom in `L`. -/
-  wf_rem   : ∀ j : Fin m, ∃! kp : ℕ × ZMod 2, Atom.rem j kp.1 kp.2 ∈ ctx.L
-  /-- Each variable is either `unk` (in L) or `known` (in P), not both. -/
-  wf_var   : ∀ i : Fin n, (Atom.unk i ∈ ctx.L) ↔ (∀ b : ZMod 2, (i, b) ∉ ctx.P)
-  /-- The number of `pend(j,·)` atoms equals the `k` in `rem(j,k,·)`. -/
-  wf_pend  : ∀ j : Fin m, ∀ k p, Atom.rem j k p ∈ ctx.L →
-             (ctx.L.filter (fun a => ∃ i, a = Atom.pend j i)).card = k
+lemma pending_singleton_syndrome (H : PCMatrix n m) (C : Context n m) (stp : StepTriple n m)
+    (hq : C.pending stp.j = {stp.i}) (hk : C.state.K stp.i = none) :
+    pendingSyndrome H C stp.j = syndrome H C.state stp.j := by
+  apply Finset.sum_congr rfl
+  intro i _
+  by_cases hi : i = stp.i
+  · subst i; simp [hq, hk]
+  · simp [hq, hi]
 
-/-- **Lemma 5.3**: `propagate` preserves well-formedness. -/
-theorem propagate_wf (H : PCMatrix n m) (ctx : Context n m)
-    (j : Fin m) (i : Fin n) (b : ZMod 2) (k : ℕ) (p : ZMod 2)
-    (hk : 0 < k)
-    (hpend  : Atom.pend j i ∈ ctx.L)
-    (hrem   : Atom.rem j k p ∈ ctx.L)
-    (hknown : (i, b) ∈ ctx.P)
-    (hwf : WFContext H ctx) :
-    WFContext H (propagate ctx j i b k p hk hpend hrem hknown) := by
-  constructor
-  · -- graph unchanged
-    exact hwf.wf_graph
-  · -- each check still has a unique rem atom
-    intro j'
-    by_cases hj : j' = j
-    · subst hj
-      refine ⟨⟨k - 1, p + b⟩, ?_, ?_⟩
-      · simp [propagate, Multiset.mem_cons, Multiset.mem_erase_of_ne]
-      · intro ⟨k'', p''⟩ hk''
-        -- the old rem(j,k,p) is erased; only rem(j,k-1,p+b) remains for j
-        simp only [propagate] at hk''
-        simp only [Multiset.mem_cons, Multiset.mem_erase] at hk''
-        obtain h | h := hk''
-        · exact Prod.mk.inj h
-        · have := hwf.wf_rem j
-          obtain ⟨⟨k₀, p₀⟩, hmem, huniq⟩ := this
-          have heq := huniq ⟨k, p⟩ hrem
-          have heq2 := huniq ⟨k'', p''⟩ (by
-            rcases h with ⟨hne, hmem'⟩
-            exact hmem')
-          simp at heq heq2
-          omega
-    · -- j' ≠ j: rem(j', ·, ·) is unaffected
-      have hwfj' := hwf.wf_rem j'
-      obtain ⟨⟨k'', p''⟩, hmem, huniq⟩ := hwfj'
-      refine ⟨⟨k'', p''⟩, ?_, ?_⟩
-      · simp [propagate, Multiset.mem_cons]
-        right
-        constructor
-        · intro heq; exact hj (Atom.rem.inj heq).1
-        constructor
-        · intro heq; exact hj (Atom.rem.inj heq).1
-        · exact hmem
-      · intro ⟨k₃, p₃⟩ h3
-        simp only [propagate, Multiset.mem_cons, Multiset.mem_erase] at h3
-        rcases h3 with h3 | ⟨hne1, hne2, h3⟩
-        · have := Atom.rem.inj h3; simp at this; exact absurd this.1 hj
-        · exact huniq ⟨k₃, p₃⟩ h3
-  · -- var status: unk ↔ not in P — K zone unchanged, L zone: pend/rem changed but not unk
-    intro i'
-    simp [propagate, WFContext.wf_var]
+lemma solve_valid (H : PCMatrix n m) (C : Context n m) (stp : StepTriple n m)
+    (hw : WFContext H C) (he : SolveEnabled H C stp) : ValidStep H C.state stp := by
+  refine ⟨Finset.Subset.antisymm ?_ ?_, he.2.2.trans (pending_singleton_syndrome H C stp he.1 he.2.1)⟩
+  · simpa [he.1] using (hw stp.j).1
+  · rw [Finset.singleton_subset_iff]
+    have hm : stp.i ∈ C.pending stp.j := by rw [he.1]; simp
+    simp [unknownNbrs, (hw stp.j).2 stp.i hm, he.2.1]
+
+lemma propagate_wf (H : PCMatrix n m) (C : Context n m) (j : Fin m) (i : Fin n)
+    (b : Bit) (hk : C.state.K i = some b) (hw : WFContext H C) :
+    WFContext H (propagate C j i) := by
+  intro j'
+  by_cases hj : j' = j
+  · subst j'
+    simp only [propagate, Function.update_same]
     constructor
-    · intro h b hb
-      have := (hwf.wf_var i').mp h
-      exact this b (by simpa using hb)
-    · intro h
-      apply (hwf.wf_var i').mpr
-      intro b hb
-      exact h b (by simpa using hb)
-  · -- pend count matches k in rem — after propagate, pend(j,i) is removed and rem(j,k,p)
-    -- becomes rem(j,k-1,p+b), so count for j decreases by 1 ✓
-    intro j' k' p' hrem'
-    simp only [propagate] at hrem' ⊢
-    by_cases hj : j' = j
-    · subst hj
-      simp only [Multiset.mem_cons, Multiset.mem_erase] at hrem'
-      rcases hrem' with h | ⟨_, _, h⟩
-      · obtain ⟨rfl, rfl⟩ : k' = k - 1 ∧ p' = p + b := by
-          have := Atom.rem.inj h; exact ⟨this.2.1, this.2.2⟩
-        have hcount := hwf.wf_pend j k p hrem
-        simp [Multiset.filter_erase, Multiset.card_erase_of_mem]
-        omega
-      · have hcount := hwf.wf_pend j k' p' h
-        simp [Multiset.filter_erase, Multiset.card_erase_of_mem]
-        omega
-    · simp only [Multiset.mem_cons, Multiset.mem_erase] at hrem'
-      rcases hrem' with h | ⟨hne1, hne2, h⟩
-      · exact absurd (Atom.rem.inj h).1 hj
-      · have hcount := hwf.wf_pend j' k' p' h
-        simp only [Multiset.filter_cons, Multiset.filter_erase]
-        -- pend(j, i) is removed; pend(j', ·) atoms for j' ≠ j are unaffected
-        simp [show ∀ i'', (∃ i''', Atom.pend j i'' = Atom.pend j' i''') ↔ j = j' from by
-          intro i''; simp [Atom.pend.injEq]; tauto]
-        simp [hj, hcount]
+    · intro k hku
+      apply Finset.mem_erase.mpr
+      refine ⟨?_, (hw j).1 hku⟩
+      intro heq
+      subst k
+      have hn := (Finset.mem_filter.mp hku).2.2
+      rw [hk] at hn
+      contradiction
+    · intro k hkp
+      exact (hw j).2 k (Finset.mem_of_mem_erase hkp)
+  · simpa [propagate, hj] using hw j'
 
-/-- **Lemma 5.4**: `solve` preserves well-formedness. -/
-theorem solve_wf (H : PCMatrix n m) (ctx : Context n m)
-    (j : Fin m) (i : Fin n) (p : ZMod 2)
-    (hrem  : Atom.rem j 1 p ∈ ctx.L)
-    (hpend : Atom.pend j i ∈ ctx.L)
-    (hunk  : Atom.unk i ∈ ctx.L)
-    (hwf : WFContext H ctx) :
-    WFContext H (solve ctx j i p hrem hpend hunk) := by
+lemma solve_wf (H : PCMatrix n m) (C : Context n m) (stp : StepTriple n m)
+    (hw : WFContext H C) : WFContext H (solve H C stp) := by
+  intro j
   constructor
-  · exact hwf.wf_graph
-  · -- rem uniqueness: rem(j,·,·) is replaced by rem(j,0,0)
-    intro j'
-    by_cases hj : j' = j
-    · subst hj
-      refine ⟨⟨0, 0⟩, ?_, ?_⟩
-      · simp [solve, Multiset.mem_cons]
-      · intro ⟨k'', p''⟩ hk''
-        simp only [solve, Multiset.mem_cons, Multiset.mem_erase] at hk''
-        rcases hk'' with h | ⟨_, _, ⟨_, h⟩⟩
-        · simp [Atom.rem.injEq] at h
-        · have := (hwf.wf_rem j).choose_spec.2 ⟨k'', p''⟩ (by
-            rcases h with ⟨_, h⟩; exact h)
-          exact this
-    · have := hwf.wf_rem j'
-      obtain ⟨⟨k'', p''⟩, hmem, huniq⟩ := this
-      refine ⟨⟨k'', p''⟩, ?_, ?_⟩
-      · simp [solve, Multiset.mem_cons]
-        right; refine ⟨?_, ?_, ?_, ?_, hmem⟩
-        all_goals (intro h; exact hj (Atom.rem.inj h).1)
-      · intro ⟨k₃, p₃⟩ h3
-        simp only [solve, Multiset.mem_cons, Multiset.mem_erase] at h3
-        rcases h3 with h | ⟨_, _, ⟨_, h⟩⟩
-        · exact absurd (Atom.rem.inj h).1 hj
-        · exact huniq ⟨k₃, p₃⟩ h
-  · -- var status: unk(i) is consumed, (i,p) added to P
-    intro i'
-    simp only [solve]
-    constructor
-    · intro h
-      -- unk(i) was erased; if i' = i then unk(i') was removed → contradiction
-      by_cases hi : i' = i
-      · subst hi
-        simp [Multiset.mem_erase_of_mem] at h
-      · -- i' ≠ i: unk(i') status unchanged, P unchanged for (i',·)
-        have := (hwf.wf_var i').mp (by
-          simp [Multiset.mem_erase] at h
-          exact h.2.2)
-        intro b hb
-        simp [Multiset.mem_cons] at hb
-        rcases hb with ⟨rfl, rfl⟩ | hb
-        · exact absurd rfl hi
-        · exact this b hb
-    · intro h
-      -- unk(i') must not be in the erased linear zone
-      by_cases hi : i' = i
-      · subst hi
-        exfalso
-        have : (i, p) ∈ Multiset.cons (i, p) ctx.P := Multiset.mem_cons_self _ _
-        exact h p this
-      · have hunk_i' : Atom.unk i' ∈ ctx.L := by
-          apply (hwf.wf_var i').mpr
-          intro b hb
-          exact h b (Multiset.mem_cons_of_mem _ hb)
-        simp [Multiset.mem_erase_of_ne (by intro h; exact hi (Atom.unk.inj h)),
-              Multiset.mem_erase_of_ne (by intro h; exact hi (by simp [Atom.pend.injEq] at h)),
-              hunk_i']
-  · -- pend count: rem(j,1,p) → rem(j,0,0), and pend(j,i) is consumed
-    intro j' k' p' hrem'
-    simp only [solve, Multiset.mem_cons, Multiset.mem_erase] at hrem'
-    rcases hrem' with h | ⟨_, _, ⟨_, h⟩⟩
-    · obtain ⟨rfl, rfl, rfl⟩ : j' = j ∧ k' = 0 ∧ p' = 0 := by
-        simp [Atom.rem.injEq] at h; exact ⟨h.1, h.2.1, h.2.2⟩
-      have hcount := hwf.wf_pend j 1 p hrem
-      simp [Multiset.filter_erase, Multiset.card_erase_of_mem, hcount]
-    · have hcount := hwf.wf_pend j' k' p' h
-      simp only [solve]
-      simp [Multiset.filter_erase, Multiset.card_erase_of_mem]
-      exact hcount
+  · intro i hi
+    change i ∈ unknownNbrs H (applyStep H C.state stp) j at hi
+    rw [unknown_applyStep] at hi
+    obtain ⟨hne, hold⟩ := Finset.mem_erase.mp hi
+    by_cases hj : j = stp.j
+    · subst j
+      simp only [solve, Function.update_same]
+      exact Finset.mem_erase.mpr ⟨hne, (hw stp.j).1 hold⟩
+    · simpa [solve, hj] using (hw j).1 hold
+  · intro i hi
+    by_cases hj : j = stp.j
+    · subst j
+      simp only [solve, Function.update_same] at hi
+      exact (hw stp.j).2 i (Finset.mem_of_mem_erase hi)
+    · apply (hw j).2 i
+      simpa [solve, hj] using hi
+
+/-- Derived rem fields perform the specified XOR update on Propagate. -/
+lemma propagate_syndrome (H : PCMatrix n m) (C : Context n m) (j : Fin m) (i : Fin n)
+    (b : Bit) (hp : i ∈ C.pending j) (hk : C.state.K i = some b) (hw : WFContext H C) :
+    pendingSyndrome H (propagate C j i) j = pendingSyndrome H C j + b := by
+  have he : H j i = 1 := bit_eq_one _ ((hw j).2 i hp)
+  calc
+    pendingSyndrome H (propagate C j i) j =
+        ∑ k, ((if k ∈ C.pending j then 0 else H j k * (C.state.K k).getD 0) +
+          if k = i then b else 0) := by
+      apply Finset.sum_congr rfl
+      intro k _
+      by_cases hki : k = i
+      · subst k; simp [propagate, hp, hk, he]
+      · simp [propagate, hki]
+    _ = pendingSyndrome H C j + b := by rw [Finset.sum_add_distrib]; simp [pendingSyndrome]
+
+/-- Canonical normalized contexts have the operational syndrome at every check. -/
+lemma encode_syndrome (H : PCMatrix n m) (σ : PeelingState n m)
+    (T : List (StepTriple n m)) (j : Fin m) :
+    pendingSyndrome H (encodeLogged H σ T) j = syndrome H σ j := by
+  apply Finset.sum_congr rfl
+  intro i _
+  by_cases hi : σ.K i = none
+  · simp [encodeLogged, unknownNbrs, hi]
+  · simp [encodeLogged, unknownNbrs, hi]
+
+/-- Erasing distinct or identical pending incidences commutes as a state update. -/
+lemma propagate_commute (C : Context n m) (j k : Fin m) (i l : Fin n) :
+    propagate (propagate C j i) k l = propagate (propagate C k l) j i := by
+  apply Context.ext
+  · rfl
+  · funext r
+    by_cases hj : r = j <;> by_cases hk : r = k
+    · subst j; subst k; simp [propagate, Finset.erase_right_comm]
+    · subst j; simp [propagate, hk, Ne.symm hk]
+    · subst k; simp [propagate, hj, Ne.symm hj]
+    · simp [propagate, hj, hk]
+  · rfl
+
+/-- Solve's selected rem becomes (0,0), as in the raw token rule. -/
+lemma solve_selected_syndrome (H : PCMatrix n m) (C : Context n m) (stp : StepTriple n m)
+    (hw : WFContext H C) (he : SolveEnabled H C stp) :
+    pendingSyndrome H (solve H C stp) stp.j = 0 := by
+  have hv := solve_valid H C stp hw he
+  have hp : pendingSyndrome H (solve H C stp) stp.j =
+      syndrome H (applyStep H C.state stp) stp.j := by
+    simp [pendingSyndrome, solve, he.1, syndrome]
+  rw [hp, applyStep_syndrome_update H C.state stp he.2.1,
+    valid_edge H C.state stp hv, one_mul, ← hv.2, add_self_zmod2]
+
+/-- Solve leaves every other rem syndrome unchanged until its pending value propagates. -/
+lemma solve_other_syndrome (H : PCMatrix n m) (C : Context n m) (stp : StepTriple n m)
+    (j : Fin m) (hj : j ≠ stp.j) (hw : WFContext H C) (he : SolveEnabled H C stp) :
+    pendingSyndrome H (solve H C stp) j = pendingSyndrome H C j := by
+  apply Finset.sum_congr rfl
+  intro i _
+  by_cases hi : i = stp.i
+  · subst i
+    by_cases hedge : H j stp.i = 0
+    · simp [solve, hj, hedge]
+    · have hp : stp.i ∈ C.pending j := (hw j).1 (by
+        simp [unknownNbrs, hedge, he.2.1])
+      simp [solve, hj, hp]
+  · simp [solve, hj, applyStep, hi]
+
+lemma applyStep_degree_update (H : PCMatrix n m) (σ : PeelingState n m)
+    (stp : StepTriple n m) (hk : σ.K stp.i = none) (j : Fin m) :
+    degree H (applyStep H σ stp) j = degree H σ j - (if H j stp.i ≠ 0 then 1 else 0) := by
+  unfold degree
+  rw [unknown_applyStep]
+  by_cases he : H j stp.i = 0
+  · have hn : stp.i ∉ unknownNbrs H σ j := by simp [unknownNbrs, he]
+    simp [he, Finset.erase_eq_of_not_mem hn]
+  · have hm : stp.i ∈ unknownNbrs H σ j := by simp [unknownNbrs, he, hk]
+    simp [he, Finset.card_erase_of_mem hm]
 
 end SELLCert

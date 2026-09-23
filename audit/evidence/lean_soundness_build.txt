@@ -1,0 +1,16 @@
+✖ [2508/2508] Building SELLCert.Soundness
+trace: .> LEAN_PATH=././.lake/packages/Cli/.lake/build/lib:././.lake/packages/batteries/.lake/build/lib:././.lake/packages/Qq/.lake/build/lib:././.lake/packages/aesop/.lake/build/lib:././.lake/packages/proofwidgets/.lake/build/lib:././.lake/packages/importGraph/.lake/build/lib:././.lake/packages/LeanSearchClient/.lake/build/lib:././.lake/packages/plausible/.lake/build/lib:././.lake/packages/mathlib/.lake/build/lib:././.lake/build/lib DYLD_LIBRARY_PATH= /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/toolchains/lean-4.14.0-darwin_aarch64/bin/lean ././././SELLCert/Soundness.lean -R ./././. -o ././.lake/build/lib/SELLCert/Soundness.olean -i ././.lake/build/lib/SELLCert/Soundness.ilean -c ././.lake/build/ir/SELLCert/Soundness.c --json
+error: ././././SELLCert/Soundness.lean:123:2: tactic 'apply' failed, failed to unify
+  ?m.44476.sum ?m.44471 = ?m.44476.sum ?m.44472
+with
+  (residualMatrix H σ *ᵥ ρ) j = ∑ i : Fin n, H j i * if σ.K i = none then ρ i else 0
+n m : ℕ
+H : PCMatrix n m
+σ : PeelingState n m
+ρ : Fin n → Bit
+j : Fin m
+⊢ (residualMatrix H σ *ᵥ ρ) j = ∑ i : Fin n, H j i * if σ.K i = none then ρ i else 0
+error: Lean exited with code 1
+Some required builds logged failures:
+- SELLCert.Soundness
+error: build failed

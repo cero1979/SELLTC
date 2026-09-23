@@ -1,0 +1,5 @@
+✔ [2508/2512] Built SELLCert.Rewriting
+✔ [2509/2512] Built SELLCert.Soundness
+✔ [2510/2512] Built SELLCert.Adequacy
+✔ [2511/2512] Built SELLCert
+Build completed successfully.

@@ -1,0 +1,30 @@
+{
+  "date": "2026-09-23",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "lean": "Lean (version 4.14.0, arm64-apple-darwin23.6.0, commit 410fab728470, Release)",
+  "lake": "Lake version 5.0.0-410fab7 (Lean version 4.14.0)",
+  "mathlib_revision": "4bbdccd9c5f862bf90ff12f0a9e2c8be032b9a84",
+  "audited_declarations": 51,
+  "transitive_axioms": [
+    "Classical.choice",
+    "Quot.sound",
+    "propext"
+  ],
+  "unexpected_axioms": [],
+  "forbidden_source_matches": [],
+  "sha256": {
+    "SELLCert/Adequacy.lean": "98b31cd6b02617b2d298d5eb0729767e7ce3494a0088abe355aee1b0b57c7236",
+    "SELLCert/Basic.lean": "b1216aab4872f62daf802cd60565c43fa9a4ad96c1c87fa42c2804426c6e8d85",
+    "SELLCert/Checker.lean": "c03e13af3481c8c953bf6a4735747e6674fddcf4525e388038a5bf13d4c2be61",
+    "SELLCert/PeelingState.lean": "6bf00d66f6b7190fce870dbb62b6b843b9677d82b9a3fdc7b12c0834a06ce00c",
+    "SELLCert/Rewriting.lean": "33a57339cd3df3f77ab37e34d082eeea59cf56ff1c60fdbd4f72cba0e432f7b4",
+    "SELLCert/Soundness.lean": "076100708b623429835425aa6c6f213301e3e4dc29e1b2cde4418316d606a58f",
+    "SELLCert.lean": "9ca290b38221fbe0868549b9bedc0aacaf91de821322f4322a5625b6f2f51a01",
+    "Main.lean": "3419faf13f79752a4aa1d21b19242883801d39c8ffa6269861ad23a4e63ecaaa",
+    "AxiomAudit.lean": "20bd3d487d3655c861331c9897a1bf2db0f7a234f7414924271a725004288c83",
+    "StatementAudit.lean": "78ca29d71d297df0a8d09af2b2c616e4bb0560010b8206a39a36147b6e24576c",
+    "lakefile.lean": "82d780c547099a203282cbaeb226b2726ecddfa0c01b2e6943cb1c156da3f0ba",
+    "lake-manifest.json": "863f8f86d1df4c7396dd9fc2a0495422aa066d386e6cac4e4d6b2a8f44145d23",
+    "lean-toolchain": "6faf6530819a0bc6d6092a2d9b974ea8e8adfec955d0e51e02e1f82734264d14"
+  }
+}
