@@ -1,0 +1,439 @@
+\section{SELL-style rewriting and asynchronous adequacy}
+\label{sec:sem}
+
+We specify peeling by two rules with persistent knowledge and linear residual
+resources. The operational semantics in this section is multiset rewriting.
+The theorem relates its executions to operational peeling, including executions
+that interleave solving with unfinished propagation. A logical reading of the
+clauses motivates the resource discipline; no adequacy with a SELL sequent
+calculus or its focused variant is assumed.
+
+\subsection{Resources, clauses, and execution labels}
+\label{sec:sem-resources}
+
+Fix a binary parity-check matrix $H$ and write
+$\Nb(j)=\{i\in\Var:H_{j,i}=1\}$. A context is $M=(G,P,L)$: $G=H$ is fixed
+static information, $P$ is a multiset of pairs $(i,b)$ representing persistent
+facts $\mathsf{val}(i,b)$, and $L$ is a multiset of linear atoms
+\[
+ \mathsf{unk}(i),\quad \mathsf{pend}(j,i),\quad
+ \mathsf{rem}(j,k,p),\quad \mathsf{step}(j,i,b).
+\]
+Here $i\in\Var$, $j\in\Chk$, $b,p\in\Ftwo$, and $k\in\mathbb N$.
+A pending incidence is an edge whose variable has not yet been incorporated
+into that check's stored residual. Its variable may already be known.
+This distinction is necessary for asynchronous executions.
+
+The two rules below act inside an arbitrary unchanged multiset context.
+A premise in the persistent zone is read without being removed. Every displayed
+linear premise is removed once, and every displayed conclusion is inserted once.
+\begin{align*}
+\textbf{Propagate:}\quad
+ &!^K\mathsf{val}(i,b)\otimes\mathsf{pend}(j,i)
+       \otimes\mathsf{rem}(j,k+1,p)
+   \multimap\mathsf{rem}(j,k,p\xor b),\\
+\textbf{Solve:}\quad
+ &\mathsf{rem}(j,1,p)\otimes\mathsf{pend}(j,i)\otimes\mathsf{unk}(i)
+   \multimap !^K\mathsf{val}(i,p)\otimes\mathsf{step}(j,i,p)
+        \otimes\mathsf{rem}(j,0,0).
+\end{align*}
+The successor form of the propagation degree excludes underflow.
+There are no rules that remove log atoms or create pending incidences.
+The matrix is not read by either rule: the correspondence between pending
+incidences and actual edges is established by the invariant below.
+
+A rewrite event has label $\tau$ for Propagate and label $(j,i,p)$ for Solve.
+An execution is a finite sequence of contexts and labelled events, with each
+event justified by the applicable rule. Its trace is the ordered list of its
+non-$\tau$ labels. We write
+\[
+ M\overset{T}{\Longrightarrow^{*}}M'
+\]
+when an execution from $M$ to $M'$ has exactly trace $T$.
+The empty execution has trace $[\,]$; concatenation concatenates traces.
+Thus the trace is part of the execution data, not an arbitrary ordering of the
+final log multiset. In a proof assistant one may use computational derivation
+objects or a proposition indexed explicitly by $T$; endpoint reachability alone
+does not retain execution order.
+
+For a trace $T$, let $\operatorname{Log}(T)$ be the multiset containing one
+$\mathsf{step}(j,i,b)$ for each occurrence of $(j,i,b)$ in $T$.
+Write $\uplus$ for multiset sum, so multiplicities are always retained.
+
+\subsection{An invariant for delayed propagation}
+\label{sec:sem-invariant}
+
+\begin{defi}[Admissible asynchronous context]
+\label{def:sem-admissible}
+Let $K:\Var\rightharpoonup\Ftwo$ be a partial function and
+$U=\Var\setminus\operatorname{dom}(K)$. For each $j$, let $Q_j$ be a finite
+set and $p_j\in\Ftwo$. A context is admissible with data $(K,Q,p,T)$ if
+$G=H$, its persistent zone is exactly
+\[
+ P=\{\!\{(i,K(i)):i\in\operatorname{dom}(K)\}\!\},
+\]
+and its linear zone is exactly
+\begin{align*}
+L={}&\{\!\{\mathsf{unk}(i):i\in U\}\!\}\uplus
+ \{\!\{\mathsf{pend}(j,i):j\in\Chk,\ i\in Q_j\}\!\}\\
+ &\uplus\{\!\{\mathsf{rem}(j,|Q_j|,p_j):j\in\Chk\}\!\}
+ \uplus\operatorname{Log}(T),
+\end{align*}
+where
+\begin{equation}
+\label{eq:sem-pending}
+ \Nb(j)\cap U\ \subseteq\ Q_j\ \subseteq\ \Nb(j),
+ \qquad
+ p_j=\bigxor_{i\in\Nb(j)\setminus Q_j}K(i).
+\end{equation}
+Every multiset comprehension above contributes each indicated atom exactly
+once. The values in the XOR are defined because the first inclusion implies
+$\Nb(j)\setminus Q_j\subseteq\operatorname{dom}(K)$.
+\end{defi}
+
+In particular, each variable has exactly one unknown token or exactly one
+persistent value; conflicting values are excluded. Each row has exactly one
+residual token, and pending incidences have multiplicity one. Membership-based
+uniqueness would not suffice: two copies of the same residual atom have the
+same parameters, but erasing one copy leaves the other behind.
+
+\begin{defi}[Operational projection and normalized encoding]
+\label{def:sem-projection}
+The operational projection of an admissible context is
+$\pi(M)=(K,U,s,d)$, where
+\[
+ d(j)=|\Nb(j)\cap U|,
+ \qquad s(j)=\bigxor_{i\in\Nb(j)\cap\operatorname{dom}(K)}K(i).
+\]
+Let $D_j=Q_j\cap\operatorname{dom}(K)$ be its delayed known incidences.
+The context is \emph{propagation-normalized} if every $D_j$ is empty.
+For an operational state $\sigma$ satisfying the degree and syndrome invariants,
+$\operatorname{Enc}_H(\sigma,T)$ is the admissible context with
+$Q_j=\Nb(j)\cap U$, $p_j=s(j)$, and log multiset $\operatorname{Log}(T)$.
+\end{defi}
+
+The inclusion in~\eqref{eq:sem-pending} gives the disjoint union
+$Q_j=(\Nb(j)\cap U)\mathbin{\dot\cup}D_j$. Consequently
+\begin{equation}
+\label{eq:sem-delayed}
+ |Q_j|=d(j)+|D_j|,
+ \qquad s(j)=p_j\xor\bigxor_{i\in D_j}K(i).
+\end{equation}
+These equations state precisely how the stored residual differs from the
+operational residual. In a normalized context they agree, and
+$M=\operatorname{Enc}_H(\pi(M),T)$. In an intermediate context the equalities
+$|Q_j|=d(j)$ and $p_j=s(j)$ need not hold.
+
+\begin{exa}[Two solves before propagation finishes]
+\label{exa:sem-interleaving}
+Let
+\[
+ H=\begin{pmatrix}1&0\\0&1\\1&1\end{pmatrix},
+ \qquad y=(\star,\star).
+\]
+Initially $Q_1=\{1\}$, $Q_2=\{2\}$, $Q_3=\{1,2\}$, and all stored
+syndromes are zero. Solve $(1,1,0)$ and then immediately solve $(2,2,0)$.
+Both rewrites are enabled. The resulting assignment knows both variables,
+but row~3 still contains $\mathsf{rem}(3,2,0)$ and both pending incidences.
+Its operational degree is zero and its delayed set is $D_3=\{1,2\}$.
+Either order of the two remaining propagations yields
+$\mathsf{rem}(3,0,0)$ and leaves the trace
+$[(1,1,0),(2,2,0)]$ unchanged. A proof that assumes all propagations follow
+their originating solve immediately would not cover this execution.
+\end{exa}
+
+\begin{lem}[Initialization]
+\label{lem:sem-init}
+Let $\sigma_0$ be the initial peeling state for $y$. Then
+$\operatorname{Enc}_H(\sigma_0,[\,])$ is admissible and normalized.
+\end{lem}
+\begin{proof}
+Initialization sets $K$ to the visible coordinates of $y$,
+$d(j)=|\Nb(j)\cap U|$, and $s(j)$ to the XOR of the known neighbors.
+With $Q_j=\Nb(j)\cap U$, its complement inside $\Nb(j)$ is precisely the
+known-neighbor set, so~\eqref{eq:sem-pending} holds with $p_j=s(j)$.
+The encoding contains each required atom exactly once and no log atoms.
+Also $Q_j\cap\operatorname{dom}(K)=\emptyset$.
+\end{proof}
+
+\begin{lem}[Propagation preserves the invariant and stutters]
+\label{lem:sem-propagate}
+Suppose $M$ is admissible with data $(K,Q,p,T)$ and a Propagate event at
+$(j,i)$ with value $b$ yields $M'$. Then $M'$ is admissible with the same
+$K$ and $T$, and $\pi(M')=\pi(M)$.
+\end{lem}
+\begin{proof}
+The premises and uniqueness of the persistent value imply
+$i\in Q_j\cap\operatorname{dom}(K)$ and $b=K(i)$. Replace $Q_j$ by
+$Q_j\setminus\{i\}$ and $p_j$ by $p_j\xor b$; leave all other rows unchanged.
+No unknown incidence is removed, so both inclusions
+in~\eqref{eq:sem-pending} remain true. The set
+$\Nb(j)\setminus Q_j$ gains exactly $i$, whose value is $b$; hence its XOR
+changes by precisely $b$. Since $i\in Q_j$, its cardinality decreases by
+one, as required by the new residual token. The unique pending and residual
+tokens are replaced exactly as specified, and no other token or log changes.
+The operational projection depends on $H$ and $K$, both unchanged.
+\end{proof}
+
+\begin{lem}[Solve preserves the invariant and simulates peeling]
+\label{lem:sem-solve}
+Suppose $M$ is admissible with data $(K,Q,p,T)$ and Solve $(j,i,b)$ yields
+$M'$. Then $(j,i,b)$ is a valid operational peeling step from $\pi(M)$.
+Moreover $M'$ is admissible with trace $T\mathbin{+\!+}[(j,i,b)]$, and
+$\pi(M')$ is precisely the operational state after that step.
+\end{lem}
+\begin{proof}
+The residual token gives $|Q_j|=1$ and $p_j=b$; the pending token gives
+$i\in Q_j$; and the unknown token gives $i\in U$. Thus $Q_j=\{i\}$.
+By~\eqref{eq:sem-pending}, $i$ is a genuine neighbor and every unknown
+neighbor of $j$ lies in $\{i\}$. Therefore $\Nb(j)\cap U=\{i\}$.
+Every other neighbor is known and outside $Q_j$, so
+\[
+ b=p_j=\bigxor_{v\in\Nb(j)\setminus\{i\}}K(v)=s(j).
+\]
+This is exactly the operational validity condition. No assumption is needed
+about delayed incidences at other checks.
+
+Set $K'=K\cup\{i\mapsto b\}$ and $U'=U\setminus\{i\}$.
+At row $j$, put $Q'_j=\emptyset$ and $p'_j=0$. Its newly known-neighbor XOR
+is $p_j\xor b=b\xor b=0$, agreeing with the rule. At any other row $\ell$
+adjacent to $i$, the old inclusion $\Nb(\ell)\cap U\subseteq Q_\ell$
+ensures $i\in Q_\ell$. It remains pending, so assigning its value does not
+change the XOR over $\Nb(\ell)\setminus Q_\ell$. Retain $Q_\ell,p_\ell$.
+At nonadjacent rows the sets and sums do not change. The pending inclusions
+hold with $U'$ at every row.
+
+Exactly one unknown token disappears and exactly one previously absent
+persistent assignment is inserted. The forcing row's residual and pending
+tokens are replaced as above; all other residual resources are retained.
+One log atom is added. Hence the complete admissibility conditions hold.
+Finally, fixing $i$ removes one unknown neighbor and adds $b$ to the
+known-neighbor XOR at precisely the rows adjacent to $i$. This is the
+operational update of $d$ and $s$, and proves the projection claim.
+\end{proof}
+
+\subsection{Normalization and exact trace adequacy}
+\label{sec:sem-adequacy}
+
+\begin{lem}[Propagation normalization and commutation]
+\label{lem:sem-normalization}
+Every admissible context $M$ with data $(K,Q,p,T)$ has a unique
+propagation-normal form, denoted $\operatorname{NF}(M)$, and
+\[
+ \operatorname{NF}(M)=\operatorname{Enc}_H(\pi(M),T).
+\]
+Every maximal propagation-only execution has exactly
+$\sum_j|D_j|$ events. Two distinct enabled propagations commute.
+\end{lem}
+\begin{proof}
+A propagation is enabled exactly at a delayed incidence $(j,i)$ with
+$i\in D_j$: its persistent value and pending token are present, and
+$|Q_j|\geq1$. By Lemma~\ref{lem:sem-propagate}, such an event leaves $K$
+fixed and removes exactly this incidence from $D_j$.
+Thus the natural number $\sum_j|D_j|$ decreases by one at each event;
+it is zero exactly when no propagation is enabled. Every maximal
+propagation-only execution therefore terminates in the stated number of events.
+
+At termination each pending set is $\Nb(j)\cap U$ by the two inclusions
+in~\eqref{eq:sem-pending}. The invariant determines its syndrome as the XOR
+of all known neighbors. Assignments, unknown tokens, static information,
+and logs are unchanged. Exact multiplicities now force the terminal context
+to be $\operatorname{Enc}_H(\pi(M),T)$, proving uniqueness.
+
+For commutation, distinct enabled propagations at different rows modify
+disjoint pending and residual tokens and read persistent values only.
+At the same row they concern distinct pending variables, so the initial
+pending degree is at least two and either remains enabled after the other.
+Both orders remove those two incidences, decrease the degree by two, and
+replace $p$ by $p\xor b\xor c$. Associativity and commutativity of XOR
+make the results equal. The same incidence cannot be consumed twice because
+its pending token has multiplicity one.
+\end{proof}
+
+\begin{prop}[Termination of rewriting]
+\label{prop:sem-termination}
+Every rewrite execution starting from an admissible context is finite.
+Its number of events is at most the initial number $\sum_j|Q_j|$ of pending
+incidences, and its number of Solve events is at most the initial $|U|$.
+\end{prop}
+\begin{proof}
+Each rule consumes exactly one pending token and creates none. The preceding
+lemmas preserve the invariant, so $\sum_j|Q_j|$ decreases by one at every
+event and cannot become negative. Each Solve also consumes exactly one
+unknown token; neither rule creates one.
+\end{proof}
+
+The confluence statement above concerns propagation with a fixed assignment.
+It does not assert confluence of arbitrary Solve choices. On an inconsistent
+input two different degree-one checks may force different values of the same
+variable; both resulting traces can be locally valid, with inconsistency
+remaining in another row. Certificate checking still tests the entire residual
+system.
+
+\begin{exa}[Why the endpoint includes a log]
+\label{exa:sem-log}
+For $H=[1]$ and $y=(\star)$, the valid step $(1,1,0)$ transforms
+\[
+ P=\emptyset,\quad
+ L=\{\mathsf{unk}(1),\mathsf{pend}(1,1),\mathsf{rem}(1,1,0)\}
+\]
+into $P'=\{(1,0)\}$ and
+$L'=\{\mathsf{rem}(1,0,0),\mathsf{step}(1,1,0)\}$.
+An encoding of only the final peeling state would omit the step atom.
+No further rule can erase it. Thus exact reachability of a log-free final
+encoding is false even in this one-variable example.
+The logged encoding $\operatorname{Enc}_H$ makes the correct endpoint explicit.
+\end{exa}
+
+\begin{thm}[Adequacy with exact trace labels]
+\label{thm:sem-adequacy}
+Let $\sigma_0$ be the initial state for $(H,y)$, and let
+$M_0=\operatorname{Enc}_H(\sigma_0,[\,])$.
+\begin{enumerate}
+\item \emph{Soundness for arbitrary interleavings.}
+If $M_0\overset{T}{\Longrightarrow^{*}}M$, then $T$ is a valid operational
+peeling trace. Writing $\sigma_T$ for its replayed state, $M$ is admissible,
+$\pi(M)=\sigma_T$, its log is exactly $\operatorname{Log}(T)$, and
+\[
+ \operatorname{NF}(M)=\operatorname{Enc}_H(\sigma_T,T).
+\]
+\item \emph{Completeness for each specified trace.}
+For every valid operational peeling trace $T$ from $\sigma_0$,
+\[
+ M_0\overset{T}{\Longrightarrow^{*}}
+       \operatorname{Enc}_H(\sigma_T,T).
+\]
+\end{enumerate}
+These statements include empty and partial traces; neither requires that
+peeling has already stalled.
+\end{thm}
+\begin{proof}
+For soundness, induct on the events of the given execution, maintaining
+admissibility, exact log equality, and equality between the operational
+projection and replay of the trace prefix. The empty execution satisfies
+these assertions by Lemma~\ref{lem:sem-init}. A Propagate event preserves
+the invariant and projection by Lemma~\ref{lem:sem-propagate}; its label
+$\tau$ does not extend the trace or the log. A Solve event is a valid
+operational step by Lemma~\ref{lem:sem-solve}, and that lemma supplies
+precisely the updated projection and appended trace/log entry. This proves
+all assertions about the endpoint for every finite execution, including
+those that end with unfinished propagations. Applying
+Lemma~\ref{lem:sem-normalization} gives the stated normalized endpoint.
+
+For completeness, induct on the length of the requested trace, maintaining
+an execution to its exact logged normalized encoding. The empty trace is
+realized by the empty execution. Suppose the prefix $T$ is realized at
+$\operatorname{Enc}_H(\sigma_T,T)$ and its next valid step is $(j,i,b)$.
+Since $\Nb(j)\cap U=\{i\}$ and $s(j)=b$, that encoding contains
+$\mathsf{rem}(j,1,b)$, $\mathsf{pend}(j,i)$, and $\mathsf{unk}(i)$.
+Apply Solve. For every other adjacent row $\ell$, the incidence $(\ell,i)$
+was pending because $i$ was unknown; it is now a delayed known incidence.
+No other delayed incidence is introduced, since the starting context was
+normalized. Propagate these incidences in any order. Each remains enabled
+until it is consumed; commutation and normalization follow from
+Lemma~\ref{lem:sem-normalization}. By Lemma~\ref{lem:sem-solve} the projection
+is the next operational state, and propagation does not change it.
+The final context is therefore its exact normalized encoding with log
+$\operatorname{Log}(T\mathbin{+\!+}[(j,i,b)])$.
+The constructed block contributes exactly the requested triple, because
+its remaining events are all $\tau$. Concatenating it with the prefix
+execution establishes the induction step.
+\end{proof}
+
+\begin{prop}[Maximal executions and stopping]
+\label{prop:sem-stopping}
+The endpoint of a maximal rewrite execution from $M_0$ is normalized.
+Its projected unknown set is empty or is a nonempty stopping set.
+\end{prop}
+\begin{proof}
+If a delayed known incidence remained, a propagation would be enabled,
+contradicting maximality. In a normalized context $Q_j=\Nb(j)\cap U$.
+If any check had exactly one unknown neighbor, its residual, pending, and
+unknown tokens would enable Solve. Thus no residual degree is one.
+When $U\neq\emptyset$, every check adjacent to $U$ has degree at least two,
+which is precisely the stopping-set condition.
+\end{proof}
+
+This proposition concerns exhaustion of local peeling. In particular,
+$U=\emptyset$ does not imply that all parity equations hold: a row may have
+residual syndrome one. Both empty and nonempty residuals must undergo the
+algebraic certificate checks.
+
+\subsection{What the subexponential labels contribute}
+\label{sec:sem-sell-role}
+
+Following the resource distinction of linear logic and its subexponential
+extension~\cite{Girard1987,NigamMiller2009SELL}, one possible logical
+vocabulary uses the subexponential signature
+$\Sigma=(\{S,K\},\preceq,\{S,K\})$, where $\preceq$ is the discrete
+preorder and both labels admit weakening and contraction. The $S$ zone
+contains static edge facts and reusable program clauses; the $K$ zone
+contains learned value facts. Linear atoms have no such prefix.
+The displayed clauses can be read as first-order multiplicative formulas,
+with finite variable and check sorts, natural-number degree indices, and
+$\Ftwo$-valued indices. Equivalently, use their ground instances, interpreting
+successor and XOR in these index domains. This specifies the intended clause
+syntax and structural permissions. In this paper the executable meaning
+is exactly the two operational rules already defined. Structural proof rules
+are not extra transitions of that operational system.
+
+The two unbounded labels distinguish static data from learned information,
+but their distinction is not necessary for the operational result. The
+following statement identifies the precise scope of that observation.
+
+\begin{prop}[Erasing persistent-zone labels preserves these executions]
+\label{prop:sem-label-erasure}
+Consider the two-rule system above, with static edges represented by persistent
+$\mathsf{edge}$ facts. Replace both $!^S$ and $!^K$ by one ordinary $!$,
+retaining the atom predicates and event labels. On contexts in which edge
+facts occupy $S$ and value facts occupy $K$, merging the two persistent zones
+is an event-preserving strong bisimulation.
+The same event-labelled transition system can be represented by ordinary
+multiset rewriting, with the propagation rule
+\[
+\begin{split}
+ \mathsf{val}(i,b)\otimes\mathsf{pend}(j,i)
+             \otimes\mathsf{rem}(j,k+1,p)
+ \multimap{}&\mathsf{val}(i,b)\otimes\mathsf{rem}(j,k,p\xor b),
+\end{split}
+\]
+and Solve producing an ordinary $\mathsf{val}(i,p)$ token, while edge
+tokens remain inert. This second correspondence holds on the images of
+admissible contexts.
+\end{prop}
+\begin{proof}
+For the first correspondence, merging is injective on the specified contexts:
+the distinct predicate symbols $\mathsf{edge}$ and $\mathsf{val}$ recover
+the original partition. Neither rule examines a persistent-zone label or a
+preorder comparison. Propagate reads precisely the same value fact and
+rewrites precisely the same two linear atoms before and after merging.
+Solve consumes precisely the same three linear atoms and adds the same
+value and log. Hence a transition in either system has a matching transition
+with the same event label, and merging its endpoint gives the other endpoint.
+There are only these two rules, so this proves both directions of the strong
+bisimulation.
+
+For ordinary rewriting, map each persistent edge and value fact to one
+ordinary token and retain the linear multiset. Distinct atom predicates make
+this map injective on admissible contexts. Propagate consumes the unique
+value token and immediately recreates it unchanged; thus its net effect is
+identical to persistent lookup. Solve introduces exactly the one new value
+token, while the consumed unknown token and admissibility ensure that no
+old value for that variable exists. The remaining consumed and produced
+atoms coincide rule by rule, and neither system modifies an edge token.
+Every applicable rule in either image therefore has the matching rule and
+endpoint in the other image, with the same event label. Invariant
+preservation ensures that subsequent contexts stay in these images.
+\end{proof}
+
+Thus differentiated persistent zones supply a disciplined presentation of
+access patterns; this particular specification does not establish their
+necessity or an increase in operational expressiveness. The theorem is about
+the two stated rewrite systems, not an equivalence between full logical
+calculi. In particular, it does not establish an adequacy theorem for a
+focused calculus of the kind studied in
+\cite{Andreoli1992Focusing,NigamMiller2009SELL}.
+The mathematical contribution used by certification is
+Theorem~\ref{thm:sem-adequacy}: exact trace correspondence despite delayed
+propagation, together with explicit invariants and a unique propagation
+normal form.

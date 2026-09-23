@@ -4,7 +4,7 @@ Date: 2026-09-20. Audited revision: `6bb47d9781d813dff526e043c9d0ad35d37ed0a4` (
 
 ## Verdict
 
-**The baseline is not ready for submission.** Its exact-endpoint adequacy theorem is false, its context invariant does not support its preservation claims, its Lean project fails a clean build and contains admissions and a vacuous ML claim, and its Python checker accepts an output outside the declared binary domain. Experimental summaries disagree with their captions and do not support empirical linear scaling. These are scientific correctness issues, not only presentation defects.
+**The baseline is not ready for submission.** Its Lean exact-endpoint adequacy theorem is false, its context invariant does not support its preservation claims, its Lean project fails a clean build and contains admissions and a vacuous ML claim, and its Python checker accepts an output outside the declared binary domain. Experimental summaries disagree with their captions and do not support empirical linear scaling. These are scientific correctness issues, not only presentation defects.
 
 No original results were deleted. `originals/baseline-6bb47d9.tar.gz` contains every tracked original artifact; the original output directory is retained unchanged. See [source provenance](SOURCE_PROVENANCE.md), [complete tracked inventory](evidence/baseline-inventory.txt), and [Git history](evidence/git-history.txt).
 
