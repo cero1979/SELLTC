@@ -1,0 +1,14 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_analysis_seed_can_use_saved_configuration ________________
+
+    def test_analysis_seed_can_use_saved_configuration():
+        from publication_experiments import seed_for
+>       assert seed_for('analysis',base_seed=123)==seed_for('analysis',base_seed=123)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: seed_for() got an unexpected keyword argument 'base_seed'
+
+tests/test_experiments.py:69: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_experiments.py::test_analysis_seed_can_use_saved_configuration
+1 failed in 0.46s

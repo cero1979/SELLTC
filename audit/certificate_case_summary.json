@@ -1,0 +1,7 @@
+{
+  "differential_cases": 575,
+  "accepted": 369,
+  "rejected": 206,
+  "named_adversarial_cases": 24,
+  "all_named_outcomes_expected": true
+}

@@ -1,0 +1,5 @@
+Complete grid: {'clean_trials': 720, 'robustness_trials': 480, 'scaling_trials': 90, 'matrices': 39, 'timing_repetitions': 24747, 'distinct_trial_streams': 4800}
+All 39 matrices regenerated identically.
+All 1200 non-timing trial outcomes regenerated identically; transmitted nonzero words: 1200
+All 90 all-zero checker-scaling inputs/traces regenerated identically.
+All 13 original output files unchanged byte-for-byte from f9beafa.

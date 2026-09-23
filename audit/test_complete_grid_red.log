@@ -1,0 +1,17 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________ test_campaign_validator_rejects_missing_measurements _____________
+
+tmp_path = PosixPath('/private/var/folders/fw/fywrcj014vs8hkpj1d_n1pj40000gn/T/pytest-of-cero/pytest-0/test_campaign_validator_reject0')
+
+    def test_campaign_validator_rejects_missing_measurements(tmp_path):
+        import publication_experiments as p
+>       assert hasattr(p,'validate_campaign'), 'complete-grid validation must precede finalization'
+E       AssertionError: complete-grid validation must precede finalization
+E       assert False
+E        +  where False = hasattr(<module 'publication_experiments' from '/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/publication_experiments.py'>, 'validate_campaign')
+
+tests/test_experiments.py:54: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_experiments.py::test_campaign_validator_rejects_missing_measurements
+1 failed in 0.32s

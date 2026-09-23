@@ -1,0 +1,18 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_json_empty_matrix_keeps_received_dimension ________________
+
+    def test_json_empty_matrix_keeps_received_dimension():
+        case=dict(H=[],y=[-1,1],kind='success',trace=[],witness=[0])
+>       assert s.check_json(case)=={'accepted':True,'word':[0,1]}
+E       AssertionError: assert {'accepted': ... 'word': None} == {'accepted': ...word': [0, 1]}
+E         
+E         Differing items:
+E         {'word': None} != {'word': [0, 1]}
+E         {'accepted': False} != {'accepted': True}
+E         Use -v to get more diff
+
+tests/test_certificates.py:121: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_certificates.py::test_json_empty_matrix_keeps_received_dimension
+1 failed in 0.05s

@@ -1,0 +1,16 @@
+\begin{table}
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Finite-size log-log time slopes on blocklengths 256 through 4096, with 95 percent percentile bootstrap intervals resampling the three matrix identities at each size (2000 replicates). These describe this machine and protocol, not asymptotic guarantees.}
+\label{tab:scaling-slopes}
+\begin{tabular}{lrrr}
+\toprule
+Checker & Slope & Lower 95\% & Upper 95\% \\
+\midrule
+Sparse replay & 1.046 & 1.033 & 1.062 \\
+Direct check & 1.006 & 1.003 & 1.008 \\
+Dense replay & 1.583 & 1.555 & 1.617 \\
+\bottomrule
+\end{tabular}
+\end{table}
