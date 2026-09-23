@@ -1,0 +1,133 @@
+\section{Lean mechanization and implementation boundary}\label{sec:lean}
+The artifact uses Lean 4.14.0 with Mathlib pinned by a checked-in Lake
+manifest (Mathlib commit \texttt{4bbdccd9c5f8}). The library is a
+mechanization of finite operational states, certificate conditions and
+an asynchronous event system. It is not a formalization of a SELL
+sequent calculus, a verified Python compiler or a proof of the measured
+Python program's execution time.
+
+\paragraph{Representations.}
+Bits are \texttt{ZMod 2}, coordinates are finite types, and an
+observation is a function into optional bits. The formal
+\texttt{PeelingState} stores the partial assignment $K$; its unknown
+neighbors, degrees and syndromes are derived functions. This gives
+coherence by construction. The Python implementation instead maintains
+cached arrays and adjacency lists. The Lean update lemmas prove the
+mathematical degree and syndrome equations, but there is no verified
+refinement of those Python caches.
+
+A formal asynchronous context stores $K$, finite pending sets $Q_j$
+and an ordered event observer. Its residual fields are derived from
+$(K,Q)$, and its well-formedness condition is
+$\Nb(j)\cap U\subseteq Q_j\subseteq\Nb(j)$. Thus exact multiplicities
+of the canonical tokens are enforced by representation. The relation
+to the raw multisets and their exact multiplicity invariant is proved
+in Section~\ref{sec:sem}; the Lean development operates on the
+canonical representation rather than mechanizing a quotient of all
+malformed raw multisets. The log field records chronological events;
+its multiset image represents the manuscript's unordered log atoms.
+
+The relation \texttt{RewStar H C T D} has the event list $T$ as an
+explicit index. Its soundness theorem accepts arbitrary interleavings
+of Propagate and Solve from a well-formed context, including endpoints
+with unpropagated known incidences. Completeness constructs a derivation
+for the very same prescribed $T$, ending at
+\texttt{encodeLogged} of the folded operational state with the previous
+log followed by $T$. It does not assert equality with an encoding that
+discards the Solve events, and it does not attempt to extract ordered
+data by eliminating a proof-irrelevant reachability proposition.
+
+\begin{table}[t]
+\centering\small
+\caption{Mechanized results and their principal declarations.
+The accompanying verification report records full statements,
+build commands and axiom-dependency output.}
+\label{tab:lean}
+\begin{tabular}{>{\raggedright\arraybackslash}p{.37\textwidth}>{\raggedright\arraybackslash}p{.54\textwidth}}
+\toprule
+Property & Lean declaration(s) \\
+\midrule
+Forced assignments preserve all completions &
+\texttt{forced\_value}, \texttt{trace\_extends} \\
+Replay matches the inductive trace relation &
+\texttt{replayFull\_eq\_some\_iff} \\
+Left-kernel separator soundness and existence &
+\texttt{lem\_unsat\_witness\_sound},
+\texttt{lem\_unsat\_witness\_complete} \\
+Accepted success and failure certificates &
+\texttt{thm\_sound\_success}, \texttt{thm\_sound\_failure} \\
+Residual and empty-trace certificate completeness &
+\texttt{residual\_unsat\_iff\_witness},
+\texttt{thm\_complete\_failure}, \texttt{thm\_complete\_success} \\
+Real-valued BEC likelihood maximization &
+\texttt{bec\_completion\_maximizes}, \texttt{thm\_ml} \\
+Invariant and local operational correspondence &
+\texttt{propagate\_wf}, \texttt{solve\_wf}, \texttt{solve\_valid} \\
+Propagation normalization and order independence &
+\texttt{propagation\_normalization},
+\texttt{propagation\_confluence}, \texttt{propagate\_commute} \\
+Arbitrary-interleaving trace soundness &
+\texttt{rewstar\_sound}, \texttt{adequacy\_soundness} \\
+Logged trace completeness and same-trace equivalence &
+\texttt{adequacy\_completeness}, \texttt{thm\_adequacy\_complete} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Algebra and likelihood.}
+The separator-existence proof uses finite-dimensional linear duality:
+a vector outside the image of the residual matrix is separated by a
+linear functional, represented by a row vector over $\Ftwo$. This is
+an existence theorem, not a formal verification of the Python row
+eliminator or its transformation matrix. The residual system has a
+mechanized solution-or-separator equivalence. The named checker
+completeness theorems construct accepted certificates using the empty
+trace; the stronger manuscript statement for every prescribed valid
+partial trace follows from its residual-bijection proof and is not
+presented as a single checker-completeness theorem in Lean.
+Success and failure soundness
+are proved for the executable typed checker; failure soundness uses
+preservation of every compatible completion by the replayed trace.
+
+The likelihood function is real-valued. It is defined as zero on an
+incompatible word, and otherwise as
+$\varepsilon^{e}(1-\varepsilon)^k$, where $e$ counts erasures and
+$k=n-e$ counts visible entries.
+Lean proves that an accepted completion maximizes this function over
+codewords when $0\leq\varepsilon\leq1$. This is the closed form of the
+coordinate-product model in Proposition~\ref{prop:core-ml}; the
+coordinate-product factorization itself is justified there rather than
+by a separate Lean probability-space construction. The endpoint values
+are included without asserting a conditional distribution on a
+zero-probability observation. Neither ML theorem has the vacuous
+conclusion \texttt{True}.
+
+\paragraph{What the formal checker guarantees.}
+The success witness in Lean is a total function on variable indices;
+only its residual entries are used. The Python certificate instead
+serializes those entries in increasing residual-index order. The
+adapter pads known coordinates when translating a Python witness to
+the typed formal input. The formal checker receives already typed
+matrix, observation, trace and witness data. Consequently parsing,
+binary-domain rejection, serialization and conversion to those types
+form a separate implementation boundary. Finite differential cases
+exercise that boundary and compare the Lean and Python acceptance
+results. All 575 supplied differential cases agreed, including returned
+words for accepted successes (369 acceptances and 206 rejections). The
+run used Lean's interpreter; the native executable built on this host
+could not be loaded by macOS 27. These finite comparisons do not prove
+equivalence for all inputs.
+
+The full verification report distinguishes source inspection,
+compilation, theorem statements and their transitive axiom
+dependencies. No project axiom or admitted proof is used to establish
+the listed results. Lean's ordinary foundational assumptions and its
+kernel, together with the pinned libraries, remain part of the formal
+trust base. Execution of a compiled checker additionally relies on the
+compiler and runtime. The raw-token representation correspondence,
+SELL-label erasure, global rewrite termination including Solve events,
+stopping-set and nullity characterizations,
+Gaussian-elimination implementation, sparse complexity and bit-size
+bounds, and experimental/statistical claims are not presented as
+mechanized results. Their mathematical proofs or empirical evidence
+are given separately.

@@ -1,0 +1,20 @@
+Title:           Trace-Certified Hybrid LDPC Decoding: A SELL-Style Operational Specification
+Keywords:        LDPC codes, binary erasure channel, certifying algorithms, subexponential linear logic, multiset rewriting, trace adequacy, Lean
+Author:          Carlos Ramírez Ovalle
+Creator:         LaTeX with hyperref
+Producer:        xdvipdfmx (0.1)
+CreationDate:    Wed Sep 23 16:42:45 2026 -05
+Custom Metadata: no
+Metadata Stream: no
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           23
+Encrypted:       no
+Page size:       612 x 792 pts (letter)
+Page rot:        0
+File size:       498977 bytes
+Optimized:       no
+PDF version:     1.5

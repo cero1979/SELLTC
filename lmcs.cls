@@ -16,7 +16,7 @@
 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{lmcs}
-              [2024/09/23 v0.93 LMCS Layout Editor Class]
+              [2026/06/22 v0.94 LMCS Layout Editor Class]
 
 \@ifundefined{pdfoutput}{}{
   % if \pdfoutput is available, then activate it:
@@ -62,7 +62,14 @@
 \RequirePackage{tikz}
 \RequirePackage{color}
 \RequirePackage{amsthm}
+
 \RequirePackage{thmtools}
+
+% Fix for https://github.com/muzimuzhi/thmtools/issues/75
+\IfFormatAtLeastTF{2026/06/01}{%
+    \renewcommand\thmt@autorefsetup{\@xa\def\csname\thmt@envname autorefname\@xa\endcsname\@xa{\thmt@thmname}}
+}{}
+
 \RequirePackage{etoolbox}
 
 % boot up hyperref. this needs to be done before \begin{document}
@@ -377,6 +384,12 @@
   \bigskip\hrule\medskip
   \@setrevision
   \@setabstract
+  \ifx\@empty\@specialissue
+  \else
+    \baselineskip18\p@
+    \vtop{\noindent {\footnotesize{This paper is part of the special issue \emph{\@specialissue}.}\@@par}%
+      \global\dimen@i\prevdepth}\prevdepth\dimen@i
+  \fi
   \vskip-\bigskipamount
   \normalsize
   \if@titlepage
@@ -451,6 +464,10 @@
   \addresses
   \endgroup
 }
+
+\def\specialissue#1{\def\@specialissue{#1}}
+\def\@specialissue{}
+
 \copyrightinfo{}{}
 
 \newinsert\copyins
@@ -841,11 +858,6 @@ baseline=(current bounding box.south)]
     \global\expandafter\let\csname\macroname\expandafter\endcsname\csname oldvalueof\macroname\endcsname
   }
 }
-
-
-% Bibliographystyle
-
-\bibliographystyle{alphaurl}
 
 
 \ifcsname bibfont\endcsname%

@@ -37,3 +37,5 @@ audit/build-original/
 # Keep verification logs as evidence, even though ordinary LaTeX logs are ignored.
 !audit/*.log
 !audit/evidence/*.log
+# Full-page visual QA rasters are local; compact contact sheets are retained.
+audit/rendered-pages/
