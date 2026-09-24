@@ -2,8 +2,8 @@ PAGE 1
 EXACT TRACE ADEQUACY FOR LDPC PEELING:
 DELA YED PROP AGA TION AND RESIDUAL CERTIFICA TES
 CARLOS RAMÍREZ OV ALLE
- 
- 
+
+
 Pontiﬁcia Universidad Javeriana, Cali, Colombia
 e-mail address : carlosovalle@javerianacali.edu.co
 Abstract. Certifying hybrid LDPC decoding over the binary erasure channel requires

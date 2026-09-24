@@ -61,6 +61,7 @@ The PDF operation marker ran successfully once with the bundled Node executable 
 - The first inventory command used the system Python 3.8 x86_64 interpreter. Its native Git child failed through incompatible `libxcrun`; the same inventory then succeeded under `.venv-publication/bin/python` (arm64). No artifact hashes were accepted from the failed attempt.
 - `node` was absent from the shell PATH; the PDF marker succeeded using the explicit bundled Node path.
 - An initial statement-audit command incorrectly prepended a repository-relative toolchain path from inside `lean4/`; it exited 127. The explicit absolute native toolchain path above corrected it, and the complete statement audit then exited 0.
+- The staged whitespace check detected two blank PDF-extraction lines containing spaces. They were normalized before the remote push, the artifact manifest was refreshed, and the final complete revision diff passes. No PDF/source content changed.
 - Publisher access restrictions and two Crossref 429 responses are disclosed with primary-source fallbacks in `coding-experiment-review.md`. No unsupported source metadata was invented.
 
 ## Remote update
