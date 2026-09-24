@@ -50,3 +50,14 @@ Audit started 20 September 2026 and finalized after resumption on 23 September 2
 - Used the current unmodified LMCS class, concise abstract, ORCID, alphaurl bibliography and native Tectonic build. Documented a narrow first-page header compatibility workaround that preserves the text-block geometry.
 - Updated installation, proof scope, reproducibility, testing and build instructions. Removed duplicated inventory and references to absent files.
 - Obtained independent logic/formal-methods, coding-theory and experiment/reproducibility reviews, with concrete objections and retained limitations. Final dispositions are in `audit/FINAL_REVIEW.md`; the scientific readiness decision is in `PUBLICATION_READINESS.md`.
+
+
+## 24 September 2026: exact trace adequacy revision
+
+- Repositioned the title, abstract, introduction, related work and conclusion around Theorem 6.10, delayed propagation and exact logged normalization.
+- Added a fully proved abstract adequacy principle with invariant preservation, silent observers, canonical normalization and explicit local event lifting; kept the LDPC statement/proof and original theorem numbering.
+- Preserved Proposition 6.12 and explained label erasure as an informative separation between resource-sensitive behavior and inessential differentiated persistent zones.
+- Added a representation/evidence table that uses a raw context together with its declared event history, distinguishing informal proofs, canonical Lean results and finite Python comparisons.
+- Clarified the local operational explanation obtained by trace replay, its equality with direct checking on final-word validity, and the retained direct-check performance advantage.
+- Added the revision report, claim audit, abstraction note and dated verification/preservation evidence. Preserved prior audit records as historical snapshots.
+- Corrected Girard (1987) journal pagination to 1--101 from the publisher record; retained all 16 references and documented the differing restored-version archive metadata.

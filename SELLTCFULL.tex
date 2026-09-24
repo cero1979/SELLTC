@@ -3,7 +3,7 @@
 \documentclass{lmcs}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amsfonts,amssymb,mathtools}
-\usepackage{booktabs,array,graphicx}
+\usepackage{booktabs,array,graphicx,needspace}
 \newcommand{\Ftwo}{\mathbb{F}_2}
 \newcommand{\Var}{\mathsf{Var}}
 \newcommand{\Chk}{\mathsf{Chk}}
@@ -12,6 +12,7 @@
 \newcommand{\bigxor}{\bigoplus}
 \newcommand{\starE}{\star}
 \newcommand{\Edges}{\mathcal{E}}
+\newtheorem*{adequacyprinciple}{Proposition (abstract adequacy principle)}
 \newcommand{\RepoURL}{\url{https://github.com/cero1979/SELLTC}}
 \keywords{LDPC codes, binary erasure channel, certifying algorithms,
 subexponential linear logic, multiset rewriting, trace adequacy, Lean}
@@ -28,75 +29,134 @@ subexponential linear logic, multiset rewriting, trace adequacy, Lean}
 \headheight=40pt
 \makeatother
 \begin{document}
-\title[Trace-Certified Hybrid LDPC Decoding]{Trace-Certified Hybrid LDPC Decoding:\texorpdfstring{\\}{ }A SELL-Style Operational Specification}
+\title[Exact Trace Adequacy for LDPC Peeling]{Exact Trace Adequacy for LDPC Peeling:\texorpdfstring{\\}{ }Delayed Propagation and Residual Certificates}
 \author[C.~Ram\'irez~Ovalle]{Carlos Ram\'irez Ovalle\lmcsorcid{0000-0002-4254-5610}}
 \address{Pontificia Universidad Javeriana, Cali, Colombia}
 \email{carlosovalle@javerianacali.edu.co}
 \begin{abstract}
-Hybrid decoding over the binary erasure channel combines peeling with a
-residual linear solve. We study independently checkable certificates for
-this classical algorithm using a specification inspired by subexponential
-linear logic. A delayed-propagation invariant connects asynchronous
-multiset rewriting to operational peeling: every rewrite execution emits
-a valid trace, and every valid trace has a corresponding derivation with
-an exact logged endpoint after propagation normalization. Success
-certificates provide a compatible codeword; failure certificates provide
-a linear infeasibility witness. We prove their soundness and existence,
-and distinguish maximum-likelihood completion from unique or exact
-recovery. The two persistent subexponential labels organize the
-specification but are not necessary for these operational rules; no
-adequacy with a focused logical calculus is claimed. Sparse trace checking
-and direct full-word checking have the same linear upper bound in graph
-size, while providing different trace guarantees. A reproducible
-implementation measures their costs separately, including corrupted
-inputs and malformed certificates. The companion Lean development and
-the implementation tests have explicitly distinct verification scopes.
+Certifying hybrid LDPC decoding over the binary erasure channel requires
+connecting local peeling steps with a residual algebraic result. In an
+asynchronous specification, a solved variable may await propagation to
+some checks while other solves proceed, so stored residuals need not
+match the operational state. We give a pending-incidence invariant that
+accounts for this delay. Our principal theorem establishes exact
+trace adequacy: every rewrite execution, with arbitrary interleaving of
+solving and propagation, emits the same valid operational trace under
+projection; every prescribed valid trace has a rewrite realization with
+its exact logged endpoint after propagation normalization. Empty and
+partial traces are included. An abstract proposition isolates the
+simulation, canonical normalization and local lifting hypotheses behind
+this correspondence. Residual linear algebra then supplies independently
+checkable compatible-completion or left-kernel infeasibility certificates.
+Trace replay certifies a local operational explanation in addition to
+the final-word predicate already established by direct checking.
+A Lean development mechanizes the canonical LDPC correspondence and
+certificate results within stated boundaries; finite tests and retained
+experiments assess an independent Python implementation and its checking
+costs. The subexponential presentation exposes the resource discipline,
+while an event-preserving translation shows that its two persistent
+labels are inessential for these operational rules.
 \end{abstract}
 \maketitle
 
 \section{Introduction}
-An untrusted decoder can return a proposed word together with evidence
-that a smaller checker validates. For a binary erasure channel (BEC),
-the final-word condition is particularly simple: the word must satisfy
-the parity checks and agree with all visible symbols. A direct syndrome
-check already establishes this property. Replaying a peeling trace adds
-a different guarantee: each declared local assignment was justified by
-a degree-one constraint. The question studied here is how to connect
-that trace guarantee to a precise logical-style specification while
-retaining simple certificates for the residual algebraic phase.
+Hybrid decoding over the binary erasure channel (BEC) combines local
+peeling with a linear solve on the remaining erasures. An untrusted
+producer can accompany its result with a certificate checked independently
+of that producer. The central question here is how an asynchronous,
+resource-sensitive account of peeling can certify exactly the declared
+sequence of local assignments when propagation is delayed. Our principal
+result, Theorem~\ref{thm:sem-adequacy}, relates these rewrite executions
+to the same operational peeling traces in both directions and identifies
+their exact logged endpoints after normalization.
 
-The decoding algorithm is classical. Peeling resolves degree-one checks;
-Gaussian elimination completes the remaining linear system
-\cite{RichardsonUrbanke2008,BurshteinMiller2004ML}. Independent result
-checking is also established methodology
-\cite{McConnellEtAl2011,AlkassarEtAl2013,Necula1997PCC}.
-Our construction is a case study in connecting these ingredients.
-The delicate point is asynchronous state: after a variable is solved,
-some adjacent checks may still await its value while another variable
-is solved elsewhere. Identifying such an intermediate context with a
-fully updated operational state gives incorrect degrees and syndromes.
-Discarding log atoms from an exact reachability target creates a second,
-independent error. The semantics developed here accounts for both.
+Four levels organize the construction. At the \emph{algorithmic level},
+classical peeling forces erased variables and Gaussian elimination solves
+the residual system
+\cite{RichardsonUrbanke2008,BurshteinMiller2004ML}. At the
+\emph{certificate level}, witnesses separate the producer from trusted
+checking, following certifying algorithms
+\cite{McConnellEtAl2011,AlkassarEtAl2013,Necula1997PCC}. Here a successful
+witness completes the residual equations, while a left-kernel witness
+certifies inconsistency. These two levels provide the decoding problem
+and its algebraic contract.
 
-The mathematical development has three parts. First, a pending-incidence
-invariant proves soundness for arbitrary rewrite interleavings and
-completeness for each specified operational trace, with normalization
-and logged endpoints made explicit. Second, a residual-system bijection
-connects valid traces to success witnesses and classical left-kernel
-infeasibility witnesses. Third, an event-preserving translation shows
-that the two persistent labels can be merged for these rules. Thus SELL
-supplies a useful resource discipline without an unsupported necessity
-claim. These results concern the defined transition system, rather than
-proof search in an unformalized SELL calculus.
+The \emph{asynchronous semantic level} explains each declared peeling
+assignment. Once a variable has been solved, some neighboring checks may
+still await its value while another Solve event occurs elsewhere.
+Consequently a stored degree can exceed the number of genuinely unknown
+neighbors, and a stored syndrome can omit known values. Treating such a
+context as fully updated would invalidate the simulation argument.
+Moreover, the final multiset contains persistent log atoms; their exact
+presence must be retained in a reachability theorem, even though their
+multiset alone cannot recover chronological order.
 
-The artifact complements the mathematics with strict certificate
-validation, an independent direct-word checker, finite adversarial and
-exhaustive tests, and a controlled experiment using the same algebraic
-engine for the compared decoding pipelines. We report completion,
-exact recovery, uniqueness and corruption compatibility separately.
-The proof assistant's scope and the Python trust boundary are stated
-explicitly; similar-looking implementations are not assumed equivalent.
-The source repository is \RepoURL. Its current access restrictions and
+The invariant makes these two issues explicit. Write $K$ for the current
+partial assignment, $Q_j$ for the incidences still pending at check $j$,
+and $p_j$ for its stored syndrome. Pending incidences include every unknown
+neighbor and may also include delayed known neighbors
+$D_j=Q_j\cap\operatorname{dom}K$. If $d(j)$ and $s(j)$ are the actual
+operational degree and syndrome, then
+\[
+ |Q_j|=d(j)+|D_j|,\qquad
+ s(j)=p_j\xor\bigxor_{i\in D_j}K(i).
+\]
+Propagation removes a known pending incidence while leaving the
+operational projection unchanged. A Solve event is justified at its
+forcing check even if other checks still have delayed incidences.
+Propagation terminates with a unique normal form, where the stored and
+operational residuals agree. These facts make the arbitrary-interleaving
+soundness direction of Theorem~\ref{thm:sem-adequacy} possible. Its converse
+uses local enablement in normalized contexts to realize each prescribed
+operational trace, retaining the accumulated log exactly.
+
+The \emph{logical presentation level} exposes reusable information and
+consumable residual resources through a vocabulary inspired by
+subexponential linear logic (SELL). Static facts and learned values occupy
+two persistent zones. Proposition~\ref{prop:sem-label-erasure} identifies
+what this presentation contributes: the zones express an intended access
+discipline, but their differentiated labels can be erased while preserving
+the specified event-labelled transitions. The trace correspondence depends
+on the asynchronous resource updates and their invariant. It does not
+require an expressive advantage of two persistent labels or an adequacy
+claim for a focused logical calculus.
+
+The contributions are as follows.
+\begin{enumerate}
+\item \emph{Certificate algebra.} A residual-solution bijection gives
+success soundness and left-kernel failure soundness and completeness for
+every specified valid finite trace, including a partial or empty trace
+(Section~\ref{sec:certificates}). It separates compatible completion,
+uniqueness and exact recovery.
+\item \emph{Invariant and normalization.} Exact token
+multiplicities and pending-incidence equations support invariant
+preservation, silent stuttering and a unique propagation normal form
+(Section~\ref{sec:sem-invariant}). Only propagation is claimed confluent.
+\item \emph{Exact trace adequacy.} Theorem~\ref{thm:sem-adequacy} proves
+arbitrary-interleaving soundness and completeness for the very same
+requested trace, with a logged normalized endpoint. A preceding abstract
+proposition isolates the sufficient hypotheses, including the local
+lifting needed for completeness (Section~\ref{sec:sem-adequacy}).
+\item \emph{Formal and executable evidence.} A canonical Lean development
+mechanizes the LDPC trace correspondence and scoped certificate results.
+Independent Python checkers, finite differential tests and a reproducible
+cost study provide separate implementation evidence
+(Sections~\ref{sec:lean}--\ref{sec:results}).
+\end{enumerate}
+
+Direct verification of a proposed binary word already establishes
+$Hx=0$ and agreement with all visible symbols. Trace replay certifies a
+local operational explanation, not a stronger final-word correctness
+predicate: every declared assignment must be forced by a degree-one check
+in the preceding state. This is a property of the supplied explanation,
+not an attestation of the producer's actual internal history. Both checks
+have a linear sparse upper bound; the retained measurements show direct
+checking to be faster, so the additional trace evidence has an explicit
+measured cost.
+
+The source repository is \RepoURL. The representation and implementation
+boundaries are stated in Section~\ref{sec:lean}; Python is independently
+implemented, not extracted from Lean. Current access restrictions and
 release requirements are recorded in the companion readiness report;
 this manuscript does not assert that a public archival release exists.
 
@@ -106,83 +166,113 @@ this manuscript does not assert that a public archival release exists.
 \input{paper/experiments}
 
 \section{Related work}\label{sec:related}
-Gallager introduced LDPC codes \cite{Gallager1962}; iterative erasure
-coding and stopping-set analysis are developed in
-\cite{LubyMitzenmacherShokrollahiSpielman2001,DiEtAl2002Stopping}.
-Burshtein and Miller already combine iterative decoding with algebraic
-methods for BEC maximum-likelihood decoding
-\cite{BurshteinMiller2004ML}. Our contribution does not include a new
-hybrid decoder, stopping-set characterization, channel threshold or
-linear-algebraic alternative. The proofs make their role in the
-certificate contract explicit.
+The decoding and algebraic foundations are established. Gallager introduced
+LDPC codes \cite{Gallager1962}. Iterative erasure correction is developed
+in \cite{LubyMitzenmacherShokrollahiSpielman2001}, and finite-length
+stopping-set analysis in \cite{DiEtAl2002Stopping}.
+Burshtein and Miller combine iterative decoding with algebraic methods
+for BEC maximum-likelihood decoding \cite{BurshteinMiller2004ML}.
+These results supply the algorithmic setting of the present paper.
+Our residual bijection and finite-field alternative articulate the
+success/failure certificate contract for that setting rather than
+introducing a new hybrid decoder or channel threshold.
 
-Certifying algorithms produce witnesses that can be checked separately
-from the producing algorithm \cite{McConnellEtAl2011}. Alkassar and
-coauthors connect high-level witness properties with verified checker
-implementations \cite{AlkassarEtAl2013}. Proof-carrying code supplies a
-related producer/checker division for code-safety evidence
-\cite{Necula1997PCC}. Our finite decoding certificates use this existing
-methodology. Work on linear-programming decoding is another established
-connection between decoding and optimization guarantees
-\cite{FeldmanWainwrightKarger2005LP}; its relaxation-based setting differs
-from checking a feasible BEC completion.
+Certifying algorithms separate producing a result from checking its
+witness \cite{McConnellEtAl2011}. Alkassar and coauthors connect
+high-level witness properties with verified checker implementations
+\cite{AlkassarEtAl2013}; proof-carrying code supplies a related division
+for code-safety evidence \cite{Necula1997PCC}. We apply this producer/checker
+organization to a declared local trace and its residual result.
+Linear-programming decoding also connects decoding to optimization
+guarantees \cite{FeldmanWainwrightKarger2005LP}. Its relaxation-based
+optimality setting differs from the BEC feasibility predicate and local
+trace explanation checked here.
 
-Linear logic distinguishes consumable from reusable resources
-\cite{Girard1987}, and focusing gives structured proof search
-\cite{Andreoli1992Focusing}. Nigam and Miller use subexponentials in
-algorithmic specifications with mechanisms richer than the two
+Linear logic provides the distinction between consumable and reusable
+resources \cite{Girard1987}, and focusing structures proof search
+\cite{Andreoli1992Focusing}. Nigam and Miller study algorithmic
+specifications using subexponential mechanisms richer than the two
 persistent zones used here \cite{NigamMiller2009SELL}.
-Proposition~\ref{prop:sem-label-erasure} deliberately limits our claim:
-the present rules admit a semantics-preserving translation to one
-persistent zone and to ordinary read-and-recreate multiset rewriting.
-The case-specific technical work is the delayed-propagation simulation
-and its exact trace/normalization correspondence.
+Our operational resource presentation uses this vocabulary to expose
+pending work and reusable knowledge. Proposition~\ref{prop:sem-label-erasure}
+then identifies the label distinction as inessential to these particular
+transitions. This representation result complements
+Theorem~\ref{thm:sem-adequacy}; neither is a correspondence theorem for a
+SELL sequent calculus or focused proof search.
 
-Formal coding theory also predates this artifact. Affeldt, Garrigue and
-Saikawa formalize linear error-correcting codes in Coq and extract a
-verified LDPC sum-product decoder \cite{AffeldtGarrigueSaikawa2020}.
-Our finite-field certificate and rewriting development has a different
-scope; it is not the first formal treatment of LDPC decoding. A focused
-literature audit is included with the repository, identifying these
-antecedents and the limits of the novelty claim.
+Formal coding theory supplies a closer algorithmic antecedent as well.
+Affeldt, Garrigue and Saikawa formalize linear error-correcting codes in
+Coq, including a BEC sum-product decoder with a terminating fixed-point
+construction and approximation invariants, and extract an LDPC
+sum-product implementation \cite{AffeldtGarrigueSaikawa2020}.
+Our emphasis is the exact chronological event trace of delayed
+propagation, its logged normal form, and the success/failure witnesses
+for the residual system. The canonical Lean development formalizes this
+specific correspondence with an explicit boundary to raw multisets and
+independent Python code.
 
-Recent quantum-code work further illustrates the breadth of certification.
-Ehatamm and coauthors develop Lean-based distance certificates through
-verified reductions to satisfiability \cite{EhatammEtAl2026LeanQEC}.
-Krishnamoorthy and coauthors study certificates for degenerate
-quantum-decoding optimality using partition-function comparisons
-\cite{KrishnamoorthyEtAl2026CertifiedQ}. Both are 2026 preprints with
-different target properties: neither distance certification nor
-comparison of quantum error classes is the BEC trace/feasibility
-contract studied here. Their existence also rules out treating
-``Lean plus coding certificates'' as a novelty claim by itself.
+Recent work illustrates other certification targets in coding theory.
+Ehatamm and coauthors develop Lean-based quantum-code distance
+certificates through verified reductions to satisfiability
+\cite{EhatammEtAl2026LeanQEC}. Krishnamoorthy and coauthors study
+certificates for degenerate quantum-decoding optimality using
+partition-function comparisons \cite{KrishnamoorthyEtAl2026CertifiedQ}.
+These 2026 preprints concern distance and comparison of quantum error
+classes, respectively. Their target properties differ from the BEC
+trace/feasibility contract.
 
-\section{Limitations and conclusion}\label{sec:limitations}
-The architecture separates a classical hybrid producer from a checker
-whose accepted evidence has a precise algebraic and operational meaning.
-The delayed-propagation invariant is what makes arbitrary interleavings
-compatible with valid peeling traces. The exact endpoint includes the
-accumulated log, and propagation normalization supplies the connection
-to the fully updated operational state.
+Relative to these cited developments, the specific issue addressed here
+is the connection between an asynchronously maintained residual state
+and an exact, independently checkable operational explanation.
+Theorem~\ref{thm:sem-adequacy} supplies that connection for arbitrary
+interleavings, and the residual certificate theorems extend it to either
+a compatible completion or an infeasibility witness. This is the positive
+scope of the contribution assessed against the reviewed literature;
+we make no field-wide priority claim for its combination or for the
+abstract simulation principle used to organize its proof.
 
-The differentiated subexponentials are a specification choice, and the
-paper establishes no SELLF adequacy or expressiveness separation.
-Trace checking validates a declared explanation of a result, not the
-producer's actual internal history. Direct parity and channel checking
-already establish the same final-word validity condition. An accepted
-BEC completion need not be unique or equal the transmitted word, and
-visible corruption may remain algebraically compatible. The supplied
-matrix, observation, checker and execution environment remain within
-the stated trust boundary.
+\section{Conclusion and limitations}\label{sec:limitations}
+Delayed propagation separates the stored residual resources of an
+asynchronous decoder specification from its actual operational state.
+The pending-incidence invariant quantifies this separation, and
+propagation normalization recovers the unique fully updated context.
+The principal result, Theorem~\ref{thm:sem-adequacy}, proves exact
+correspondence in both directions: arbitrary rewrite interleavings emit
+valid operational traces, and each prescribed valid trace has a realization
+with its precise logged normalized endpoint. The abstract proposition
+isolates the forward simulation, normalization and local lifting on which
+this result depends; empty and partial traces require no maximality
+assumption.
 
-The experimental conclusions are restricted to the recorded graph
-constructions, finite sizes and host environment. Three independent
-matrices per condition give limited information about ensemble
-variation, and timing fits are descriptive rather than asymptotic
-proofs. No universal speed advantage, universal corruption detection,
-verified Python extraction or fully mechanized logical calculus follows
-from these results. The remaining artifact and publication limitations
-are stated alongside the mechanization and experimental evidence.
+The residual bijection connects this trace semantics to a complete
+success/failure contract. A residual solution supplies a compatible
+codeword; a left-kernel separator excludes every compatible word.
+The Lean development proves the canonical LDPC correspondence and the
+stated certificate results, while finite tests and experiments assess
+an independent executable implementation. The representation table in
+Section~\ref{sec:lean} marks the mathematical, mechanized and tested
+connections separately.
+
+The SELL-style presentation exposes reusable knowledge and consumable
+pending work. Proposition~\ref{prop:sem-label-erasure} shows that its two
+persistent labels can be merged for these rules, thereby separating a
+useful specification discipline from what the operational proof needs.
+No SELLF adequacy or expressiveness separation follows.
+
+Trace replay certifies a declared local operational explanation, not the
+producer's true internal history. Direct checking establishes the same
+final-word validity condition and was faster in the retained measurements.
+A compatible completion need not be unique or equal the transmitted word;
+visible corruption can remain algebraically compatible. The supplied
+matrix, observation, checker and execution environment remain within the
+stated trust boundary. Python is not extracted from Lean, and the abstract
+proposition and raw-representation bridge are manuscript proofs.
+
+The experiments concern the recorded graph constructions, finite sizes
+and host. Three matrices per condition limit ensemble inference, and
+fitted scaling exponents are descriptive, not asymptotic guarantees.
+The additional trace evidence has measured checking costs; it supports
+neither a universal speed advantage nor universal corruption detection.
 
 \AtBeginEnvironment{thebibliography}{\interlinepenalty=10000}
 \bibliographystyle{alphaurl}

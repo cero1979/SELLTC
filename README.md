@@ -1,12 +1,23 @@
-# Trace-Certified Hybrid LDPC Decoding
+# Exact Trace Adequacy for LDPC Peeling
 
-This research artifact accompanies **Trace-Certified Hybrid LDPC Decoding: A SELL-Style Operational Specification**. It connects classical BEC peeling and residual Gaussian elimination to independently checkable success/failure certificates and an asynchronous transition specification inspired by subexponential linear logic.
+This research artifact accompanies **Exact Trace Adequacy for LDPC Peeling: Delayed Propagation and Residual Certificates**. It connects classical BEC peeling and residual Gaussian elimination to independently checkable success/failure certificates and an asynchronous transition specification inspired by subexponential linear logic.
 
-The central logical result relates **the same specified trace** in both directions: arbitrary admissible rewrite interleavings emit valid operational traces, and each valid operational trace has a derivation to its normalized endpoint with the accumulated log retained. Pending known incidences are represented explicitly. Two persistent SELL labels organize the specification but are not necessary for these rules; no SELLF sequent-calculus adequacy is claimed.
+The central mathematical result relates **the same specified trace** in both directions: arbitrary admissible rewrite interleavings emit valid operational traces, and each valid operational trace has a derivation to its normalized endpoint with the accumulated log retained. Pending known incidences are represented explicitly. Two persistent SELL labels organize the specification but are not necessary for these rules; no SELLF sequent-calculus adequacy is claimed.
 
 The manuscript proves success/failure soundness, certificate existence, residual equivalence, completion multiplicity, the BEC maximum-likelihood statement including endpoint qualifications, and sparse checking bounds. Direct word verification already establishes final parity and channel agreement; trace replay additionally checks a declared operational explanation. Neither implies that an untrusted producer internally followed that explanation, or that the completion is the transmitted word.
 
 See [PUBLICATION_READINESS.md](PUBLICATION_READINESS.md) for the final scope and remaining publication limitations, and [CHANGELOG_PUBLICATION.md](CHANGELOG_PUBLICATION.md) for substantive repairs. The branch is `codex/publication-audit`. No submission or public release was made.
+
+## 24 September 2026 conceptual revision
+
+Theorem 6.10 is the principal result: arbitrary asynchronous executions and prescribed operational traces correspond exactly despite delayed propagation, with the accumulated log retained after normalization. A fully proved abstract proposition separates forward simulation, canonical silent normalization and the local event lifting needed for completeness. Proposition 6.12 retains the event-preserving label-erasure result. The abstract proposition is a manuscript theorem, not a newly mechanized generic Lean result.
+
+- [REVISION_REPORT.md](REVISION_REPORT.md): section-by-section changes, title decision, mathematical scope and verification.
+- [CLAIM_AUDIT.md](CLAIM_AUDIT.md): mathematical, mechanized, implementation, empirical and literature claims.
+- [ABSTRACT_ADEQUACY_NOTE.md](ABSTRACT_ADEQUACY_NOTE.md): hypotheses, proof and LDPC instantiation.
+- [Dated verification evidence](audit/revision-2026-09-24/): fresh builds, read-only reproduction, independent reviews and current artifact hashes.
+
+The revision preserves the recorded experiments, generated tables/figures, Python implementation and Lean proof sources. Earlier reports and `audit/evidence/final-artifact-hashes.json` describe the 23 September snapshot at `d277e95`; the dated revision directory binds the current manuscript to its output. No new measurements are required to reproduce this editorial revision.
 
 ## Files
 

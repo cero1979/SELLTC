@@ -1,12 +1,23 @@
 \section{SELL-style rewriting and asynchronous adequacy}
 \label{sec:sem}
 
-We specify peeling by two rules with persistent knowledge and linear residual
-resources. The operational semantics in this section is multiset rewriting.
-The theorem relates its executions to operational peeling, including executions
-that interleave solving with unfinished propagation. A logical reading of the
-clauses motivates the resource discipline; no adequacy with a SELL sequent
-calculus or its focused variant is assumed.
+The principal result of this section is Theorem~\ref{thm:sem-adequacy}:
+an exact correspondence between asynchronous rewrite events and operational
+peeling traces. A Solve event may occur while other checks still await values
+assigned by earlier events. The stored rewrite residuals therefore cannot be
+identified directly with the fully updated operational residuals. We relate
+them through an invariant on pending incidences, then use propagation
+normalization to obtain an exact endpoint that retains every log atom.
+
+The two rules use persistent knowledge and linear residual resources. Their
+semantics here is multiset rewriting; the logical notation presents an access
+discipline rather than a SELL deductive calculus. The resulting trace can be
+checked together with the residual success or failure witnesses of
+Section~\ref{sec:certificates}. We first establish the local invariant and
+normalization results, isolate the reusable proof principle, and then prove
+the LDPC trace theorem in detail. Proposition~\ref{prop:sem-label-erasure}
+subsequently determines which distinctions in the persistent-zone presentation
+can be erased while preserving these executions.
 
 \subsection{Resources, clauses, and execution labels}
 \label{sec:sem-resources}
@@ -285,7 +296,156 @@ encoding is false even in this one-variable example.
 The logged encoding $\operatorname{Enc}_H$ makes the correct endpoint explicit.
 \end{exa}
 
-\begin{thm}[Adequacy with exact trace labels]
+\paragraph{An abstract adequacy principle.}
+The preceding argument separates three observations of an execution: its
+operational state, its ordered event trace, and the multiset of log atoms
+retained at its endpoint. The following proposition isolates a sufficient
+proof architecture. Its completeness hypothesis includes a local lifting
+condition: forward simulation and unique silent normalization alone do not
+ensure that an operational step can be performed by the concrete system.
+The proposition is a mathematical abstraction of the argument, not an
+additional mechanized result.
+
+\begin{adequacyprinciple}
+Let $\mathcal M$ be a concrete state space, $I\subseteq\mathcal M$ an
+admissibility invariant, $\mathcal S$ an operational state space, and
+$\mathcal A$ a set of observable events. Concrete transitions have labels
+in $\mathcal A\cup\{\tau\}$, where $\tau\notin\mathcal A$ is silent;
+operational transitions $\sigma\xrightarrow{a}_o\sigma'$ have labels
+$a\in\mathcal A$. Let $\mathbb M(\mathcal A)$ be the finite multisets of
+events, let $\pi:I\to\mathcal S$ and
+$\ell:I\to\mathbb M(\mathcal A)$, and let
+$\operatorname{Can}:\mathcal S\times\mathbb M(\mathcal A)\to I$.
+Assume the following conditions.
+\begin{enumerate}[label=(\arabic*),leftmargin=*]
+\item \emph{Canonical representations.}
+For every $\sigma,B$, the state $\operatorname{Can}(\sigma,B)$ is
+silent-normal, with projection $\sigma$ and log $B$.
+\item \emph{Invariant preservation and local simulation.}
+Every concrete transition from a state in $I$ ends in $I$.
+If $M\xrightarrow{\tau}_cN$, then $\pi(N)=\pi(M)$ and
+$\ell(N)=\ell(M)$. If $M\xrightarrow{a}_cN$ for $a\in\mathcal A$, then
+$\pi(M)\xrightarrow{a}_o\pi(N)$ and
+$\ell(N)=\ell(M)\uplus\{\!\{a\}\!\}$.
+These assertions concern transitions whose source lies in $I$.
+\item \emph{Terminating canonical normalization.}
+Silent reduction on $I$ terminates. Every silent-normal $N\in I$
+satisfies $N=\operatorname{Can}(\pi(N),\ell(N))$.
+\item \emph{Local lifting from canonical states.}
+For every operational step $\sigma\xrightarrow{a}_o\sigma'$ and every
+$B\in\mathbb M(\mathcal A)$, there exists a concrete transition
+$\operatorname{Can}(\sigma,B)\xrightarrow{a}_cP$ with $\pi(P)=\sigma'$.
+\end{enumerate}
+Write $M\overset{T}{\Longrightarrow_c^*}N$ for a finite concrete
+execution whose ordered nonsilent labels are $T$, and
+$\sigma\overset{T}{\longrightarrow_o^*}\sigma'$ for an operational path
+with exactly that event list. Then every $M\in I$ has the unique silent
+normal form
+\[
+ \operatorname{NF}(M)=\operatorname{Can}(\pi(M),\ell(M)),
+\]
+and silent reduction from $I$ is confluent. Moreover:
+\begin{enumerate}[label=(\roman*),leftmargin=*]
+\item If $M\overset{T}{\Longrightarrow_c^*}N$, with $M\in I$, then
+$N\in I$,
+\[
+ \pi(M)\overset{T}{\longrightarrow_o^*}\pi(N),\qquad
+ \ell(N)=\ell(M)\uplus\operatorname{Log}(T),
+\]
+and $N$ silently normalizes to
+$\operatorname{Can}(\pi(N),\ell(M)\uplus\operatorname{Log}(T))$.
+\item For every $M\in I$ and every specified operational path
+$\pi(M)\overset{T}{\longrightarrow_o^*}\sigma'$, there is a concrete
+execution
+\[
+ M\overset{T}{\Longrightarrow_c^*}
+ \operatorname{Can}(\sigma',\ell(M)\uplus\operatorname{Log}(T)).
+\]
+\end{enumerate}
+Here $\operatorname{Log}(T)$ is the multiset image of the ordered list $T$;
+the endpoint log need not determine that list. No determinism of operational
+steps or confluence of the full concrete transition system is assumed.
+\end{adequacyprinciple}
+\begin{proof}
+First consider silent reduction from $M\in I$. Termination gives a
+silent-normal descendant: by well-founded induction on silent reduction,
+take $M$ itself when it is normal, and otherwise take a silent successor
+and apply the induction hypothesis to it. Invariant preservation keeps
+every state in $I$. Repeated use of condition~(2) shows that a normal
+descendant $N$ has projection $\pi(M)$ and log $\ell(M)$. Condition~(3)
+therefore identifies it with $\operatorname{Can}(\pi(M),\ell(M))$.
+This proves existence and uniqueness of the stated normal form. Any two
+silent descendants of $M$ also have the same projection and log, and
+each reduces to that same canonical state. Thus they have a common
+silent descendant, proving confluence of silent reduction on $I$.
+
+For (i), induct on the number of concrete events. For an empty execution,
+the operational path is empty and the log is unchanged. For the induction
+step, assume that the prefix ends at $P\in I$ with operational event list
+$T_0$ and log $\ell(M)\uplus\operatorname{Log}(T_0)$. A silent next event
+preserves both projection and log by condition~(2), so the same operational
+path and event list suffice. An event labelled $a\in\mathcal A$ supplies
+the operational step $\pi(P)\xrightarrow{a}_o\pi(N)$ and adds one occurrence
+of $a$ to the log. Append this step to the path. Its ordered list is
+$T_0\mathbin{+\!+}[a]$, whose multiset image is
+$\operatorname{Log}(T_0)\uplus\{\!\{a\}\!\}$. In either case the
+invariant is preserved. This proves the path and log assertions, and the
+normalization result already proved gives the claimed endpoint.
+
+For (ii), induct on the length of the specified operational path, allowing
+any admissible initial concrete state. When the path is empty,
+$\sigma'=\pi(M)$, and the silent normalization of $M$ supplies the required
+execution. For a nonempty path, write its first step as
+$\pi(M)\xrightarrow{a}_o\sigma_1$ and its remaining event list as $T_1$.
+Normalize $M$ silently to $\operatorname{Can}(\pi(M),\ell(M))$.
+Condition~(4) then gives an $a$-labelled transition to $P$ with
+$\pi(P)=\sigma_1$. By condition~(2), $P\in I$ and
+$\ell(P)=\ell(M)\uplus\{\!\{a\}\!\}$. Apply the induction hypothesis
+to $P$ and the remaining operational path. Its endpoint is
+\[
+ \operatorname{Can}(\sigma',\ell(P)\uplus\operatorname{Log}(T_1))
+ =\operatorname{Can}(\sigma',\ell(M)\uplus\operatorname{Log}(a::T_1)).
+\]
+Concatenating the initial silent normalization, the one observable event,
+and the inductively obtained execution gives exactly the ordered list
+$a::T_1$. This establishes (ii), including paths that stop before any
+maximality condition holds.
+\end{proof}
+
+\paragraph{Instantiation to peeling.}
+Fix $H$. Take $I$ to be the raw contexts of
+Definition~\ref{def:sem-admissible}, $\mathcal S$ the coherent operational
+states, $\pi$ the projection of Definition~\ref{def:sem-projection}, and
+$\ell(M)$ the multiset of its $\mathsf{step}$ atoms, viewed as triples.
+Silent transitions are Propagate; an observable transition is Solve with
+its triple label. Define $\operatorname{Can}_H(\sigma,B)$ by the normalized
+encoding with log multiset $B$. Equivalently, it is
+$\operatorname{Enc}_H(\sigma,T)$ for any list with
+$\operatorname{Log}(T)=B$: this is well-defined because that encoding
+depends on $T$ only through its multiset image. Chronological order remains
+part of the execution, not something recovered from $B$.
+
+The normalized encoding supplies condition~(1).
+Lemmas~\ref{lem:sem-propagate} and~\ref{lem:sem-solve} supply condition~(2),
+and Lemma~\ref{lem:sem-normalization} supplies condition~(3), including
+the exact canonical normal form. For condition~(4), let $(j,i,b)$ be any
+valid operational step from $\sigma$. In its normalized encoding,
+$Q_j=\Nb(j)\cap U=\{i\}$ and $p_j=s(j)=b$, so the unique residual,
+pending, and unknown tokens enable precisely this Solve event, independently
+of the previous log $B$. Lemma~\ref{lem:sem-solve} identifies the projection
+of its successor with the prescribed operational successor. This verifies
+local lifting without assuming the adequacy theorem being proved.
+
+For the received-word initial state, Lemma~\ref{lem:sem-init} supplies
+initialization. The other ingredients are silent propagation stuttering,
+solving-step simulation, and terminating propagation normalization with a
+unique normal form and commuting propagation steps. Together with the
+explicit local lifting just verified, they give the following main theorem.
+We retain its direct proof to display the exact assignments and logs in the
+peeling instance.
+
+\Needspace{20\baselineskip}
+\begin{thm}[Main theorem: adequacy with exact trace labels]
 \label{thm:sem-adequacy}
 Let $\sigma_0$ be the initial state for $(H,y)$, and let
 $M_0=\operatorname{Enc}_H(\sigma_0,[\,])$.
@@ -340,6 +500,25 @@ its remaining events are all $\tau$. Concatenating it with the prefix
 execution establishes the induction step.
 \end{proof}
 
+The soundness direction applies to the events of the given execution, even
+when a Solve occurs before earlier assignments have propagated to every
+adjacent check. Completeness realizes each prescribed valid trace; it does
+not replace that trace by another successful schedule. Normalization is
+needed only to compare the stored residual resources with the fully updated
+operational state. It changes neither the assignment nor the event history,
+and the exact endpoint retains the log atoms that no rule removes.
+
+The correspondence also links rewriting to certificate checking.
+By Lemma~\ref{lem:core-residual}, replaying the emitted trace gives a residual
+system whose solutions are exactly the compatible completions. Theorems
+\ref{thm:core-success} and~\ref{thm:core-failure} then supply the success or
+infeasibility contract for that same trace. This applies also to empty and
+partial executions: certificate checking reconstructs the operational
+residual from replay and does not require all concrete propagations to have
+finished. The abstract proposition organizes the trace argument; the
+certificate conclusions additionally use the binary linear algebra of
+Section~\ref{sec:certificates}.
+
 \begin{prop}[Maximal executions and stopping]
 \label{prop:sem-stopping}
 The endpoint of a maximal rewrite execution from $M_0$ is normalized.
@@ -377,9 +556,12 @@ syntax and structural permissions. In this paper the executable meaning
 is exactly the two operational rules already defined. Structural proof rules
 are not extra transitions of that operational system.
 
-The two unbounded labels distinguish static data from learned information,
-but their distinction is not necessary for the operational result. The
-following statement identifies the precise scope of that observation.
+The subexponential presentation exposes the intended access discipline:
+static data and reusable clauses occupy $S$, while newly learned values
+occupy $K$. The following proposition identifies a distinction that is
+semantically inessential for this transition system. It gives a controlled
+comparison with one persistent zone and with ordinary multiset rewriting,
+preserving the events used by the main theorem.
 
 \begin{prop}[Erasing persistent-zone labels preserves these executions]
 \label{prop:sem-label-erasure}
@@ -426,14 +608,22 @@ endpoint in the other image, with the same event label. Invariant
 preservation ensures that subsequent contexts stay in these images.
 \end{proof}
 
-Thus differentiated persistent zones supply a disciplined presentation of
-access patterns; this particular specification does not establish their
-necessity or an increase in operational expressiveness. The theorem is about
-the two stated rewrite systems, not an equivalence between full logical
-calculi. In particular, it does not establish an adequacy theorem for a
-focused calculus of the kind studied in
-\cite{Andreoli1992Focusing,NigamMiller2009SELL}.
-The mathematical contribution used by certification is
-Theorem~\ref{thm:sem-adequacy}: exact trace correspondence despite delayed
-propagation, together with explicit invariants and a unique propagation
-normal form.
+Proposition~\ref{prop:sem-label-erasure} separates the persistent-zone
+vocabulary from the operational obligations used by certification. Its
+translations retain the event labels, assignments, pending incidences,
+residual tokens, and logs. Hence the invariant and exact trace correspondence
+of Theorem~\ref{thm:sem-adequacy} survive erasure of the $S/K$ distinction.
+The sufficient ingredients isolated by the abstract principle are invariant
+preservation, projection and log behavior, canonical silent normalization,
+and local lifting. Their use here does not depend on a comparison between
+subexponential labels.
+
+Differentiated persistent zones thus supply a specification discipline,
+without an increase in operational expressiveness for these rules. The
+proposition concerns the two stated rewrite systems, not an equivalence
+between full logical calculi or a minimality theorem for resource-sensitive
+representations. In particular, it does not establish adequacy for a focused
+calculus of the kind studied in
+\cite{Andreoli1992Focusing,NigamMiller2009SELL}. The certification result
+remains the exact event-labelled correspondence despite delayed propagation,
+with the log and normalization conditions made explicit.

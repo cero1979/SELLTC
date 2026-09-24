@@ -371,8 +371,11 @@ failure witness adds $m$ bits. For $m=O(n)$ and $t\leq n$, these are
 $O(n\log(n+1))$ and $O(n\log(n+1)+m)$ respectively.
 A direct success witness is simply an $n$-bit word. It proves parity
 and visible-coordinate agreement without proving a declared peeling
-trace. Consequently trace replay purchases an additional explanatory
-property, not a stronger final-word validity guarantee. For an
+trace. Replay additionally checks that every declared local assignment
+is justified by a degree-one check in the preceding operational state.
+It therefore certifies a local operational explanation, not a stronger
+final-word correctness predicate. This explanation concerns the supplied
+trace, not the producer's actual internal history. For an
 empty trace, a failure witness for the initial erasure system already
 certifies impossibility without any peeling history.
 

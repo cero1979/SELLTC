@@ -1,0 +1,20 @@
+Title:           Exact Trace Adequacy for LDPC Peeling: Delayed Propagation and Residual Certificates
+Keywords:        LDPC codes, binary erasure channel, certifying algorithms, subexponential linear logic, multiset rewriting, trace adequacy, Lean
+Author:          Carlos Ramírez Ovalle
+Creator:         LaTeX with hyperref
+Producer:        xdvipdfmx (0.1)
+CreationDate:    Thu Sep 24 07:56:01 2026 -05
+Custom Metadata: no
+Metadata Stream: no
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           27
+Encrypted:       no
+Page size:       612 x 792 pts (letter)
+Page rot:        0
+File size:       522673 bytes
+Optimized:       no
+PDF version:     1.5

@@ -1,0 +1,92 @@
+[
+  {
+    "file": "paper/core.tex",
+    "label": "lem:core-invariant",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "prop:core-stopping",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "lem:core-residual",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "thm:core-success",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "lem:core-alternative",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "prop:core-extraction",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "thm:core-failure",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "prop:core-nullity",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "prop:core-ml",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/core.tex",
+    "label": "prop:core-cost",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/semantics.tex",
+    "label": "lem:sem-init",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/semantics.tex",
+    "label": "lem:sem-propagate",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/semantics.tex",
+    "label": "lem:sem-solve",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/semantics.tex",
+    "label": "lem:sem-normalization",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/semantics.tex",
+    "label": "prop:sem-termination",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/semantics.tex",
+    "label": "thm:sem-adequacy",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/semantics.tex",
+    "label": "prop:sem-stopping",
+    "statement_and_proof_unchanged": true
+  },
+  {
+    "file": "paper/semantics.tex",
+    "label": "prop:sem-label-erasure",
+    "statement_and_proof_unchanged": true
+  }
+]

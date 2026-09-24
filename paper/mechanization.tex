@@ -26,6 +26,38 @@ in Section~\ref{sec:sem}; the Lean development operates on the
 canonical representation rather than mechanizing a quotient of all
 malformed raw multisets. The log field records chronological events;
 its multiset image represents the manuscript's unordered log atoms.
+A raw context alone does not determine that order. The correspondence
+therefore relates a raw context $M$ together with a declared history
+$T$, whose multiset image is the log of $M$, to the canonical context
+$(K,Q,T)$; it does not reconstruct $T$ from the final multiset.
+
+\begin{table}[t]
+\centering\small
+\caption{Representation and evidence boundaries. Arrows between the
+layers require the correspondence stated here; they are not all
+mechanized refinements.}
+\label{tab:representation-boundary}
+\begin{tabular}{>{\raggedright\arraybackslash}p{.21\textwidth}>{\raggedright\arraybackslash}p{.31\textwidth}>{\raggedright\arraybackslash}p{.39\textwidth}}
+\toprule
+Layer & Representation & Evidence for the correspondence \\
+\midrule
+Raw token execution & Admissible multiset $M$ and declared history $T$ &
+Exact multiplicities, delayed residual fields and unordered log:
+manuscript invariant and proof in Section~\ref{sec:sem}. \\
+Canonical asynchronous Lean & Partial assignment $K$, pending sets $Q_j$,
+ordered observer $T$ &
+Invariant preservation, arbitrary-interleaving soundness and exact
+trace completeness: kernel-checked for this representation. \\
+Canonical operational Lean & State $K$ with derived syndromes and degrees;
+typed traces and witnesses &
+Kernel-checked replay relation and success/failure certificate theorems. \\
+Python checker and adapter & Cached arrays, adjacency lists and serialized
+residual witnesses &
+Finite differential agreement with the typed Lean checker; no general
+proof of parsing, cache refinement or program equivalence. \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 The relation \texttt{RewStar H C T D} has the event list $T$ as an
 explicit index. Its soundness theorem accepts arbitrary interleavings
@@ -36,6 +68,10 @@ for the very same prescribed $T$, ending at
 log followed by $T$. It does not assert equality with an encoding that
 discards the Solve events, and it does not attempt to extract ordered
 data by eliminating a proof-irrelevant reachability proposition.
+The abstract adequacy principle in Section~\ref{sec:sem} is a manuscript
+result. The Lean library proves the corresponding concrete LDPC
+properties; it contains no generic adequacy theorem for arbitrary
+labelled transition systems.
 
 \begin{table}[t]
 \centering\small

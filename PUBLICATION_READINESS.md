@@ -1,5 +1,18 @@
 # Publication readiness
 
+## Current revision: 24 September 2026
+
+The current manuscript is **Exact Trace Adequacy for LDPC Peeling: Delayed Propagation and Residual Certificates**. Theorem 6.10 is its principal result; the new abstract proposition makes local lifting and canonical normalization explicit. The certificate algebra, event-preserving label erasure and existing formalization limits are retained. Recorded experimental artifacts and implementation/proof sources are preserved.
+
+The current PDF has **27 pages** and passes the fresh reference, compilation and visual checks. A clean Lean build/51-declaration axiom audit and all 29 Python tests passed; read-only reproduction matched the saved matrices and outcomes. The new abstract result remains a manuscript proof with an independent mathematical review.
+
+See [REVISION_REPORT.md](REVISION_REPORT.md), [CLAIM_AUDIT.md](CLAIM_AUDIT.md), [ABSTRACT_ADEQUACY_NOTE.md](ABSTRACT_ADEQUACY_NOTE.md) and `audit/revision-2026-09-24/` for the current revision and verification. The user authorized updating the existing remote branch `codex/publication-audit`; public release, merging `main`, arXiv posting and journal submission remain outside this task.
+
+## Historical assessment: 23 September 2026
+
+The assessment below is preserved as a dated record of the previous 23-page manuscript and its local reconstruction. Statements below about the page count, hashes and absence of a push describe that earlier snapshot, not the subsequent authorized branch updates.
+
+
 Assessment date: **23 September 2026**. Repository: `cero1979/SELLTC`. Local branch: `codex/publication-audit`.
 
 ## Decision

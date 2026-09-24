@@ -1,0 +1,833 @@
+You are acting as a senior researcher and editor in formal methods, linear logic,
+rewriting semantics, certifying algorithms, and coding theory.
+
+You are working on the LaTeX source repository of the manuscript:
+
+    "TRACE-CERTIFIED HYBRID LDPC DECODING:
+     A SELL-STYLE OPERATIONAL SPECIFICATION"
+
+The current manuscript is intended for a venue such as Logical Methods in Computer
+Science (LMCS).
+
+Your task is NOT merely to proofread the paper.
+
+Your task is to revise the manuscript so that its actual mathematical contribution is
+made substantially clearer and stronger, while preserving mathematical correctness,
+the existing experimental data, the Lean verification scope, and all justified limitations.
+
+The central editorial diagnosis is the following:
+
+1. The strongest contribution of the paper is not that SELL is used to describe LDPC
+   decoding.
+
+2. The central mathematical contribution is the exact correspondence between:
+      - asynchronous multiset rewriting with delayed propagation,
+      - operational peeling traces,
+      - propagation normalization,
+      - and independently checkable algebraic success/failure certificates.
+
+3. In particular, Theorem 6.10 should become the conceptual centerpiece of the paper.
+
+4. Proposition 6.12 correctly shows that the distinction between the two persistent
+   subexponential labels is NOT necessary for the particular operational system studied.
+   This must NOT be hidden, weakened, or contradicted.
+   Instead, it should be reframed as a scientifically meaningful result:
+   the paper identifies which part of the resource-sensitive architecture is essential
+   for trace certification and which part is merely a useful specification discipline.
+
+5. The paper should therefore NOT make stronger claims about SELL expressiveness,
+   SELLF adequacy, proof search, or logical necessity than are actually proved.
+
+6. If mathematically possible from the current machinery, the paper should extract
+   an abstract delayed-propagation trace-adequacy principle from the LDPC-specific
+   development, with LDPC peeling presented as an instance.
+   However, NO theorem may be invented and NO hypothesis may be silently omitted.
+   If the abstraction cannot be rigorously proved using the current framework, do not
+   pretend that it has been proved. Instead, either:
+       (a) formulate and prove the strongest correct abstract proposition supported by
+           the current arguments, or
+       (b) explain the general pattern informally in a clearly labelled discussion,
+           without presenting it as a theorem.
+
+The revision must be rigorous enough that a specialist referee in formal methods,
+linear logic, rewriting systems, or semantics cannot reasonably accuse the paper of
+overselling SELL or conflating operational semantics with logical adequacy.
+
+
+======================================================================
+A. FIRST: AUDIT THE COMPLETE REPOSITORY
+======================================================================
+
+Before editing anything:
+
+1. Identify:
+   - the main LaTeX source;
+   - included .tex files;
+   - bibliography files;
+   - theorem environments;
+   - figures and tables;
+   - scripts generating experimental results;
+   - Lean sources;
+   - README/reproducibility material;
+   - any supplementary verification report.
+
+2. Read the complete manuscript before modifying it.
+
+3. Build a dependency map of the main mathematical results, especially:
+
+   Lemma 2.2
+        ->
+   Lemma 3.1
+        ->
+   Theorems 3.3 and 3.6
+
+   and
+
+   Definitions 6.1--6.2
+        ->
+   Lemmas 6.4--6.7
+        ->
+   Proposition 6.8
+        ->
+   Theorem 6.10
+        ->
+   Proposition 6.11
+        ->
+   Proposition 6.12.
+
+4. Verify that every proposed change respects this dependency structure.
+
+5. Check all theorem references, equation references, section references, figure/table
+   references, bibliography citations, and Lean declaration names.
+
+6. Do not change experimental numbers unless they can be regenerated from the supplied
+   scripts and raw data and there is a demonstrable error.
+
+7. Do not alter the meaning of existing Lean claims unless the corresponding Lean source
+   is also updated and successfully compiled.
+
+Create an internal revision plan before editing.
+
+
+======================================================================
+B. REPOSITION THE CENTRAL CONTRIBUTION
+======================================================================
+
+Revise the Abstract, Introduction, contribution list, Section 6 introduction,
+Related Work, and Conclusion so that the scientific story is approximately:
+
+    classical hybrid BEC decoder
+           |
+           v
+    independently checkable certificates
+           |
+           v
+    asynchronous operational specification
+           |
+           v
+    delayed-propagation invariant
+           |
+           v
+    propagation normalization
+           |
+           v
+    exact event-labelled trace adequacy
+           |
+           v
+    mechanized counterpart + executable checker
+
+The reader should understand very early that:
+
+- peeling and Gaussian elimination are classical;
+- certifying algorithms are classical;
+- the novelty is NOT a new LDPC decoder;
+- the novelty is NOT that linear logic has reusable resources;
+- the novelty is the precise certification semantics connecting an asynchronous
+  rewrite execution with a valid operational peeling trace despite delayed propagation,
+  while also incorporating independently checkable residual algebraic certificates.
+
+Rewrite the paper so that Theorem 6.10 is clearly identified as the principal theorem.
+
+Do this explicitly but without exaggerated novelty claims.
+
+
+======================================================================
+C. ABSTRACT
+======================================================================
+
+Rewrite the Abstract.
+
+The revised abstract should, in this order:
+
+1. State the concrete problem:
+   certifying hybrid LDPC decoding over the binary erasure channel.
+
+2. Explain the semantic difficulty:
+   asynchronous executions may solve variables before all adjacent checks have
+   incorporated those values, so naive state identification is invalid.
+
+3. State the central technical device:
+   the delayed-incidence / delayed-propagation invariant.
+
+4. State the main result:
+   arbitrary rewrite interleavings produce valid operational traces, and every valid
+   operational trace has a corresponding execution reaching the exact logged endpoint
+   after propagation normalization.
+
+5. Mention success and failure certificates:
+      - compatible completion;
+      - left-kernel infeasibility witness.
+
+6. Mention mechanization and experiments only after the mathematical contribution.
+
+7. Explicitly state, concisely, that differentiated subexponential labels provide a
+   specification discipline but are not required for this particular transition system.
+
+8. Avoid presenting SELL as the central novelty.
+
+9. Avoid phrases suggesting adequacy with a focused SELL calculus.
+
+Keep the abstract compact and journal-appropriate.
+
+
+======================================================================
+D. INTRODUCTION
+======================================================================
+
+Substantially improve the Introduction.
+
+It must distinguish four levels:
+
+    (i) classical decoding algorithm,
+    (ii) certificate contract,
+    (iii) asynchronous trace semantics,
+    (iv) logical/resource-sensitive presentation.
+
+Add a clearly written paragraph explaining why asynchronous propagation is technically
+nontrivial.
+
+Explain the failure of the naive identification:
+
+    stored rewrite residual
+        !=
+    fully propagated operational residual
+
+during intermediate executions.
+
+Introduce, informally but accurately, the role of:
+
+    Q_j,
+    D_j,
+    p_j,
+    d(j),
+    s(j).
+
+The Introduction should preview the identities
+
+    |Q_j| = d(j) + |D_j|
+
+and
+
+    s(j) = p_j XOR (XOR of K(i) over i in D_j),
+
+without overloading the introduction with notation.
+
+Explain that these equations quantify exactly how an asynchronous stored state differs
+from the fully updated operational state.
+
+Then explicitly preview Theorem 6.10.
+
+Add a concise numbered or paragraph-style contribution summary, preferably with
+approximately four principal contributions:
+
+1. certificate algebra for success/failure;
+2. delayed-propagation invariant and normalization;
+3. exact trace adequacy for arbitrary interleavings;
+4. mechanized/executable validation with an explicitly stated trust boundary.
+
+SELL should appear as a specification framework supporting the resource discipline,
+not as an unsupported expressiveness result.
+
+
+======================================================================
+E. STRENGTHEN THE CONCEPTUAL ROLE OF THEOREM 6.10
+======================================================================
+
+Review Section 6 in detail.
+
+Theorem 6.10 must be visually and conceptually presented as the main theorem.
+
+Immediately before it, add a short paragraph explaining that the preceding lemmas
+establish the four ingredients:
+
+    1. initialization,
+    2. silent propagation stuttering,
+    3. solving-step simulation,
+    4. terminating and confluent propagation normalization.
+
+Immediately after Theorem 6.10, add a concise interpretation paragraph explaining:
+
+- what the soundness direction says;
+- what the completeness direction says;
+- why arbitrary interleavings matter;
+- why the exact logged endpoint matters;
+- why normalization is necessary.
+
+Do not change the theorem statement unless a genuine mathematical improvement is
+justified.
+
+Verify carefully that partial and empty traces remain covered.
+
+
+======================================================================
+F. ABSTRACT THE DELAYED-PROPAGATION PRINCIPLE IF POSSIBLE
+======================================================================
+
+This is the most intellectually important optional strengthening.
+
+Examine whether Lemmas 6.4--6.7 and Theorem 6.10 can be factored into a generic
+meta-principle independent of the detailed LDPC algebra.
+
+Look for an abstraction containing, at minimum:
+
+- a concrete asynchronous state space M;
+- an operational state space Sigma;
+- a projection pi : M -> Sigma;
+- silent propagation transitions tau;
+- observable Solve transitions labelled by operational events;
+- an admissibility invariant I;
+- a normalization operation NF;
+- preservation of pi by silent transitions;
+- simulation of labelled Solve transitions;
+- termination of silent normalization;
+- local commutation / uniqueness of normalized form.
+
+Investigate whether one can prove a proposition/theorem schematically of the form:
+
+    If
+       (a) silent propagation preserves the operational projection,
+       (b) each observable rewrite event simulates one operational step,
+       (c) silent propagation terminates,
+       (d) silent propagation has a unique normal form,
+    then
+       event-labelled rewrite executions are sound with respect to operational traces,
+       and operational traces can be realized by normalized rewrite executions.
+
+CRITICAL REQUIREMENTS:
+
+- Do not introduce such a theorem unless every hypothesis and conclusion can be proved.
+- Do not use category-theoretic, rewriting-theoretic, or concurrency terminology
+  stronger than what has actually been established.
+- Do not claim Church-Rosser, global confluence, bisimulation, adequacy, or completeness
+  unless the precise definitions and proofs support the term.
+- If a full abstract theorem would require too much new machinery, instead create a
+  short subsection entitled something like:
+
+      "The delayed-propagation adequacy pattern"
+
+  and explain the reusable proof architecture informally.
+
+If a rigorous abstract theorem IS feasible without destabilizing the paper:
+- state it before the LDPC-specific adequacy theorem;
+- prove it fully;
+- then state Theorem 6.10 as an instance/corollary, or clearly explain the instantiation.
+
+Preserve detailed proofs. Do NOT replace proofs by "proof sketches".
+
+
+======================================================================
+G. REFRAME SELL AND PROPOSITION 6.12
+======================================================================
+
+Section 6.4 needs careful editorial treatment.
+
+Do NOT weaken Proposition 6.12.
+
+Instead make its scientific role clearer.
+
+The paper should explain that:
+
+- the S and K labels distinguish static reusable information from learned reusable
+  information;
+- this is useful as a specification discipline;
+- nevertheless, for the two operational rules studied here, the labels do not increase
+  operational expressive power;
+- the distinction can be erased while preserving event-labelled transitions on the
+  specified class of contexts;
+- therefore the central certification result depends on the resource-sensitive
+  asynchronous architecture, not on a claimed strict expressive advantage of SELL.
+
+Use language such as:
+
+    "The subexponential presentation exposes the intended access discipline, whereas
+     Proposition 6.12 identifies which part of that discipline is semantically inessential
+     for this particular transition system."
+
+or an equivalent mathematically precise formulation.
+
+Avoid suggesting:
+- SELLF adequacy;
+- focused proof-search adequacy;
+- logical completeness;
+- strict expressiveness separation;
+- necessity of multiple subexponential labels.
+
+Retain the explicit limitation already present in the manuscript.
+
+
+======================================================================
+H. EXPLAIN THE VALUE OF TRACE CERTIFICATION
+======================================================================
+
+Strengthen the distinction between:
+
+    direct final-word checking
+
+and
+
+    trace replay.
+
+The paper already proves that both admit the same asymptotic sparse upper bound for
+the final-word validity property.
+
+Make explicit that replay does NOT strengthen the mathematical statement
+
+    Hx = 0 and visible-coordinate agreement.
+
+Instead replay certifies an additional intensional property:
+
+    each declared local assignment is justified by a valid degree-one peeling step
+    relative to the preceding operational state.
+
+Use precise language such as:
+
+    "Trace replay certifies a local operational explanation, not a stronger final-word
+     correctness predicate."
+
+This distinction should appear:
+- in the Introduction;
+- near Proposition 5.1;
+- in the interpretation of experiments;
+- in the Conclusion.
+
+Do not suggest that trace checking is faster than direct checking.
+
+The measured results showing direct checking to be faster must remain visible.
+
+
+======================================================================
+I. LEAN / RAW MULTISET CORRESPONDENCE
+======================================================================
+
+Clarify the formalization boundary.
+
+The manuscript currently distinguishes:
+- raw multiset contexts in the mathematical presentation;
+- canonical finite representations in Lean;
+- the independently implemented Python checker.
+
+Make this relation easier for a referee to understand.
+
+Add, if appropriate, a compact commutative-style diagram or textual diagram:
+
+    raw multiset context
+          | canonical representation
+          v
+    Lean asynchronous context
+
+with corresponding rewrite/event relations.
+
+Clearly label which correspondences are:
+- formally mechanized in Lean;
+- mathematically proved in the manuscript;
+- empirically cross-checked;
+- outside the formal trust boundary.
+
+Do NOT imply that Python refinement is proved.
+
+Do NOT imply that parsing, serialization, compiler behavior, runtime behavior,
+or measured execution times are formally verified.
+
+Preserve the current honesty of the trust-boundary discussion.
+
+
+======================================================================
+J. EXPERIMENTS
+======================================================================
+
+Do NOT redesign the experiments unless required to repair a demonstrable inconsistency.
+
+Preserve:
+- all trial counts;
+- all matrices;
+- all seeds;
+- all timing data;
+- all corruption data;
+- all reported confidence/bootstrap intervals;
+- all figures;
+- all tables,
+unless an actual reproducibility bug is discovered.
+
+Do not manipulate the experiments to make the approach look better.
+
+In particular preserve the negative or non-favorable observations:
+
+- direct checking may be faster than trace replay;
+- trace checking can be a substantial portion of total runtime;
+- clean completion does not imply exact recovery;
+- nonunique completions occur;
+- some corrupted observations remain algebraically compatible;
+- the observed scaling fit is descriptive rather than an asymptotic theorem.
+
+The experimental section should support the conceptual claim:
+
+    certification provides additional trace evidence at measurable cost.
+
+It should NOT be used to claim universal speedup.
+
+
+======================================================================
+K. RELATED WORK
+======================================================================
+
+Rewrite the Related Work section to reduce its defensive tone.
+
+Keep all necessary priority acknowledgements:
+
+- classical LDPC decoding;
+- BEC peeling/stopping sets;
+- hybrid iterative + algebraic decoding;
+- certifying algorithms;
+- proof-carrying code;
+- formal coding theory;
+- SELL/subexponentials;
+- focusing;
+- relevant recent certificate/formalization work.
+
+However, after delimiting what is not novel, add a precise positive gap statement.
+
+The gap statement must be conservative and supported by the bibliography.
+
+A possible formulation to verify and refine is:
+
+    "Within the literature reviewed here, we are not aware of an exact event-labelled
+     correspondence between asynchronous delayed propagation and operational peeling
+     combined with independently checkable residual success/failure certificates and
+     a mechanized counterpart."
+
+DO NOT use this sentence blindly.
+
+First verify whether every part is supported by the literature currently cited.
+If external literature searching is unavailable, qualify the statement explicitly as
+being relative to the cited literature.
+
+Never claim "first", "novel", "unprecedented", or "to our knowledge" without a
+defensible literature basis.
+
+
+======================================================================
+L. CONCLUSION
+======================================================================
+
+Rewrite the Conclusion so that it starts with the positive mathematical contribution,
+not with limitations.
+
+Suggested logical order:
+
+1. asynchronous delayed-propagation problem;
+2. invariant and normalization;
+3. exact trace adequacy;
+4. success/failure certificate contract;
+5. mechanized and executable evidence;
+6. role of SELL;
+7. limitations.
+
+Keep all scientifically important limitations, including:
+
+- differentiated subexponentials are not operationally necessary here;
+- no SELLF adequacy is established;
+- trace checking verifies a declared explanation, not the producer's true internal
+  history;
+- direct checking proves the same final-word validity condition;
+- compatible completion need not be unique;
+- compatible completion need not equal the transmitted word under corruption;
+- no universal speed advantage is claimed;
+- Python is not extracted from Lean.
+
+The limitations should strengthen credibility rather than dominate the conclusion.
+
+
+======================================================================
+M. TITLE
+======================================================================
+
+Evaluate whether the current title
+
+    "Trace-Certified Hybrid LDPC Decoding:
+     A SELL-Style Operational Specification"
+
+correctly reflects the revised scientific center.
+
+Do NOT automatically change it.
+
+If a better title materially improves positioning, propose 3 alternatives in the
+revision report.
+
+Possible directions include formulations emphasizing:
+- asynchronous trace certification;
+- delayed propagation;
+- operational adequacy;
+- resource-sensitive specification.
+
+Do not use "SELL" in the title merely for visibility if SELL is not the central theorem.
+
+Only change the manuscript title if the new title is clearly preferable and explain why.
+
+
+======================================================================
+N. MATHEMATICAL AUDIT
+======================================================================
+
+While revising, independently audit all proofs affected by the changes.
+
+Pay particular attention to:
+
+1. Definition 6.1:
+   exact multiplicities and the inclusions
+
+       N(j) ∩ U ⊆ Q_j ⊆ N(j).
+
+2. Equation relating delayed incidences:
+
+       |Q_j| = d(j) + |D_j|,
+
+   and the corresponding syndrome equation.
+
+3. Lemma 6.5:
+   propagation preserves admissibility and stutters under pi.
+
+4. Lemma 6.6:
+   Solve implies a genuinely valid degree-one operational step.
+
+5. Lemma 6.7:
+   termination, uniqueness of propagation normal form, and commutation.
+
+6. Proposition 6.8:
+   global rewrite termination.
+
+7. Theorem 6.10:
+   arbitrary-interleaving soundness and prescribed-trace completeness.
+
+8. Proposition 6.12:
+   exact domain on which label erasure / ordinary rewriting correspondence is valid.
+
+9. Distinguish carefully:
+   - confluence of propagation,
+   - arbitrary Solve behavior,
+   - maximal execution,
+   - normalization,
+   - stopping,
+   - consistency.
+
+10. Verify that inconsistent observations are handled correctly, especially when
+    multiple degree-one checks can force incompatible values.
+
+If you discover any gap:
+- do not conceal it;
+- repair the statement/proof;
+- record the issue and repair in the revision report.
+
+
+======================================================================
+O. STYLE
+======================================================================
+
+The final manuscript must:
+
+- read like a mature LMCS/formal-methods paper;
+- use precise mathematical English;
+- avoid marketing language;
+- avoid unnecessary repetition;
+- preserve complete proofs;
+- avoid "clearly", "obviously", and similar shortcuts where an argument is needed;
+- distinguish theorem, implementation evidence, and empirical observation;
+- avoid anthropomorphic descriptions of Lean/Python;
+- maintain notation consistently;
+- retain the paper's current cautious scientific tone.
+
+Do not shorten rigorous proofs merely to save space.
+
+
+======================================================================
+P. BIBLIOGRAPHY
+======================================================================
+
+Audit every reference used in the revised text.
+
+Do NOT invent references.
+
+Do NOT add references merely to increase bibliography size.
+
+If a new citation is necessary:
+- verify that it is real;
+- verify bibliographic metadata;
+- explain exactly why it is relevant.
+
+Do not add loosely related SELL, LDPC, theorem-proving, or rewriting literature that
+would damage thematic coherence.
+
+If literature cannot be verified from the available environment, do not fabricate it.
+Instead flag the proposed citation in the revision report.
+
+
+======================================================================
+Q. BUILD AND VERIFICATION
+======================================================================
+
+After editing:
+
+1. Compile the complete LaTeX manuscript.
+
+2. Resolve:
+   - undefined references;
+   - multiply defined labels;
+   - bibliography errors;
+   - overfull boxes that materially affect readability;
+   - malformed equations;
+   - figure/table placement problems.
+
+3. If Lean is present and build instructions are available:
+   run the Lean build and verify that no theorem has been broken.
+
+4. Run existing tests/reproducibility checks where practical.
+
+5. Do NOT regenerate experimental data unless necessary.
+
+6. Record all commands executed and their outcome.
+
+
+======================================================================
+R. DELIVERABLES
+======================================================================
+
+At the end, produce:
+
+1. The fully revised LaTeX manuscript.
+
+2. A compiled PDF.
+
+3. A file named, for example:
+
+       REVISION_REPORT.md
+
+   containing:
+
+   A. Executive summary of the conceptual revision.
+
+   B. Section-by-section changes.
+
+   C. Mathematical changes.
+
+   D. Any new theorem/proposition/lemma introduced.
+
+   E. Explanation of how Theorem 6.10 was made central.
+
+   F. Explanation of how Proposition 6.12 was reframed.
+
+   G. Explanation of the revised role of SELL.
+
+   H. Explanation of the direct-check vs trace-check distinction.
+
+   I. Lean/formalization-boundary clarifications.
+
+   J. Bibliography changes.
+
+   K. Build/test results.
+
+   L. Any unresolved issues.
+
+4. A second file:
+
+       CLAIM_AUDIT.md
+
+   containing a table with columns:
+
+       Manuscript claim
+       Type of claim
+       Source/support
+       Status
+       Action taken
+
+   Classify claims as:
+       - mathematical theorem;
+       - mechanized theorem;
+       - implementation fact;
+       - experimental observation;
+       - literature/novelty claim;
+       - interpretation.
+
+5. If an abstract delayed-propagation theorem was introduced, create:
+
+       ABSTRACT_ADEQUACY_NOTE.md
+
+   explaining:
+       - hypotheses;
+       - proof dependencies;
+       - instantiation to LDPC;
+       - which parts are mechanized;
+       - whether the abstraction is genuinely reusable outside LDPC.
+
+6. Provide a final concise summary answering:
+
+       "What is the central theorem of the revised paper?"
+
+   The answer should make clear why the delayed-propagation / exact-trace result is
+   mathematically nontrivial and how the certification layer fits around it.
+
+
+======================================================================
+S. NON-NEGOTIABLE CONSTRAINTS
+======================================================================
+
+DO NOT:
+
+- fabricate theorems;
+- fabricate proofs;
+- fabricate experimental results;
+- fabricate Lean verification;
+- fabricate references;
+- claim that Python is formally verified;
+- claim that SELL labels are necessary;
+- claim SELLF adequacy;
+- claim global confluence when only propagation confluence is proved;
+- claim that completion equals exact recovery;
+- claim that trace replay proves a stronger final-word property than direct checking;
+- claim universal performance improvement;
+- silently alter experimental numbers;
+- remove negative results merely because they weaken the narrative;
+- convert complete proofs into sketches.
+
+When there is a conflict between a stronger narrative and mathematical correctness,
+mathematical correctness always wins.
+
+
+======================================================================
+FINAL OBJECTIVE
+======================================================================
+
+The revised manuscript should leave a specialist reader with the following understanding:
+
+The paper is not proposing a new LDPC decoder and is not claiming that multiple
+subexponentials are necessary.
+
+Rather, it develops a precise certification architecture in which asynchronous
+resource-sensitive rewriting can be related exactly to operational peeling despite
+delayed propagation. A normalization theorem recovers the fully updated operational
+state, an event-labelled adequacy theorem relates executions and traces, and residual
+linear algebra supplies independently checkable success or infeasibility certificates.
+
+SELL provides a disciplined specification vocabulary for this architecture, while the
+paper explicitly determines the limits of what that SELL structure contributes.
+
+The mathematical centerpiece is the exact trace-adequacy result, not the mere use
+of SELL.
