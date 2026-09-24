@@ -1,0 +1,68 @@
+{
+  "protocol_version": 1,
+  "base_seed": 20260920,
+  "families": [
+    "random_regular",
+    "peg"
+  ],
+  "dv": 3,
+  "dc": 6,
+  "blocklengths": [
+    128,
+    256,
+    512,
+    1024
+  ],
+  "matrix_replicates": 3,
+  "epsilons": [
+    0.3,
+    0.4,
+    0.5
+  ],
+  "clean_trials_per_matrix_condition": 10,
+  "robustness_blocklengths": [
+    256,
+    512
+  ],
+  "robustness_epsilons": [
+    0.4,
+    0.55
+  ],
+  "deltas": [
+    0.001,
+    0.01
+  ],
+  "robustness_trials_per_matrix_condition": 10,
+  "timing_repetitions": 3,
+  "warmup_runs_per_trial": 1,
+  "scaling_family": "random_regular",
+  "scaling_blocklengths": [
+    256,
+    512,
+    1024,
+    2048,
+    4096
+  ],
+  "scaling_matrix_replicates": 3,
+  "scaling_trials_per_matrix": 6,
+  "scaling_epsilon": 0.4,
+  "scaling_timing_repetitions": 5,
+  "bootstrap_replicates": 2000,
+  "notes": [
+    "New campaign, not a rerun pretending to use the original parameters.",
+    "720 clean and 480 robustness trials; one code matrix per family/size/replicate reused across conditions.",
+    "90 checker-scaling trials; independent matrices from decoding campaign and all-zero words (checker-focused, no recovery inference).",
+    "Random codewords sampled uniformly from a precomputed kernel basis for clean and robustness trials.",
+    "Regular matrices use uniform socket permutations conditioned on simplicity.",
+    "PEG variant uses maximum graph distance, then minimum check degree, with prescribed check-capacity constraint and restart on dead end.",
+    "GE-only and both hybrids use identical integer-bitset first-available-pivot elimination with row-transform tracking.",
+    "Uncertified hybrid still constructs the same certificate but does not execute the checker.",
+    "Graph validation, matrix generation, dense conversion and kernel-basis construction are measured once per matrix, outside per-input times.",
+    "Per-input initialization is measured inside each decode; timing repetition order is randomized deterministically.",
+    "Stage values use the certified repetition whose total time is the median, preserving exact denominators.",
+    "Direct verification applies only to success outputs; it cannot certify infeasibility or trace validity.",
+    "Separate sparse/dense replay timings use the same certificate and are randomized with other comparators.",
+    "Memory is tracemalloc Python-tracked peak incremental allocation, not RSS; measured separately on trial 0 of every clean condition and scaling trial 0.",
+    "Three matrices per condition limit ensemble inference; intervals bootstrap matrices, not pooled channel observations."
+  ]
+}

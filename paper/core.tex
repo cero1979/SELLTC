@@ -1,0 +1,390 @@
+\section{Coding and operational preliminaries}
+\label{sec:core}
+Let $H\in\Ftwo^{m\times n}$, with variable set $\Var=\{1,\ldots,n\}$,
+check set $\Chk=\{1,\ldots,m\}$, and Tanner edges
+$\Edges=\{(j,i):H_{ji}=1\}$. Write $\Nb(j)=\{i:H_{ji}=1\}$ and
+$C=\{x\in\Ftwo^n:Hx=0\}$. Vectors are columns throughout.
+The matrix need not have full row rank, and empty rows, empty columns,
+$m=0$ and $n=0$ are allowed. Sparsity is needed for the implementation
+bounds, not for the algebraic theorems. LDPC decoding and its standard
+iterative and algebraic ingredients are classical
+\cite{Gallager1962,RichardsonUrbanke2008,LubyMitzenmacherShokrollahiSpielman2001,BurshteinMiller2004ML}.
+
+A received word is $y\in\{0,1,\starE\}^n$. A partial assignment
+$K:\Var\rightharpoonup\Ftwo$ has unknown set
+$U=\Var\setminus\operatorname{dom}K$. A full word $x$ extends $K$ if
+$x_i=K(i)$ whenever $K(i)$ is defined. Initially $K_0(i)=y_i$ at each
+nonerased coordinate. For an assignment $K$, define
+\begin{equation}\label{eq:operational-state}
+ s_K(j)=\sum_{i\in\Nb(j)\cap\operatorname{dom}K}K(i),
+ \qquad d_K(j)=|\Nb(j)\cap U|.
+\end{equation}
+All sums and matrix products are in $\Ftwo$, unless explicitly stated
+otherwise. Thus addition is XOR. A coherent operational state
+$\sigma=(K,U,s,d)$ has $s=s_K$ and $d=d_K$.
+
+\begin{defi}[Operational peeling and trace]\label{def:peeling}
+A triple $a=(j,i,b)$ is valid at $\sigma$ if
+$\Nb(j)\cap U=\{i\}$ and $b=s(j)$. Its successor extends $K$ by
+$K(i)=b$, removes $i$ from $U$, and, for every $\ell$ adjacent to $i$,
+sets $s(\ell)\leftarrow s(\ell)+b$ and
+$d(\ell)\leftarrow d(\ell)-1$. Other entries remain unchanged.
+A trace $T=(a_1,\ldots,a_t)$ is valid from $y$ when every triple is valid
+at the preceding state, starting at $K_0$. Traces may be empty or stop
+before peeling is maximal. Every valid trace has $t\leq n$ because it
+resolves a different unknown coordinate at every step.
+\end{defi}
+
+\begin{lem}[State meaning and preservation of completions]\label{lem:core-invariant}
+Every state reached by a valid trace satisfies
+\eqref{eq:operational-state}. Furthermore, every $x\in C$ agreeing with
+the visible coordinates of $y$ extends its reached assignment $K$.
+\end{lem}
+\begin{proof}
+Both state identities hold initially by definition. In a valid step,
+$i$ was unknown, so adding it to $\operatorname{dom}K$ adds exactly $b$
+to the known sum at each adjacent check and removes exactly one term
+from the corresponding unknown-neighbor count. Nonadjacent checks
+are unaffected. This proves the identities inductively.
+
+Initially the assertion about $x$ is its assumed agreement with $y$.
+Suppose $x$ extends the current $K$, and the next step is $(j,i,b)$.
+Every neighbor of $j$ except $i$ is already known. Since the $j$-th
+parity of $x$ is zero,
+\[
+ x_i=\sum_{h\in\Nb(j)\setminus\{i\}}x_h
+     =\sum_{h\in\Nb(j)\cap\operatorname{dom}K}K(h)=s(j)=b.
+\]
+Thus $x$ extends the enlarged assignment too. Induction proves the
+claim for the entire trace, including inputs that have no completion
+(for which the assertion is vacuous).
+\end{proof}
+
+A nonempty $S\subseteq\Var$ is a \emph{stopping set} when every check
+has either zero or at least two neighbors in $S$ \cite{DiEtAl2002Stopping}.
+\begin{prop}[Stopping sets]\label{prop:core-stopping}
+A maximal peeling run leaves a nonempty unknown set precisely when that
+remaining set is a stopping set. Peeling removes all initial erasures
+if and only if the initial erasure set contains no stopping set.
+Here ``removes'' is a structural statement, not acceptance of a codeword.
+\end{prop}
+\begin{proof}
+A step exists exactly when some check has one unknown neighbor.
+Consequently a nonempty residual has no possible step exactly when it
+is a stopping set. Now let $S$ be a stopping subset of the initial
+unknown set. If peeling removed a member of $S$, consider the first
+such removal. At its witnessing check all members of $S$ are still
+unknown; that check touches $S$ and hence has at least two unknown
+neighbors, contradicting degree one. Thus $S$ survives every run.
+Conversely, a nonempty residual of a maximal run is itself a stopping
+subset of the initial erasure set, by the first part. These implications
+establish the characterization independently of the choice of eligible
+checks. A degree-zero row with syndrome one may still rule out any
+completion; it does not change the structural argument.
+\end{proof}
+
+\section{Residual algebra and certificate checking}\label{sec:certificates}
+For the final unknown set $U$ of a valid trace, order its coordinates
+in increasing order, let $H_U$ be the corresponding column restriction
+of $H$, and put $r=(s(j))_{j\in\Chk}$. A residual assignment
+$\rho\in\Ftwo^{|U|}$ fills those coordinates, and $K\cup\rho$ denotes
+the resulting full word.
+
+\begin{lem}[Residual equivalence]\label{lem:core-residual}
+For a valid trace from $y$, the map $\rho\mapsto K\cup\rho$ is a
+bijection between solutions of $H_U\rho=r$ and codewords agreeing with
+all visible coordinates of $y$.
+\end{lem}
+\begin{proof}
+For a word extending $K$, its $j$-th parity is
+$s(j)+\sum_{i\in\Nb(j)\cap U}x_i$, by
+Lemma~\ref{lem:core-invariant}. This parity is zero exactly when the
+$j$-th equation of $H_Ux_U=r$ holds. Hence every residual solution
+produces a compatible codeword. In the other direction,
+Lemma~\ref{lem:core-invariant} says that every compatible codeword
+extends $K$; its restriction to $U$ therefore solves the residual
+system. Restriction and filling are inverse functions.
+\end{proof}
+
+\begin{defi}[Certificate formats and independent checker]\label{def:certificates}
+A success certificate consists of the tag $\mathsf{success}$, a trace
+$T$, and a binary witness $\rho$ of length $|U|$ after replay. A failure
+certificate consists of the tag $\mathsf{failure}$, a trace $T$, and a
+witness $\omega\in\Ftwo^m$.
+The checker first rejects a trace longer than $n$ (or stops a streaming
+trace after its $(n+1)$-st entry). It then validates the tag, triple
+structure, integer index bounds, binary values and witness lengths. It initializes the coherent
+state from $(H,y)$ and replays every triple according to
+Definition~\ref{def:peeling}; it rejects at the first invalid step.
+For success it accepts exactly when $H_U\rho=r$, returning $K\cup\rho$.
+For failure it accepts exactly when
+\begin{equation}\label{eq:separator}
+ \omega^\top H_U=0,\qquad \omega^\top r=1.
+\end{equation}
+The checker uses only the supplied instance and certificate; it does
+not invoke the decoder. All rows are checked, including zero-degree
+rows. A schema-valid partial trace is allowed in both branches.
+\end{defi}
+
+A hybrid producer runs maximal peeling, constructs the residual, and
+performs exact Gaussian elimination over $\Ftwo$. A solution produces
+a success certificate; an inconsistent row produces a failure
+certificate as described below. When $U$ is empty, the residual still
+has $m$ equations: success requires $r=0$. Removing all erasures does
+not justify skipping this check.
+
+\begin{thm}[Success soundness]\label{thm:core-success}
+If the checker accepts a success certificate and returns $x$, then
+$x\in\Ftwo^n$, $Hx=0$, and $x_i=y_i$ at every nonerased coordinate.
+\end{thm}
+\begin{proof}
+The validated binary witness and assignment $K$ define a binary word.
+Replay only assigns initially unknown coordinates, so $K$ extends
+$K_0$ and channel agreement holds. The accepted residual equation and
+Lemma~\ref{lem:core-residual} establish $Hx=0$.
+\end{proof}
+
+\begin{lem}[Finite-field alternative]\label{lem:core-alternative}
+For $A\in\Ftwo^{m\times q}$ and $r\in\Ftwo^m$, exactly one of the
+following exists: a solution $z$ of $Az=r$, or a vector $\omega$ with
+$\omega^\top A=0$ and $\omega^\top r=1$.
+\end{lem}
+\begin{proof}
+They cannot both exist, since then
+$1=\omega^\top r=\omega^\top Az=0$.
+Suppose there is no solution. Let $W$ be the span of the columns of
+$A$. Then $r\notin W$. Choose a basis of $W$; appending $r$ gives a
+linearly independent family, which extends to a basis of the finite
+space $\Ftwo^m$. Define a linear functional $f$ on this basis to be
+zero on the basis of $W$, one on $r$, and zero on all additionally
+chosen basis vectors. Unique basis expansion defines $f$ on the
+whole space and proves its linearity. If $e_j$ are the coordinate
+basis vectors and $\omega_j=f(e_j)$, then for every vector $v$,
+$f(v)=\sum_j v_j f(e_j)=\omega^\top v$. Therefore $f$ annihilates
+every column of $A$, while $f(r)=1$, giving the required witness.
+The argument also covers $q=0$. If $m=0$, the zero vector of $\Ftwo^q$ is always
+a solution and the inconsistent case cannot arise.
+\end{proof}
+
+\begin{prop}[Constructing a failure witness]\label{prop:core-extraction}
+Suppose elementary row operations transform $[A\mid r]$ to
+$[R\mid c]=M[A\mid r]$, where $M\in\Ftwo^{m\times m}$ records the
+same operations on the identity matrix. If $R$ has a zero row $h$
+with $c_h=1$, then $\omega^\top=e_h^\top M$ satisfies the failure
+conditions. Row reduction of an inconsistent system always finds
+such a row.
+\end{prop}
+\begin{proof}
+Taking row $h$ of the displayed equality gives
+$(e_h^\top M)A=R_{h,*}=0$ and $(e_h^\top M)r=c_h=1$.
+Row swaps and adding one row to another are invertible over $\Ftwo$,
+so they preserve solvability. In echelon form, if every zero coefficient
+row has right-hand side zero, set all free variables to zero and solve
+the pivot equations from bottom to top. This constructs a solution:
+each pivot is one, later pivot variables are already assigned, and
+zero rows impose no further condition. Consequently an inconsistent
+echelon system must have a zero coefficient row with right-hand side
+one. Redundant rows and zero-column matrices cause no exception.
+\end{proof}
+
+\begin{thm}[Failure soundness and certificate completeness]\label{thm:core-failure}
+An accepted failure certificate excludes every codeword agreeing with
+$y$. Conversely, for every $(H,y)$ and every valid finite trace $T$,
+there is an accepted certificate of exactly one status: success if a
+compatible codeword exists, and failure otherwise.
+\end{thm}
+\begin{proof}
+For soundness, acceptance supplies \eqref{eq:separator}. By
+Lemma~\ref{lem:core-residual}, any compatible codeword would supply
+a residual solution. This contradicts Lemma~\ref{lem:core-alternative}.
+For completeness, if a compatible codeword exists, its restriction
+to $U$ supplies a success witness by the residual bijection.
+Otherwise the residual is inconsistent and the finite-field
+alternative supplies a failure witness. Both witnesses pass the
+specified checks, and the two statuses cannot both be accepted by
+the same alternative. This is an existence statement for a suitable
+witness, not a claim that every alleged witness is accepted.
+\end{proof}
+
+\begin{prop}[Multiplicity and exact recovery]\label{prop:core-nullity}
+If $H_U\rho=r$ is consistent and has rank $a$, it has exactly
+$2^{|U|-a}$ solutions. Hence the compatible completion is unique if
+and only if $|U|-a=0$. Under a clean erasure channel the transmitted
+word is one of these completions; acceptance alone does not identify
+it when more than one completion exists.
+\end{prop}
+\begin{proof}
+For one solution $\rho_0$, every solution is uniquely of the form
+$\rho_0+v$ with $v\in\ker H_U$, because
+$H_U(\rho+\rho_0)=r+r=0$. Rank--nullity gives dimension $|U|-a$ for
+this kernel. A basis of a $d$-dimensional binary vector space gives a
+bijection with $\Ftwo^d$, which has $2^d$ elements. Apply the residual
+bijection. On the clean channel the transmitted codeword agrees
+with the visible symbols, proving the last assertion.
+\end{proof}
+
+\section{Likelihood, examples and trust boundary}\label{sec:interpretation}
+For erasure probability $\epsilon\in[0,1]$, define the memoryless BEC
+transition probability by
+\[
+ W_\epsilon(y\mid x)=\prod_{i=1}^n w_\epsilon(y_i\mid x_i),\qquad
+ w_\epsilon(a\mid b)=
+ \begin{cases}
+  \epsilon,&a=\starE,\\
+  1-\epsilon,&a=b,\\
+  0,&a\in\Ftwo\text{ and }a\ne b.
+ \end{cases}
+\]
+Maximum likelihood means maximizing this quantity over $x\in C$;
+it does not impose a prior distribution on codewords.
+\begin{prop}[BEC maximum likelihood]\label{prop:core-ml}
+For every $\epsilon\in[0,1]$, a compatible codeword maximizes
+$W_\epsilon(y\mid x)$ over $C$. If $0<\epsilon<1$ and a compatible
+codeword exists, the maximizers are exactly the compatible codewords.
+\end{prop}
+\begin{proof}
+Let $u$ and $k=n-u$ be the numbers of erased and visible coordinates.
+Every compatible word has likelihood
+$c=\epsilon^u(1-\epsilon)^k\geq0$; every incompatible word has a
+zero factor and therefore likelihood zero. Thus no candidate has
+likelihood greater than a compatible word. For interior $\epsilon$,
+$c>0$, so the incompatible candidates are not maximizers. The product
+definition handles the endpoints, with an empty product equal to one.
+An observation impossible at an endpoint may give all candidates
+likelihood zero; the first assertion still holds, but the second
+need not. No posterior conditional on such a zero-probability event
+is asserted.
+\end{proof}
+
+\begin{exa}[Peeling, stopping, ambiguity and impossibility]\label{exa:core}
+All indices in these calculations are one-based; the software uses
+zero-based indices.
+\begin{enumerate}[label=(\alph*),leftmargin=*]
+\item For
+$H=\left(\begin{smallmatrix}1&1&0\\0&1&1\end{smallmatrix}\right)$ and
+$y=(0,\starE,\starE)$, initially $s=(0,0)$ and $d=(1,2)$.
+The step $(1,2,0)$ changes these to $s=(0,0)$, $d=(0,1)$.
+The step $(2,3,0)$ leaves $U=\varnothing$ and $r=(0,0)$,
+so the empty residual assignment certifies $x=(0,0,0)$.
+\item For $H=(1\ 1)$ and $y=(\starE,\starE)$, the unknown set is
+a stopping set and the empty trace is maximal. The residual equation
+$\rho_1+\rho_2=0$ has solutions $(0,0)$ and $(1,1)$, rank one and
+nullity one. Each is an ML completion, and neither is selected by
+likelihood alone.
+\item For
+$H=\left(\begin{smallmatrix}1&1&0\\1&0&1\end{smallmatrix}\right)$,
+$y=(\starE,0,1)$ and $T=\varnothing$, the residual is
+$A=(1,1)^\top$, $r=(0,1)^\top$.
+The witness $\omega=(1,1)^\top$ gives $\omega^\top A=0$ and
+$\omega^\top r=1$. It certifies impossibility before any peeling.
+Alternatively resolving $x_1=0$ from row one leaves no residual
+variables and right-hand side $(0,1)$; $\omega=(0,1)^\top$ then
+certifies the remaining degree-zero contradiction.
+\item For $H=(1\ 1)$, a transmission of $(0,0)$ followed by one
+visible flip and one erasure can yield $y=(1,\starE)$.
+Peeling validly returns $(1,1)$, which passes both parity and channel
+checks. The certificate is valid, but the transmitted word was not
+recovered. Corruption need not make the observed constraints
+inconsistent.
+\end{enumerate}
+\end{exa}
+
+The trusted instance is the supplied pair $(H,y)$, including its
+validated graph representation. The mathematical checker assumes
+exact binary arithmetic; an executable deployment also trusts its
+parser, checker implementation, interpreter/compiler and runtime.
+The decoder and its residual solver need not be trusted. A Lean
+proof of a mathematical function does not by itself verify an
+independently written Python program or its execution environment.
+
+An accepted trace certifies that the declared sequence is permitted
+by the specification. It does not attest that an untrusted producer
+actually followed this sequence internally. A valid partial trace,
+or a permutation of independent steps that remains valid, must be
+accepted. Malformed certificates, incompatible words and invalid
+steps must be rejected. Rejection of a malformed failure witness
+alone does not establish that a completion exists.
+
+If the supplied matrix is corrupted, acceptance proves only the
+constraints of that supplied matrix, not those of an intended
+external code. Authenticating the matrix or channel observations
+is outside this model. On inputs containing visible flips,
+compatibility is an algebraic property; the BEC likelihood theorem
+is not a guarantee about the physical channel that generated them.
+
+\section{Representation, verification cost and certificate size}\label{sec:cost}
+Assume a validated graph stored as check-to-variable and
+variable-to-check adjacency lists with no duplicate incidences.
+Use a word-RAM with words large enough for indices and counters,
+constant-time binary arithmetic and array access. Graph validation
+and construction from a dense input matrix require $\Theta(mn)$
+entry inspections; they are separate from the following per-input
+bounds. Storing a matrix densely does not become a sparse algorithm
+merely by calling a pivot heuristic ``sparse.''
+
+\begin{prop}[Sparse checking upper bound]\label{prop:core-cost}
+A success or failure certificate can be checked in
+$O(n+m+|\Edges|)$ word operations and $O(n+m+|\Edges|)$ space,
+including graph storage. Direct verification of a binary full word
+against $H$ and $y$ has the same asymptotic upper bound and requires
+no trace.
+\end{prop}
+\begin{proof}
+Reading $y$ and initializing variable status costs $O(n)$; initializing
+check arrays costs $O(m)$. Visiting each incidence once computes
+syndromes, residual degrees and the XOR of the indices of each
+check's unknown neighbors, at cost $O(|\Edges|)$.
+When a residual degree is one, this last XOR identifies its unique
+unknown index in constant time, even if that index is zero.
+The checker validates each triple using these arrays, then visits
+the adjacency list of its newly assigned variable to update the
+three check arrays. No variable is assigned twice, so the total
+number of such incidence visits is at most $|\Edges|$, and there are
+at most $n$ valid triples. An excessive trace is rejected after at
+most $n+1$ inspected entries; malformed dimensions are rejected
+before witness processing.
+
+For success, fill the remaining coordinates from the witness and
+accumulate their contributions across the unknown incidences,
+checking all $m$ residual equations. For failure, allocate one binary
+accumulator per unknown variable, and visit each residual incidence
+$(j,i)$ to add $\omega_j$ to its accumulator; separately compute
+$\sum_j\omega_jr_j$. These procedures cost $O(n+m+|\Edges|)$.
+The arrays have $O(n+m)$ entries and the graph has $O(|\Edges|)$
+incidences. Direct checking reads the candidate and $y$ and computes
+each parity by a single pass over the check adjacency lists.
+\end{proof}
+
+The bound simplifies to $O(n+|\Edges|)$ only under an assumption such
+as $m=O(n+|\Edges|)$. It is an upper bound for this representation,
+not an optimality theorem for every possible certificate format or
+preprocessed matrix. The bit cost of reading indices is not constant
+in a bit-complexity model. A parser that first materializes an
+arbitrarily long hostile input additionally pays for those bytes;
+the graph bound assumes a parsed certificate of bounded format or a
+streaming parser that enforces these limits.
+
+With $t=|T|$, an index-encoded trace occupies
+$O(t(1+\log(m+1)+\log(n+1)))$ bits, plus a length/tag description.
+A success witness adds $|U|$ bits in canonical variable order; a
+failure witness adds $m$ bits. For $m=O(n)$ and $t\leq n$, these are
+$O(n\log(n+1))$ and $O(n\log(n+1)+m)$ respectively.
+A direct success witness is simply an $n$-bit word. It proves parity
+and visible-coordinate agreement without proving a declared peeling
+trace. Replay additionally checks that every declared local assignment
+is justified by a degree-one check in the preceding operational state.
+It therefore certifies a local operational explanation, not a stronger
+final-word correctness predicate. This explanation concerns the supplied
+trace, not the producer's actual internal history. For an
+empty trace, a failure witness for the initial erasure system already
+certifies impossibility without any peeling history.
+
+Certificate \emph{construction} has a different cost. A straightforward
+dense elimination of an $m$ by $q$ residual, with $m$ extra witness
+columns, takes $O(q+m(q+m)(1+\min(m,q)))$ elementary bit operations,
+including initialization, row-array updates and pivot searches; its storage is
+$O(q+m(q+m))$ bits apart from indexing, including the returned solution. Packed machine-word rows can
+improve constants and word-operation bounds. Peeling may reduce $q$,
+but no universal speedup over GE-only follows, and recording the
+row transformations can itself be expensive. Our comparisons use
+the same algebraic engine to keep that distinction observable.

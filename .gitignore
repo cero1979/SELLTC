@@ -27,3 +27,15 @@ lmcs_instructions.tex
 # Smoke-test outputs (reproducibility aids, not part of final article)
 SELLTCFULL_outputs/smoke_*
 SELLTCFULL_outputs/smoke_figures/
+
+# Local publication-audit environments and generated dependencies
+.venv*/
+lean4/.lake/
+audit/toolchains/
+audit/build-original/
+.pytest_cache/
+# Keep verification logs as evidence, even though ordinary LaTeX logs are ignored.
+!audit/*.log
+!audit/evidence/*.log
+# Full-page visual QA rasters are local; compact contact sheets are retained.
+audit/rendered-pages/

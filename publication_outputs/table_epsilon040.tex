@@ -1,0 +1,21 @@
+\begin{table}
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{New campaign at erasure probability 0.40: three matrices and ten trials per matrix. C/D is the internal check stage divided by decode time, averaged per trial. The check stage includes comparing checker and producer words.}
+\label{tab:new-experiments}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Family & n & Trials & Trace & Residual & Check ms & Direct ms & Mean C/D \\
+\midrule
+PEG & 128 & 30 & 35.767 & 16.400 & 0.119 & 0.092 & 1.107 \\
+PEG & 256 & 30 & 77.367 & 22.233 & 0.241 & 0.186 & 1.147 \\
+PEG & 512 & 30 & 190.033 & 11.933 & 0.527 & 0.366 & 1.415 \\
+PEG & 1024 & 30 & 389.100 & 22.900 & 1.109 & 0.741 & 1.376 \\
+Regular & 128 & 30 & 33.000 & 18.833 & 0.119 & 0.094 & 0.990 \\
+Regular & 256 & 30 & 84.500 & 15.900 & 0.247 & 0.184 & 1.243 \\
+Regular & 512 & 30 & 174.133 & 32.467 & 0.530 & 0.375 & 1.229 \\
+Regular & 1024 & 30 & 377.933 & 33.567 & 1.102 & 0.739 & 1.346 \\
+\bottomrule
+\end{tabular}
+\end{table}

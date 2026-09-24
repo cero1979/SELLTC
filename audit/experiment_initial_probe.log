@@ -1,0 +1,87 @@
+ENV macOS-27.0-arm64-arm-64bit 3.12.14 numpy 2.3.5 pandas 2.2.3
+ROWS 4200 2400 clean groups [100]
+TABLE EXACT MATCH ALL EPS True
+EPSILON .40 TABLE
+        family    n  dv  dc  mean_trace_len  mean_residual_size  mean_rank_residual  mean_density_residual  mean_peeling_time_ms  mean_residual_time_ms  mean_checker_time_ms  mean_hybrid_time_ms  mean_overhead_ratio
+           peg 1000   3   6          391.02                9.05                9.05                0.00024              2.265155               0.368060              2.490042             5.131886             1.049820
+           peg 2000   3   6          789.52               11.64               11.64                0.00009              5.462292               0.645387              6.673921            12.793113             1.183147
+           peg 5000   3   6         2003.71                0.00                0.00                0.00000             26.765783               0.018159             35.626875            62.420404             1.330124
+random_regular 1000   3   6          378.51               23.27               23.27                0.00060              2.180798               0.969766              2.451849             5.612876             1.009390
+random_regular 2000   3   6          798.40                0.00                0.00                0.00000              5.637300               0.017799              6.882074            12.546622             1.215444
+random_regular 5000   3   6         2004.67                0.00                0.00                0.00000             28.795765               0.030642             38.811678            67.654483             1.346001
+POOLED TABLE
+        family    n  dv  dc  mean_trace_len  mean_residual_size  mean_rank_residual  mean_density_residual  mean_peeling_time_ms  mean_residual_time_ms  mean_checker_time_ms  mean_hybrid_time_ms  mean_overhead_ratio
+           peg 1000   3   6      261.551429          157.251429          155.910000               0.002777              1.715379               8.427139              2.100913            12.276166             0.634484
+           peg 2000   3   6      521.075714          318.925714          315.662857               0.001414              4.372630              33.967896              6.102643            44.563316             0.691310
+           peg 5000   3   6     1324.134286          775.352857          768.392857               0.000545             24.016456             420.692053             36.694086           482.814131             0.765528
+random_regular 1000   3   6      256.417143          163.897143          162.222857               0.002863              1.683280               8.993811              2.079425            12.790139             0.621934
+random_regular 2000   3   6      531.875714          306.810000          303.925714               0.001324              4.514694              34.212745              6.321176            45.173409             0.725176
+random_regular 5000   3   6     1346.798571          753.272857          745.838571               0.000518             25.733802             454.694887             39.095374           520.981660             0.790436
+RATIOS
+peg 1000 mean relative 0.6344844113546908 ratio mean relative 0.20647276384541657 mean fraction 0.322773812341068 ratio mean fraction 0.17113752587942516
+peg 2000 mean relative 0.6913096890401988 ratio mean relative 0.1586722734083215 mean fraction 0.33178061714062235 ratio mean fraction 0.13694318665413047
+peg 5000 mean relative 0.7655281430403879 ratio mean relative 0.0822515958340794 mean fraction 0.34344294491430655 ratio mean fraction 0.07600043848462888
+random_regular 1000 mean relative 0.6219342322923089 ratio mean relative 0.19414433907290737 mean fraction 0.3156127806153821 ratio mean fraction 0.16258029512884042
+random_regular 2000 mean relative 0.7251762238909283 ratio mean relative 0.16269787011772047 mean fraction 0.34310214802080374 ratio mean fraction 0.13993133925776235
+random_regular 5000 mean relative 0.7904359672520093 ratio mean relative 0.08112987498545216 mean fraction 0.35143362216182283 ratio mean fraction 0.07504174740018524
+CHECKER SCALING
+peg slope 1.7866130508399143 5x size timing factor 17.465783334397088
+random_regular slope 1.8316024216550408 5x size timing factor 18.801053642982243
+CHECKER GREATER THAN RESIDUAL 19 of 42
+EPS .40 TIMES
+        family    n  epsilon  peeling_time_s  residual_time_s  checker_time_s  hybrid_time_s  overhead_ratio
+           peg 1000      0.4        0.002265         0.000368        0.002490       0.005132        1.049820
+           peg 2000      0.4        0.005462         0.000645        0.006674       0.012793        1.183147
+           peg 5000      0.4        0.026766         0.000018        0.035627       0.062420        1.330124
+random_regular 1000      0.4        0.002181         0.000970        0.002452       0.005613        1.009390
+random_regular 2000      0.4        0.005637         0.000018        0.006882       0.012547        1.215444
+random_regular 5000      0.4        0.028796         0.000031        0.038812       0.067654        1.346001
+NONUNIQUE CLEAN 526 of 4200
+         nonunique    nullity
+epsilon                      
+0.34      0.000000   0.000000
+0.38      0.000000   0.000000
+0.40      0.000000   0.000000
+0.42      0.000000   0.000000
+0.44      0.000000   0.000000
+0.46      0.018333   0.105000
+0.50      0.858333  27.378333
+ORIGINAL SUMMARY AGREEMENT
+success_summary True
+runtime_summary True
+checker_summary True
+robustness_summary True
+ORIGINAL RETURN CONTRACT/MUTATION PROBES
+nonbinary rho [2,2] (True, array([2, 2], dtype=int8))
+fractional rho [.1,.1] (True, array([0, 0], dtype=int8))
+partial trace is allowed (True, array([1, 1], dtype=int8))
+bad rho length (False, None)
+scalar rho EXCEPTION IndexError tuple index out of range
+truncated triple EXCEPTION ValueError not enough values to unpack (expected 3, got 1)
+bad index type EXCEPTION IndexError only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+dependent trace [(0, 0, 0), (1, 1, 0)]
+valid trace (True, array([0, 0], dtype=int8))
+reversed dependent trace (False, None)
+wrong trace bit (False, None)
+fractional trace bit (True, array([0, 0], dtype=int8))
+out of range check (False, None)
+truncated valid trace old rho (False, None)
+valid failure empty U True
+zeroed failure witness False
+nonbinary failure witness [3] True
+EXHAUSTIVE GF2 SOLVER
+GF2 exhaustive passed calls 10108
+ROBUSTNESS ACTUAL FLIPS/COMPATIBILITY FROM STORED SEEDS
+        corrupted  corrupt_compatible  accepted_success
+delta                                                  
+0.0000          0                   0               600
+0.0001         92                   0               508
+0.0010        415                   0               185
+0.0100        600                   0                 0
+SEED COLLISIONS clean distinct 3500 of 4200 rob distinct 1500 of 2400
+ROB delta 0/.0001 identical trial seeds True
+MATRIX SEEDS [('random_regular', 1000, 20262427), ('random_regular', 2000, 20263427), ('random_regular', 5000, 20266427), ('peg', 1000, 20263427), ('peg', 2000, 20264427), ('peg', 5000, 20267427)]
+PEG NEIGHBOR SELECTION COUNTEREXAMPLE
+variable 0; check distances 1,3,5; candidates [1, 2] instead of deepest [2]
+COMPATIBLE CORRUPTION COUNTEREXAMPLE
+H=[1,1], sent 00, corrupted y=[1,-1] [1, 1]

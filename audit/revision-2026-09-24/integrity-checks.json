@@ -1,0 +1,18 @@
+{
+  "labels": 52,
+  "references": 63,
+  "bibliography_entries": 16,
+  "all_citations_resolved": true,
+  "original_statement_proof_blocks_preserved": 18,
+  "numbered_results_confirmed": {
+    "thm:sem-adequacy": "6.10",
+    "prop:sem-label-erasure": "6.12",
+    "lem:core-invariant": "2.2",
+    "lem:core-residual": "3.1",
+    "thm:core-success": "3.3",
+    "thm:core-failure": "3.6"
+  },
+  "protected_files": 105,
+  "protected_files_changed": [],
+  "latex_warning_patterns": 0
+}

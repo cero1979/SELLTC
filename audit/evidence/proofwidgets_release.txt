@@ -1,0 +1,7 @@
+✖ [1/2] (Optional) Fetching proofwidgets:optRelease
+error: no release tag found for revision '68280daef58803f68368eb2e53046dabcd270c9d'
+✖ [2/2] Running proofwidgets:release
+error: failed to fetch GitHub release (see 'proofwidgets:optRelease' for details)
+Some required builds logged failures:
+- proofwidgets:release
+error: build failed

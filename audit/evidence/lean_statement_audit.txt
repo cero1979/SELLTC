@@ -1,0 +1,90 @@
+SELLCert.replayFull_eq_some_iff {n m : ℕ} (H : SELLCert.PCMatrix n m) (σ τ : SELLCert.PeelingState n m)
+  (T : List (SELLCert.StepTriple n m)) :
+  SELLCert.replayFull H σ T = some τ ↔ SELLCert.ValidTrace H σ T ∧ τ = SELLCert.foldTrace H σ T
+SELLCert.forced_value {n m : ℕ} (H : SELLCert.PCMatrix n m) (σ : SELLCert.PeelingState n m)
+  (stp : SELLCert.StepTriple n m) (hv : SELLCert.ValidStep H σ stp) (x : Fin n → SELLCert.Bit) (hcw : SELLCert.isCW H x)
+  (hx : SELLCert.Extends σ x) : x stp.i = stp.b
+SELLCert.trace_extends {n m : ℕ} (H : SELLCert.PCMatrix n m) (σ : SELLCert.PeelingState n m)
+  (T : List (SELLCert.StepTriple n m)) (hT : SELLCert.ValidTrace H σ T) (x : Fin n → SELLCert.Bit)
+  (hcw : SELLCert.isCW H x) (hx : SELLCert.Extends σ x) : SELLCert.Extends (SELLCert.foldTrace H σ T) x
+SELLCert.applyStep_syndrome_update {n m : ℕ} (H : SELLCert.PCMatrix n m) (σ : SELLCert.PeelingState n m)
+  (stp : SELLCert.StepTriple n m) (hk : σ.K stp.i = none) (j : Fin m) :
+  SELLCert.syndrome H (SELLCert.applyStep H σ stp) j = SELLCert.syndrome H σ j + H j stp.i * stp.b
+SELLCert.applyStep_degree_update {n m : ℕ} (H : SELLCert.PCMatrix n m) (σ : SELLCert.PeelingState n m)
+  (stp : SELLCert.StepTriple n m) (hk : σ.K stp.i = none) (j : Fin m) :
+  SELLCert.degree H (SELLCert.applyStep H σ stp) j = SELLCert.degree H σ j - if H j stp.i ≠ 0 then 1 else 0
+SELLCert.lem_unsat_witness_sound {n m : ℕ} (A : SELLCert.PCMatrix n m) (b ω : Fin m → SELLCert.Bit)
+  (h1 : Matrix.vecMul ω A = 0) (h2 : SELLCert.innerProd ω b = 1) (x : Fin n → SELLCert.Bit) : Matrix.mulVec A x ≠ b
+SELLCert.lem_unsat_witness_complete {n m : ℕ} (A : SELLCert.PCMatrix n m) (b : Fin m → SELLCert.Bit)
+  (hno : ∀ (x : Fin n → SELLCert.Bit), Matrix.mulVec A x ≠ b) : ∃ ω, Matrix.vecMul ω A = 0 ∧ SELLCert.innerProd ω b = 1
+SELLCert.thm_sound_success {n m : ℕ} (H : SELLCert.PCMatrix n m) (y : SELLCert.ReceivedWord n)
+  (T : List (SELLCert.StepTriple n m)) (ρ x : Fin n → SELLCert.Bit) (hcheck : SELLCert.checkSuccess H y T ρ = some x) :
+  SELLCert.isCW H x ∧ SELLCert.isConsistent y x
+SELLCert.thm_sound_failure {n m : ℕ} (H : SELLCert.PCMatrix n m) (y : SELLCert.ReceivedWord n)
+  (T : List (SELLCert.StepTriple n m)) (ω : Fin m → SELLCert.Bit) (hcheck : SELLCert.checkFailure H y T ω = true)
+  (x : Fin n → SELLCert.Bit) : ¬(SELLCert.isCW H x ∧ SELLCert.isConsistent y x)
+SELLCert.residual_unsat_iff_witness {n m : ℕ} (H : SELLCert.PCMatrix n m) (σ : SELLCert.PeelingState n m) :
+  (¬∃ ρ, SELLCert.ResidualParity H σ ρ) ↔ ∃ ω, SELLCert.FailureWitness H σ ω
+SELLCert.thm_complete_failure {n m : ℕ} (H : SELLCert.PCMatrix n m) (y : SELLCert.ReceivedWord n)
+  (hno : ¬∃ x, SELLCert.isCW H x ∧ SELLCert.isConsistent y x) : ∃ ω, SELLCert.checkFailure H y [] ω = true
+SELLCert.thm_complete_success {n m : ℕ} (H : SELLCert.PCMatrix n m) (y : SELLCert.ReceivedWord n)
+  (x : Fin n → SELLCert.Bit) (hcw : SELLCert.isCW H x) (hcon : SELLCert.isConsistent y x) :
+  SELLCert.checkSuccess H y [] x = some x
+SELLCert.bec_completion_maximizes {n : ℕ} (ε : ℝ) (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) (y : SELLCert.ReceivedWord n)
+  (x : Fin n → SELLCert.Bit) (hx : SELLCert.isConsistent y x) (x' : Fin n → SELLCert.Bit) :
+  SELLCert.becLikelihood ε y x' ≤ SELLCert.becLikelihood ε y x
+SELLCert.thm_ml {n m : ℕ} (H : SELLCert.PCMatrix n m) (y : SELLCert.ReceivedWord n) (T : List (SELLCert.StepTriple n m))
+  (ρ x : Fin n → SELLCert.Bit) (hcheck : SELLCert.checkSuccess H y T ρ = some x) (ε : ℝ) (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
+  SELLCert.isCW H x ∧
+    SELLCert.isConsistent y x ∧
+      ∀ (x' : Fin n → SELLCert.Bit), SELLCert.isCW H x' → SELLCert.becLikelihood ε y x' ≤ SELLCert.becLikelihood ε y x
+SELLCert.propagate_wf {n m : ℕ} (H : SELLCert.PCMatrix n m) (C : SELLCert.Context n m) (j : Fin m) (i : Fin n)
+  (b : SELLCert.Bit) (hk : C.state.K i = some b) (hw : SELLCert.WFContext H C) :
+  SELLCert.WFContext H (SELLCert.propagate C j i)
+SELLCert.solve_wf {n m : ℕ} (H : SELLCert.PCMatrix n m) (C : SELLCert.Context n m) (stp : SELLCert.StepTriple n m)
+  (hw : SELLCert.WFContext H C) : SELLCert.WFContext H (SELLCert.solve H C stp)
+SELLCert.solve_valid {n m : ℕ} (H : SELLCert.PCMatrix n m) (C : SELLCert.Context n m) (stp : SELLCert.StepTriple n m)
+  (hw : SELLCert.WFContext H C) (he : SELLCert.SolveEnabled H C stp) : SELLCert.ValidStep H C.state stp
+SELLCert.propagate_syndrome {n m : ℕ} (H : SELLCert.PCMatrix n m) (C : SELLCert.Context n m) (j : Fin m) (i : Fin n)
+  (b : SELLCert.Bit) (hp : i ∈ C.pending j) (hk : C.state.K i = some b) (hw : SELLCert.WFContext H C) :
+  SELLCert.pendingSyndrome H (SELLCert.propagate C j i) j = SELLCert.pendingSyndrome H C j + b
+SELLCert.solve_selected_syndrome {n m : ℕ} (H : SELLCert.PCMatrix n m) (C : SELLCert.Context n m)
+  (stp : SELLCert.StepTriple n m) (hw : SELLCert.WFContext H C) (he : SELLCert.SolveEnabled H C stp) :
+  SELLCert.pendingSyndrome H (SELLCert.solve H C stp) stp.j = 0
+SELLCert.solve_other_syndrome {n m : ℕ} (H : SELLCert.PCMatrix n m) (C : SELLCert.Context n m)
+  (stp : SELLCert.StepTriple n m) (j : Fin m) (hj : j ≠ stp.j) (hw : SELLCert.WFContext H C)
+  (he : SELLCert.SolveEnabled H C stp) :
+  SELLCert.pendingSyndrome H (SELLCert.solve H C stp) j = SELLCert.pendingSyndrome H C j
+SELLCert.propagate_commute {n m : ℕ} (C : SELLCert.Context n m) (j k : Fin m) (i l : Fin n) :
+  SELLCert.propagate (SELLCert.propagate C j i) k l = SELLCert.propagate (SELLCert.propagate C k l) j i
+SELLCert.rewstar_sound {n m : ℕ} (H : SELLCert.PCMatrix n m) {C D : SELLCert.Context n m}
+  {T : List (SELLCert.StepTriple n m)} (hder : SELLCert.RewStar H C T D) (hw : SELLCert.WFContext H C) :
+  SELLCert.ValidTrace H C.state T
+SELLCert.rewstar_wf {n m : ℕ} (H : SELLCert.PCMatrix n m) {C D : SELLCert.Context n m}
+  {T : List (SELLCert.StepTriple n m)} (hder : SELLCert.RewStar H C T D) (hw : SELLCert.WFContext H C) :
+  SELLCert.WFContext H D
+SELLCert.rewstar_observation {n m : ℕ} (H : SELLCert.PCMatrix n m) {C D : SELLCert.Context n m}
+  {T : List (SELLCert.StepTriple n m)} (hder : SELLCert.RewStar H C T D) :
+  D.state = SELLCert.foldTrace H C.state T ∧ D.trace = C.trace ++ T
+SELLCert.propagation_normalization {n m : ℕ} (H : SELLCert.PCMatrix n m) (C : SELLCert.Context n m)
+  (hw : SELLCert.WFContext H C) : SELLCert.RewStar H C [] (SELLCert.encodeLogged H C.state C.trace)
+SELLCert.propagation_normal_form_unique {n m : ℕ} (H : SELLCert.PCMatrix n m) {C D : SELLCert.Context n m}
+  (hder : SELLCert.RewStar H C [] D) (hn : SELLCert.Normalized H D) : D = SELLCert.encodeLogged H C.state C.trace
+SELLCert.propagation_confluence {n m : ℕ} (H : SELLCert.PCMatrix n m) {C D E : SELLCert.Context n m}
+  (hw : SELLCert.WFContext H C) (hd : SELLCert.RewStar H C [] D) (he : SELLCert.RewStar H C [] E) :
+  ∃ F, SELLCert.RewStar H D [] F ∧ SELLCert.RewStar H E [] F
+SELLCert.adequacy_one_step {n m : ℕ} (H : SELLCert.PCMatrix n m) (σ : SELLCert.PeelingState n m)
+  (stp : SELLCert.StepTriple n m) (hv : SELLCert.ValidStep H σ stp) (L : List (SELLCert.StepTriple n m)) :
+  SELLCert.RewStar H (SELLCert.encodeLogged H σ L) [stp]
+    (SELLCert.encodeLogged H (SELLCert.applyStep H σ stp) (L ++ [stp]))
+SELLCert.adequacy_completeness {n m : ℕ} (H : SELLCert.PCMatrix n m) (σ : SELLCert.PeelingState n m)
+  (T : List (SELLCert.StepTriple n m)) (hT : SELLCert.ValidTrace H σ T) (L : List (SELLCert.StepTriple n m)) :
+  SELLCert.RewStar H (SELLCert.encodeLogged H σ L) T (SELLCert.encodeLogged H (SELLCert.foldTrace H σ T) (L ++ T))
+SELLCert.adequacy_soundness {n m : ℕ} (H : SELLCert.PCMatrix n m) (y : SELLCert.ReceivedWord n)
+  {C : SELLCert.Context n m} {T : List (SELLCert.StepTriple n m)}
+  (hder : SELLCert.RewStar H (SELLCert.encodeState H (SELLCert.initState H y)) T C) :
+  SELLCert.ValidTrace H (SELLCert.initState H y) (SELLCert.extractedTrace hder)
+SELLCert.thm_adequacy_complete {n m : ℕ} (H : SELLCert.PCMatrix n m) (y : SELLCert.ReceivedWord n)
+  (T : List (SELLCert.StepTriple n m)) :
+  SELLCert.ValidTrace H (SELLCert.initState H y) T ↔
+    ∃ C, SELLCert.RewStar H (SELLCert.encodeState H (SELLCert.initState H y)) T C

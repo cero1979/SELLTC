@@ -1,0 +1,24 @@
+6bb47d9 Remove redundant files: SELLTCFULL_README.md, selltcfull_experiments.py, finalize.sh
+889c74d Clean repo: remove smoke test artifacts, update READMEs to reflect actual Lean code state
+1878f3b Update lean4/README: accurate proof status, correct Mathlib API, fix outdated open questions
+ead0a2e Add GitHub repo URL in contributions (v) and companion-repo mentions
+5c24393 Sync PDF (metadata update from final compilation)
+9ea8966 Recompile: all cross-references fully resolved (3 passes)
+c892fc7 Fix table overflow: resizebox, correct 13-col spec, fix all overfull hboxes
+fd54071 Ignore lmcs_instructions.tex (reference document)
+a017857 Sync PDF after final double-compilation (round 2+3)
+33e2442 Round 2+3 hostile-reviewer fixes: correct Lean table numbers, k>=1 guard, Lin zone label, axiom vs admit distinction, abstract accuracy, status paragraph
+b3a7424 Address hostile-reviewer defects: include figures/table, fix WF2 notation, add cert-size remark, honest abstract on Lean status, ML triviality note, false-acceptance clarification, Luby2001 citation
+9f097fe Add author ORCID, affiliation and email
+b78361e Reformat paper to LMCS journal style
+f9c1773 Add Lean 4 partial mechanization (~650 lines, 6 modules)
+81afcbc Address 8 hostile reviewer objections
+e8c89b1 Reorient paper toward Lean 4 formal verification
+a093aec Add full campaign outputs, figures, and final PDF (25 pages)
+1c0fe85 Add finalize.sh helper script for post-campaign PDF recompile and push
+96cb7d4 Add SELLTCFULL_README.md (bundle-level artifact guide)
+d2377ec Merge remote initial commit, keep detailed README
+48d76b8 Initial release: certified hybrid LDPC decoder via SELL
+b27a55f Prepare repo: add .gitignore, folder structure, and updated README
+1de819b Initial plan
+3d60813 Initial commit

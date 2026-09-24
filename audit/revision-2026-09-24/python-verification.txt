@@ -1,0 +1,109 @@
+Revision audit 2026-09-24: no new experiment campaign and no analysis regeneration.
+Working directory: /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle
+Interpreter: /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/.venv-publication/bin/python
+Protected artifact hashes before verification:
+{
+  "publication_outputs/checker_time_memory_summary.csv": "aebd3d30e8770df039cb6bc412cd9b74a3d706ef3fe08dc5c1abf9e089004355",
+  "publication_outputs/condition_summary.csv": "e974fcf789107d5a7f82f77076ae3547d7d99e0945c88c690f8c2efa46079904",
+  "publication_outputs/declared_config.json": "f8825725661f84dfcb7cce91679a8d67d8eb116b9041be760e979f0d9ab35750",
+  "publication_outputs/fig_checker_scaling.png": "b9192c96d85043c3323b15794e62c601fcff21dbad6fbdb4feeb4e402f8957cb",
+  "publication_outputs/fig_comparators.png": "070f42274b6c2d2b7b995a7b09a84a4da411f93d8d3e6d447fcb7e5b8602c553",
+  "publication_outputs/fig_completion.png": "07452f3bd775196073954172e8852b3cbbc2ec016d7138649d72f67f8b509f56",
+  "publication_outputs/fig_corruption.png": "9cfe433206281dac8420f9641978ca1a9cf6d30ca630eef651229517807392ea",
+  "publication_outputs/manifest.json": "fcab0767dab6fed50806b4a69826bdd720db615a6649afed1baf5dfe4b4dc623",
+  "publication_outputs/matrices/campaign_peg_n1024_r0.json": "399fae0044e236171ecb3bba014c3b5f521463a3725252cc78dec1d63f270114",
+  "publication_outputs/matrices/campaign_peg_n1024_r1.json": "236a9d7663954baf9d190b5a93286c3aefa2bfef8404b89d18518d154d266202",
+  "publication_outputs/matrices/campaign_peg_n1024_r2.json": "e61fc64fcbcfe44120e2febc2b1c437c7d26d868fac6d2e9bdd92306c5c3416e",
+  "publication_outputs/matrices/campaign_peg_n128_r0.json": "a4d3e22d2e3bc4346d2a8e1ebc6c0e8c153e18a3170b73c8009a12994efd770a",
+  "publication_outputs/matrices/campaign_peg_n128_r1.json": "4c44b57413a1ad75f1dc7ee3941b0cefc787c9b48f21e7fdc5ad6b9c8d4bfd48",
+  "publication_outputs/matrices/campaign_peg_n128_r2.json": "c377e9d767dd3f96f56d69a4b45f49c910e94f16ab270c878815fc484df3706c",
+  "publication_outputs/matrices/campaign_peg_n256_r0.json": "39e2c0c7f600852af8c1f58411860a8b886b6f5a3e2e8c3cd157d73430190418",
+  "publication_outputs/matrices/campaign_peg_n256_r1.json": "aea274aa3bb1220526ae7f2309e1494568aac72c9c654213a1876ae21244f33f",
+  "publication_outputs/matrices/campaign_peg_n256_r2.json": "a5cf7bfb0df4c6c6035695c3dbaa7faea661c30f8fde9be6fae5c646cb27814f",
+  "publication_outputs/matrices/campaign_peg_n512_r0.json": "c45a9074ac306debbb1cea8d02eeeeed61b5b77597d2b96c22cadf0d17148742",
+  "publication_outputs/matrices/campaign_peg_n512_r1.json": "de0b61efd65ede4e351088776381acfbc1c9c4650db90a34e9e19ca2c8c80541",
+  "publication_outputs/matrices/campaign_peg_n512_r2.json": "3b36ca54d08d831a4f9aec2c1ed88b443905aecb47a132a1ab3703afea4adf71",
+  "publication_outputs/matrices/campaign_random_regular_n1024_r0.json": "10bfeb6495a67951c74eb7e079c434469ba5f1311aa3edafe27ea8735b6dd400",
+  "publication_outputs/matrices/campaign_random_regular_n1024_r1.json": "db01e3fd7c7c8951e8d59e99264796b88828a4518e288e8868234c8555121a47",
+  "publication_outputs/matrices/campaign_random_regular_n1024_r2.json": "7115c7f7480bf29e1472f219428e7bb7378bb68299d33233fbab4b8f15d25f48",
+  "publication_outputs/matrices/campaign_random_regular_n128_r0.json": "59863ce3114a21c1e97ab4729b4db621da2a9e0dbdffb2993625cc0871c7accc",
+  "publication_outputs/matrices/campaign_random_regular_n128_r1.json": "f51ddcadd9d4c222fa2428ff0737e6f0e85eac90c79175d414ac598b56e366bc",
+  "publication_outputs/matrices/campaign_random_regular_n128_r2.json": "2fa064dd1f3de06f96de3f6b469947272442bbd9e2bc2abde13a119625bb03c8",
+  "publication_outputs/matrices/campaign_random_regular_n256_r0.json": "21d043d2b9800ae09f786d077e4823dc2cc2218d9b667b8d7f513137396fae6f",
+  "publication_outputs/matrices/campaign_random_regular_n256_r1.json": "65993dfa6f4913f54e29a7b02f8301beb3788bf14160bf2eee9d643891e3a233",
+  "publication_outputs/matrices/campaign_random_regular_n256_r2.json": "e4271b82f0e78866360aca2e7c78c3aec576af458e69e6e64cb4ce77ca257871",
+  "publication_outputs/matrices/campaign_random_regular_n512_r0.json": "c5fb551d3e23c4813725740c73a83e1125b07965aa5f40ca0e6c67d4dd4be33d",
+  "publication_outputs/matrices/campaign_random_regular_n512_r1.json": "4b01fa72f18a5c026773539946103b5a58d65407848c208d7b263239fe58a286",
+  "publication_outputs/matrices/campaign_random_regular_n512_r2.json": "d525072e599bf58915b8aeb7b72eeba33fc5242c1d3ac056769d6017ec983de9",
+  "publication_outputs/matrices/scaling_random_regular_n1024_r0.json": "5641bdd465b2fc09f8c436e13bce6e493049fb0dc6bbcd4bf1433f554497443d",
+  "publication_outputs/matrices/scaling_random_regular_n1024_r1.json": "97b33da4e68467237d2b111c6188ead02b4ac413404cf65872aef2d726c5924d",
+  "publication_outputs/matrices/scaling_random_regular_n1024_r2.json": "674ff84daf93f678e88cf4ee51073cba47fc47b92b6684d3dd79ad7d1baed20b",
+  "publication_outputs/matrices/scaling_random_regular_n2048_r0.json": "492fbe7af5caebaa90da66327359817f5c222ffe1037eac212ae7d4adc76f8cd",
+  "publication_outputs/matrices/scaling_random_regular_n2048_r1.json": "69cf7efeae4bd9f7c1bf469b793381ed9c9930d3adf95ba40e710c206a0ce28d",
+  "publication_outputs/matrices/scaling_random_regular_n2048_r2.json": "d5b93bf4f5cc24d34481486ff266fb4fc2fd1679a15f6fafb89254eff89b470e",
+  "publication_outputs/matrices/scaling_random_regular_n256_r0.json": "ebb7ec310f9e744af38780df674a67d5c491c245635c3d80780aac712f26fb14",
+  "publication_outputs/matrices/scaling_random_regular_n256_r1.json": "0da8f9a5dc362c8b4cc19c9f98fd53cb17bb06609b142ff79c002fbde2acc54e",
+  "publication_outputs/matrices/scaling_random_regular_n256_r2.json": "dbac2b024ac66caf17c074ff164fa5b3440ba8b59067c1410d80b66947fd75f9",
+  "publication_outputs/matrices/scaling_random_regular_n4096_r0.json": "a5ced4aa4b8319868ea63e0c4b24c3762759a743744e322b6c6c8a8edcd632a4",
+  "publication_outputs/matrices/scaling_random_regular_n4096_r1.json": "6f7bcf0a36d868b67c40326ba9811c3ff79cc386c38b9a39e878097657e77e24",
+  "publication_outputs/matrices/scaling_random_regular_n4096_r2.json": "15638a5b62a3b48c5569c1740a7e718ec801e4ab3e2c753861dcb8fb6c115cea",
+  "publication_outputs/matrices/scaling_random_regular_n512_r0.json": "a7dfbd422585e8e57207b331c0af3bee8018bfc6309c4e7d2836ef6754f740bf",
+  "publication_outputs/matrices/scaling_random_regular_n512_r1.json": "3c60223cfc10530871e175659ed0c6250b6ef3f8951599b029e724eb6f2e2b5d",
+  "publication_outputs/matrices/scaling_random_regular_n512_r2.json": "175886088f9323635efa1eb78211c78b459a1dd42fa9294b6efb7b029f5a8b81",
+  "publication_outputs/matrix_cluster_intervals.csv": "23e5765ed0ea3b06b1929a3eceb668b4e81b2ada1367daa6c9d7b993d7d1a9e2",
+  "publication_outputs/matrix_metadata.csv": "5c0319cfb76fd4c756bb0eb3223beac65c3826899c34a5976b46063aa197df7a",
+  "publication_outputs/raw_clean.csv": "e9e195c391bce7a810ab4458188d366a84111534b653142b98aa708dfa37f6b8",
+  "publication_outputs/raw_robustness.csv": "ca6afea02562528aaf151aace72b696cfd752978c63d89580b4db1c657bd1221",
+  "publication_outputs/raw_scaling.csv": "03660169f395c7fd2dca5be552f23310f297cfede9f5e3b5c4f13e8b9cf50d42",
+  "publication_outputs/reproduction_validation.json": "a0da0dbd757856b9c6d6f8eee55f4f18ecb8ca7db881aef1e4c98aaf644160fb",
+  "publication_outputs/results.json": "cb948732f128771bdbfd53d4f59a6b7a85c64861d515ab2702649cef86490abc",
+  "publication_outputs/results.tex": "f92be46fae242d5b3b1006f304a0020caa6cab07f4820d52872529bc829c0d20",
+  "publication_outputs/runtime_stages_epsilon040.tex": "786a1fbc7ed114ec06cefeae79e679aa81bfb2a174f384e396aab8c6bb47e06d",
+  "publication_outputs/runtime_stages_epsilon040_ms.csv": "5acc6f7c83e48ed52437d339989a2f1b9a199be1c6ac294681b100f2b34e23ac",
+  "publication_outputs/scaling_repetitions.csv": "912b594353f5c90fed2f5c5f9e907963e4eb75ab2d7263028c404245b6e8736c",
+  "publication_outputs/scaling_slopes.csv": "ba06e377db74c867767ac61e845e003b980b5daa2268c33726f16689636a5836",
+  "publication_outputs/scaling_slopes.tex": "2bdf38ce34bf5d76d890cbec4212745bcb07e975d70292ddb291bc78b1ead931",
+  "publication_outputs/source/publication_experiments.py": "a1c39a4111f9e939a0a8b4cd599b14ae0d409cc9b869ea9581a5caa2674e7e95",
+  "publication_outputs/source/selltcfull_experiments.py": "f018600b829704d3af9869c92f6efbb93240c63103a6af20b02d23be9312eefd",
+  "publication_outputs/table_epsilon040.csv": "fa76c25b80f16a23272d1cef5e3e13dd50d552061d3a516e5baa3bb1c0f878b7",
+  "publication_outputs/table_epsilon040.tex": "ef0c561f803aa89fa3c5d21975906ed3b332ec321b405c8cdf40ed115be2ec25",
+  "publication_outputs/timing_repetitions.csv": "62fb37bef509df4277e48ff66922153b7af6152830fa377db7c46569485dd0e5",
+  "SELLTCFULL_outputs/checker_summary.csv": "e5d66b21a4e3e3aad9712eb62aab32addb768e4d491c385bff69a6c372b2fe9f",
+  "SELLTCFULL_outputs/fig1_success_probability.png": "80b32e1c9a365d91ce443b52896b77ef20f44768c4d1b459cbc529956ac50fe4",
+  "SELLTCFULL_outputs/fig2_runtime_breakdown.png": "12d64c4692ec7c438c3769925f485ee9ee7a352df198d21b8212f299e1b3bcc5",
+  "SELLTCFULL_outputs/fig3_checker_scaling.png": "44742c0bc06916a114a941d39a6b9bc31a722f23bb396ad1bf6b29de920630f1",
+  "SELLTCFULL_outputs/fig4_robustness.png": "d9fe382b929412a236d9a0c266f27ef8fd31ea37d3efe998ab43ee9fe56955fa",
+  "SELLTCFULL_outputs/manifest.json": "6a3b74d16894c66fd7adc32db4b9b5426ecfc0ce9638331ac255775685ec2ab3",
+  "SELLTCFULL_outputs/raw_clean.csv": "66b7395389863cc1fe51544827ef057188de31ee5a283cd36ebe053683496d53",
+  "SELLTCFULL_outputs/raw_robustness.csv": "5792e0c83e26dddbc7d0e03408010fbe96c049c83949486edc525481057a5fd1",
+  "SELLTCFULL_outputs/robustness_summary.csv": "9b4aae30265d53f8a41c3457d2751002f5dd9190a811917c6499f2386057e67d",
+  "SELLTCFULL_outputs/runtime_summary.csv": "b2e4224e502303c21201f59bf8c14abef24f22db48ea686788ccd506faa16262",
+  "SELLTCFULL_outputs/success_summary.csv": "8c9f2450f0ede5ac5551a28412bcd425643e475038c8818185cd1ee9f846dbd6",
+  "SELLTCFULL_outputs/table1_summary.csv": "7d8d7ce22148de874a533da07c9ddd2a499bbd843fb340272c30c7d92795f862",
+  "SELLTCFULL_outputs/table1_summary.tex": "457faa3352901e2e8f0f72f1e95964dc996f923e6cf2afaae6440b6b3c0cc2e6",
+  "SELLTCFULL.bib": "b4ce1a4600c5238bff5dfbe2233937b56a46d5b70bb61a73b0fa57186bda2777",
+  "publication_experiments.py": "414e346268d8a633e798d3c840345b2fa084f19e67cff6a6347498911f18b9be",
+  "selltcfull_experiments.py": "cf6f43fe447da85949a79cc9dd460613c99389e00fbd3e9626f0060db33678cb",
+  "SELLTCFULL_experiments.ipynb": "97cff03f62b57076a30f5a2ed366d39f443619da2e3bc4796c52db16ce385657",
+  "audit/verify_experiment_reproduction.py": "42f20f40b119d9fa88e2d32855b96fe2b83a34e436a066db698bbf9757a31d91"
+}
+
+Existing complete Python test suite
+Command: ['/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/.venv-publication/bin/python', '-B', '-m', 'pytest', '-q', '-p', 'no:cacheprovider', 'tests']
+.............................                                            [100%]
+29 passed in 1.44s
+Exit status: 0
+
+In-memory reproduction script with only final output-file write suppressed
+Command: ['/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/.venv-publication/bin/python', '-B', '-c', 'from pathlib import Path\np=Path(\'/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/verify_experiment_reproduction.py\')\ns=p.read_text()\nold="(out/\'reproduction_validation.json\').write_text(json.dumps(summary,indent=2))"\nassert s.count(old)==1\ns=s.replace(old,"print(\'Read-only reproduction summary:\', json.dumps(summary,sort_keys=True))")\nexec(compile(s,str(p),\'exec\'),{\'__name__\':\'__main__\',\'__file__\':str(p)})\n']
+Complete grid: {'clean_trials': 720, 'robustness_trials': 480, 'scaling_trials': 90, 'matrices': 39, 'timing_repetitions': 24747, 'distinct_trial_streams': 4800}
+All 39 matrices regenerated identically.
+All 1200 non-timing trial outcomes regenerated identically; transmitted nonzero words: 1200
+All 90 all-zero checker-scaling inputs/traces regenerated identically.
+All 13 original output files unchanged byte-for-byte from f9beafa.
+Read-only reproduction summary: {"all_checks_passed": true, "matrix_reproductions": 39, "nonzero_transmitted_words": 1200, "original_files_unchanged": 13, "scaling_reproductions": 90, "trial_reproductions": 1200}
+Exit status: 0
+
+Protected artifact preservation: {"files": 83, "changed": []}
+
+Prose-edit preservation check: all 10 core proof blocks are byte-identical to HEAD; all numeric tokens in the experiment section are identical to HEAD.

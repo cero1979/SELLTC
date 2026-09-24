@@ -1,0 +1,57 @@
+commit 1878f3b6c82cdc37e427d00c7b29d664ea1a29b7
+Author:     cero1979 <cero1979@users.noreply.github.com>
+AuthorDate: Sat May 2 14:29:16 2026 -0500
+Commit:     cero1979 <cero1979@users.noreply.github.com>
+CommitDate: Sat May 2 14:29:16 2026 -0500
+
+    Update lean4/README: accurate proof status, correct Mathlib API, fix outdated open questions
+
+commit f9c1773047908aed3846ca07d9f3f29877f6db96
+Author:     cero1979 <cero1979@users.noreply.github.com>
+AuthorDate: Sat May 2 12:39:25 2026 -0500
+Commit:     cero1979 <cero1979@users.noreply.github.com>
+CommitDate: Sat May 2 12:39:25 2026 -0500
+
+    Add Lean 4 partial mechanization (~650 lines, 6 modules)
+    
+    Complete:
+      syndrome_invariant (Lem 4.9) — induction on trace length
+      propagate_wf (Lem 5.3) — WF preserved by (Propagate)
+      solve_wf (Lem 5.4) — WF preserved by (Solve)
+      lem_unsat_witness_sound (Lem 4.2) — inner_mulVec + contradiction
+      thm_sound_success (Thm 4.1) — parity split + syndrome invariant
+      thm_ml (Thm 4.6) — conditional on bec_equal_likelihood axiom
+    
+    Admitted with precise annotations:
+      lem_unsat_witness_complete — double-dual over GF(2), ~80 lines
+      thm_sound_failure — lem_residual_equivalence connection, ~30 lines
+      adequacy_completeness — Propagate-commutation step, ~120 lines
+      adequacy_soundness — wf_pend uniqueness argument, ~200 lines
+    
+    Also:
+      Replace Sec 8 'roadmap' with accurate partial-mechanization description
+      Add proof-status table (Tab 2)
+      Update conclusion and limitations to reflect partial artifact
+      Address second-pass hostile review R9-R12
+
+commit e8c89b11942e462c8125687b8c13a9adc5378b58
+Author:     cero1979 <cero1979@users.noreply.github.com>
+AuthorDate: Sat May 2 12:02:56 2026 -0500
+Commit:     cero1979 <cero1979@users.noreply.github.com>
+CommitDate: Sat May 2 12:02:56 2026 -0500
+
+    Reorient paper toward Lean 4 formal verification
+    
+    - Replace experimental section (sec:exp) with two new sections:
+      * Section 8: Lean 4 mechanization roadmap (type encodings, adequacy
+        proof plan, Mathlib dependencies, expected effort per theorem)
+      * Section 9: Companion implementation (checker reference, supplementary data)
+    - Rewrite abstract: remove experimental claim; add mechanization goal
+    - Update contributions (v): replace experimental plan with Lean 4 roadmap
+      and checker reference implementation
+    - Update structure paragraph: reference sec:lean and sec:impl
+    - Update Related Work: expand Lean 4 / Mathlib paragraph
+    - Rewrite conclusion: mechanization as primary next step; remove exp discussion
+    - Update README.md: formal verification focus, lean4/ directory, supplementary data
+    - Add lean4/README.md: detailed formalization plan for all four main theorems
+    - Add lean4/lakefile.lean: Lake build skeleton with Mathlib dependency

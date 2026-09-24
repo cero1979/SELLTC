@@ -1,0 +1,16 @@
+✔ [2506/2509] Built SELLCert.PeelingState
+✔ [2507/2509] Built SELLCert.Checker
+✖ [2508/2509] Building SELLCert.Rewriting
+trace: .> LEAN_PATH=././.lake/packages/Cli/.lake/build/lib:././.lake/packages/batteries/.lake/build/lib:././.lake/packages/Qq/.lake/build/lib:././.lake/packages/aesop/.lake/build/lib:././.lake/packages/proofwidgets/.lake/build/lib:././.lake/packages/importGraph/.lake/build/lib:././.lake/packages/LeanSearchClient/.lake/build/lib:././.lake/packages/plausible/.lake/build/lib:././.lake/packages/mathlib/.lake/build/lib:././.lake/build/lib DYLD_LIBRARY_PATH= /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/toolchains/lean-4.14.0-darwin_aarch64/bin/lean ././././SELLCert/Rewriting.lean -R ./././. -o ././.lake/build/lib/SELLCert/Rewriting.olean -i ././.lake/build/lib/SELLCert/Rewriting.ilean -c ././.lake/build/ir/SELLCert/Rewriting.c --json
+error: ././././SELLCert/Rewriting.lean:148:41: unknown constant 'Finset.erase_comm'
+error: ././././SELLCert/Rewriting.lean:148:4: unsolved goals
+case pos
+n m : ℕ
+C : Context n m
+i l : Fin n
+r : Fin m
+⊢ ((C.pending r).erase i).erase l = ((C.pending r).erase l).erase i
+error: Lean exited with code 1
+Some required builds logged failures:
+- SELLCert.Rewriting
+error: build failed

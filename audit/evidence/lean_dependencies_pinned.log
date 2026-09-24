@@ -1,0 +1,105 @@
+$ /usr/bin/git init .lake/packages/plausible
+Initialized empty Git repository in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/plausible/.git/
+exit=0
+$ /usr/bin/git -C .lake/packages/plausible remote add origin https://github.com/leanprover-community/plausible
+exit=0
+$ /usr/bin/git -C .lake/packages/plausible fetch --depth 1 origin 42dc02bdbc5d0c2f395718462a76c3d87318f7fa
+From https://github.com/leanprover-community/plausible
+ * branch            42dc02bdbc5d0c2f395718462a76c3d87318f7fa -> FETCH_HEAD
+exit=0
+$ /usr/bin/git -C .lake/packages/plausible checkout --detach 42dc02bdbc5d0c2f395718462a76c3d87318f7fa
+HEAD is now at 42dc02b Merge pull request #5 from leanprover-community/determ-tests
+exit=0
+
+$ /usr/bin/git init .lake/packages/LeanSearchClient
+Initialized empty Git repository in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/LeanSearchClient/.git/
+exit=0
+$ /usr/bin/git -C .lake/packages/LeanSearchClient remote add origin https://github.com/leanprover-community/LeanSearchClient
+exit=0
+$ /usr/bin/git -C .lake/packages/LeanSearchClient fetch --depth 1 origin d7caecce0d0f003fd5e9cce9a61f1dd6ba83142b
+From https://github.com/leanprover-community/LeanSearchClient
+ * branch            d7caecce0d0f003fd5e9cce9a61f1dd6ba83142b -> FETCH_HEAD
+exit=0
+$ /usr/bin/git -C .lake/packages/LeanSearchClient checkout --detach d7caecce0d0f003fd5e9cce9a61f1dd6ba83142b
+HEAD is now at d7caecc handling comments and newlines; quick-fixes for #11 and #8
+exit=0
+
+$ /usr/bin/git init .lake/packages/importGraph
+Initialized empty Git repository in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/importGraph/.git/
+exit=0
+$ /usr/bin/git -C .lake/packages/importGraph remote add origin https://github.com/leanprover-community/import-graph
+exit=0
+$ /usr/bin/git -C .lake/packages/importGraph fetch --depth 1 origin 519e509a28864af5bed98033dd33b95cf08e9aa7
+From https://github.com/leanprover-community/import-graph
+ * branch            519e509a28864af5bed98033dd33b95cf08e9aa7 -> FETCH_HEAD
+exit=0
+$ /usr/bin/git -C .lake/packages/importGraph checkout --detach 519e509a28864af5bed98033dd33b95cf08e9aa7
+HEAD is now at 519e509 Merge pull request #45 from leanprover-community/bump_toolchain_to_v4.14.0
+exit=0
+
+$ /usr/bin/git init .lake/packages/proofwidgets
+Initialized empty Git repository in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/proofwidgets/.git/
+exit=0
+$ /usr/bin/git -C .lake/packages/proofwidgets remote add origin https://github.com/leanprover-community/ProofWidgets4
+exit=0
+$ /usr/bin/git -C .lake/packages/proofwidgets fetch --depth 1 origin 68280daef58803f68368eb2e53046dabcd270c9d
+From https://github.com/leanprover-community/ProofWidgets4
+ * branch            68280daef58803f68368eb2e53046dabcd270c9d -> FETCH_HEAD
+exit=0
+$ /usr/bin/git -C .lake/packages/proofwidgets checkout --detach 68280daef58803f68368eb2e53046dabcd270c9d
+HEAD is now at 68280da Merge pull request #91 from leanprover-community/bump_toolchain_v4.14.0
+exit=0
+
+$ /usr/bin/git init .lake/packages/aesop
+Initialized empty Git repository in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/aesop/.git/
+exit=0
+$ /usr/bin/git -C .lake/packages/aesop remote add origin https://github.com/leanprover-community/aesop
+exit=0
+$ /usr/bin/git -C .lake/packages/aesop fetch --depth 1 origin 5a0ec8588855265ade536f35bcdcf0fb24fd6030
+From https://github.com/leanprover-community/aesop
+ * branch            5a0ec8588855265ade536f35bcdcf0fb24fd6030 -> FETCH_HEAD
+exit=0
+$ /usr/bin/git -C .lake/packages/aesop checkout --detach 5a0ec8588855265ade536f35bcdcf0fb24fd6030
+HEAD is now at 5a0ec85 chore: bump toolchain to v4.14.0 (#180)
+exit=0
+
+$ /usr/bin/git init .lake/packages/Qq
+Initialized empty Git repository in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/Qq/.git/
+exit=0
+$ /usr/bin/git -C .lake/packages/Qq remote add origin https://github.com/leanprover-community/quote4
+exit=0
+$ /usr/bin/git -C .lake/packages/Qq fetch --depth 1 origin 303b23fbcea94ac4f96e590c1cad6618fd4f5f41
+From https://github.com/leanprover-community/quote4
+ * branch            303b23fbcea94ac4f96e590c1cad6618fd4f5f41 -> FETCH_HEAD
+exit=0
+$ /usr/bin/git -C .lake/packages/Qq checkout --detach 303b23fbcea94ac4f96e590c1cad6618fd4f5f41
+HEAD is now at 303b23f chore: bump toolchain to v4.14.0-rc1 (#65)
+exit=0
+
+$ /usr/bin/git init .lake/packages/batteries
+Initialized empty Git repository in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/batteries/.git/
+exit=0
+$ /usr/bin/git -C .lake/packages/batteries remote add origin https://github.com/leanprover-community/batteries
+exit=0
+$ /usr/bin/git -C .lake/packages/batteries fetch --depth 1 origin 8d6c853f11a5172efa0e96b9f2be1a83d861cdd9
+From https://github.com/leanprover-community/batteries
+ * branch            8d6c853f11a5172efa0e96b9f2be1a83d861cdd9 -> FETCH_HEAD
+exit=0
+$ /usr/bin/git -C .lake/packages/batteries checkout --detach 8d6c853f11a5172efa0e96b9f2be1a83d861cdd9
+HEAD is now at 8d6c853 chore: bump toolchain to v4.14.0 (#1070)
+exit=0
+
+$ /usr/bin/git init .lake/packages/Cli
+Initialized empty Git repository in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/Cli/.git/
+exit=0
+$ /usr/bin/git -C .lake/packages/Cli remote add origin https://github.com/leanprover/lean4-cli
+exit=0
+$ /usr/bin/git -C .lake/packages/Cli fetch --depth 1 origin 726b3c9ad13acca724d4651f14afc4804a7b0e4d
+From https://github.com/leanprover/lean4-cli
+ * branch            726b3c9ad13acca724d4651f14afc4804a7b0e4d -> FETCH_HEAD
+exit=0
+$ /usr/bin/git -C .lake/packages/Cli checkout --detach 726b3c9ad13acca724d4651f14afc4804a7b0e4d
+HEAD is now at 726b3c9 Merge pull request #21 from leanprover/bump_to_v4.14.0-rc1
+exit=0
+
+mathlib: existing pinned checkout

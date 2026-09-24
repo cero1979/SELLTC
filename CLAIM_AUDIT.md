@@ -1,0 +1,41 @@
+# Claim audit for the exact trace adequacy revision
+
+Date: 24 September 2026. Manuscript language: English. Numbered results retain their pre-revision numbers. Support is distinguished from implementation execution and publication priority.
+
+| Manuscript claim | Type of claim | Source/support | Status | Action taken |
+|---|---|---|---|---|
+| Every valid peeling step preserves all original compatible completions, including partial traces | mathematical theorem | Lemma 2.2; induction on valid steps | Proved | Full proof retained; no consistency assumption added |
+| Residual solutions are in bijection with compatible original codewords | mathematical theorem | Lemma 3.1 using Lemma 2.2 | Proved | Made the connection between trace and certificate layers explicit |
+| Accepted success witnesses give parity and visible agreement | mathematical theorem | Theorem 3.3; residual equation | Proved | Distinguished from local trace evidence |
+| Left-kernel separator excludes every compatible completion | mathematical theorem | Lemma 3.4 and Theorem 3.6 | Proved | Preserved full finite-dimensional argument and zero-dimensional cases |
+| Each specified valid finite trace admits exactly one certificate status with a suitable witness | mathematical theorem | Theorem 3.6; residual bijection and finite-field alternative | Proved in manuscript | Explicitly distinguished from Lean's named empty-trace completeness results |
+| Compatible completion need not be unique or recover the transmitted word | mathematical theorem | Proposition 3.7, examples in Section 4 | Proved | Retained in abstract-level interpretation and conclusion |
+| Compatible BEC words maximize likelihood for epsilon in [0,1] | mathematical theorem | Proposition 4.1, closed-form likelihood with endpoint qualifications | Proved | Retained; no posterior asserted for zero-probability observations |
+| Sparse replay and direct word checking have O(n+m+E) upper bounds | mathematical theorem | Proposition 5.1, validated adjacency/word-RAM assumptions | Proved in stated model | Clarified no optimality or universal runtime claim |
+| Replay validates a local operational explanation, without strengthening final-word validity | interpretation | Definition 3.2, Theorem 3.3, Proposition 5.1 | Supported | Stated in introduction, costs, experiments and conclusion |
+| Raw contexts require exact multiplicities and pending inclusions | mathematical theorem | Definition 6.1; Lemmas 6.5--6.6 preservation | Precisely specified and preserved | Audited duplicate-token risk and undefined-value exclusion |
+| Stored residual differs by exactly the delayed known incidences | mathematical theorem | Definition 6.2 and delayed-incidence equations | Proved by disjoint partition | Previewed in introduction without assuming normalization |
+| Propagation stutters under projection; Solve is a genuine operational step | mathematical theorem | Lemmas 6.5--6.6 | Proved | Preserved arbitrary delays at other checks |
+| Propagation terminates and has a unique normal form; distinct propagations commute | mathematical theorem | Lemma 6.7 | Proved | Explicitly limited confluence to propagation |
+| Every rewrite run from an admissible context is finite | mathematical theorem | Proposition 6.8, pending-token measure | Proved in manuscript | Distinguished from finite-trace adequacy's assumptions and Lean scope |
+| Generic exact trace correspondence follows from simulation, canonical normalization and local lifting | mathematical theorem | New unnumbered abstract proposition and complete proof | Proved under explicit hypotheses | Added lifting and canonical-endpoint conditions; no inference from forward simulation alone |
+| Every asynchronous execution emits the same valid operational trace; every prescribed trace is realized | mathematical theorem | Theorem 6.10 | Principal theorem, proved | Central throughout; retained complete LDPC proof, empty/partial cases and logs |
+| Maximal rewrite endpoint is normalized and unknown set is empty or stopping | mathematical theorem | Proposition 6.11 | Proved | No implication that empty unknown set establishes consistency |
+| Persistent-zone erasure preserves event-labelled transitions | mathematical theorem | Proposition 6.12, specified partition and admissible ordinary-rewriting images | Proved on stated domains | Positive representation result; no full logical-calculus equivalence |
+| Canonical asynchronous trace adequacy is mechanized | mechanized theorem | `rewstar_sound`, `adequacy_soundness`, `adequacy_completeness`, `thm_adequacy_complete` | Existing Lean theorems; fresh build recorded separately | No generic/raw-context scope added |
+| Silent normalization and confluence are mechanized | mechanized theorem | `propagation_normalization`, `propagation_confluence`, `propagate_commute` | Existing Lean theorems | Distinguished from full Solve confluence/global termination |
+| Typed checker soundness, separator existence and named empty-trace completeness are mechanized | mechanized theorem | `thm_sound_success`, `thm_sound_failure`, `lem_unsat_witness_complete`, `thm_complete_success`, `thm_complete_failure` | Existing Lean theorems | Preserved exact statement scope |
+| Lean likelihood theorem is substantive and real-valued | mechanized theorem | `bec_completion_maximizes`, `thm_ml` | Existing Lean theorems | Coordinate-product interpretation remains manuscript proof |
+| A raw endpoint uniquely determines its chronological trace | interpretation | Raw Log(T) is a multiset | False; not claimed | Scope table uses raw context plus event history |
+| Python uses cached arrays while Lean derives state quantities | implementation fact | Python producer/checkers; `PeelingState.lean`, `Rewriting.lean` | Source-supported | No formal Python refinement claimed |
+| Lean and Python agreed on 575 differential cases | experimental observation | Preserved `audit/evidence/lean_differential_comparison.json` and prior run report | Historical finite evidence | Not presented as a fresh rerun or universal equivalence |
+| Clean campaign has 720 completions, 562 exact recoveries and 546 unique completions | experimental observation | Retained raw CSVs/results and non-timing reproduction | Recorded finite evidence | Every count and artifact preserved |
+| 100 of 251 actually corrupted observations remain compatible | experimental observation | Retained 480-trial robustness campaign | Recorded finite evidence | Negative limitation remains visible |
+| At n=4096 direct checking is faster than sparse trace replay in this campaign | experimental observation | Retained checker-scaling measurements: 2.966 ms versus 4.546 ms | Recorded finite evidence | No universal speedup or isolated marginal-cost inference |
+| Sparse fitted exponent 1.046 establishes asymptotic linearity | interpretation | Finite-size timing fit versus separate counting proof | Not supported; not claimed | Descriptive intervals and independent mathematical bound retained |
+| Classical hybrid decoding, certifying algorithms and formal BEC decoding predate this work | literature/novelty claim | Burshtein--Miller; McConnell et al.; Alkassar et al.; Affeldt et al. | Supported by cited primary works | Strengthened closest BEC antecedent acknowledgment |
+| The cited quantum-code preprints concern different certificate properties | literature/novelty claim | Ehatamm et al. 2605.16523v1; Krishnamoorthy et al. 2608.25545v1 | Supported with preprint qualifications | Preserved distinction; no blanket coding-certification novelty |
+| The paper addresses exact delayed-propagation traces combined with residual certificates | literature/novelty claim | Theorem 6.10, certificate theorems and reviewed bibliography | Positive scope statement relative to cited corpus | No firstness or exhaustive priority claim |
+| SELL labels, SELLF adequacy or verified Python are necessary/established | interpretation | Proposition 6.12 and formalization boundary | Unsupported stronger claims; excluded | Limits stated in abstract, semantics, scope table and conclusion |
+
+Fresh verification and preservation outcomes are recorded in [REVISION_REPORT.md](REVISION_REPORT.md), section K, and the dated evidence directory. Prior audit documents describe their own historical snapshot.

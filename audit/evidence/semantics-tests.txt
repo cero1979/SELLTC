@@ -1,0 +1,18 @@
+test_all_rules_are_not_globally_confluent_on_inconsistent_input (test_rewriting.RewritingRegression) ... ok
+test_empty_dimensions_and_isolated_variables (test_rewriting.RewritingRegression) ... ok
+test_exhaustive_small_instances (test_rewriting.RewritingRegression) ... 
+SEMANTICS_COUNTS={"delayed_contexts": 1362, "instances": 2719, "operational_traces_realized": 4889, "propagate_edges": 1506, "propagation_diamonds": 144, "reachable_contexts": 6251, "rewrite_edges": 3724, "solve_edges": 2218}
+ok
+test_lost_log_is_a_real_counterexample (test_rewriting.RewritingRegression) ... ok
+test_missing_or_nonedge_pending_incidence_is_not_admissible (test_rewriting.RewritingRegression) ... ok
+test_nonzero_stale_syndrome (test_rewriting.RewritingRegression) ... ok
+test_original_wf_allows_conflicting_knowledge (test_rewriting.RewritingRegression) ... ok
+test_original_wf_allows_duplicate_rem_and_is_not_preserved (test_rewriting.RewritingRegression) ... ok
+test_original_wf_allows_duplicate_unknown (test_rewriting.RewritingRegression) ... ok
+test_second_solve_can_precede_pending_propagations (test_rewriting.RewritingRegression) ... ok
+test_terminal_multiset_does_not_determine_trace_order (test_rewriting.RewritingRegression) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.778s
+
+OK

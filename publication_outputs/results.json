@@ -1,0 +1,53 @@
+{
+  "clean_trials": 720,
+  "robustness_trials": 480,
+  "scaling_trials": 90,
+  "campaign_matrices": 24,
+  "clean_completion_rate": 1.0,
+  "clean_exact_recovery_rate": 0.7805555555555556,
+  "clean_nonunique_count": 174,
+  "clean_nonzero_transmitted_words": "uniform kernel sampling; reproducible using stored seeds",
+  "actually_corrupted_robustness": 251,
+  "corrupted_compatible": 100,
+  "incompatible_robustness": 151,
+  "accepted_failure_count": 151,
+  "all_generated_certificates_accepted": true,
+  "scaling_slopes": [
+    {
+      "algorithm": "sparse",
+      "slope": 1.0457911697986793,
+      "lower95": 1.0326995966524144,
+      "upper95": 1.0617129894475077,
+      "matrices_per_size": 3,
+      "sizes": 5
+    },
+    {
+      "algorithm": "direct",
+      "slope": 1.0057792360611748,
+      "lower95": 1.0028709999489798,
+      "upper95": 1.0084598449668531,
+      "matrices_per_size": 3,
+      "sizes": 5
+    },
+    {
+      "algorithm": "dense",
+      "slope": 1.582634533624475,
+      "lower95": 1.5545209959008055,
+      "upper95": 1.616569334692349,
+      "matrices_per_size": 3,
+      "sizes": 5
+    }
+  ],
+  "scaling_n4096": {
+    "sparse_s": 0.004546273056702217,
+    "direct_s": 0.002965861055094489,
+    "dense_s": 0.04957426383286166,
+    "sparse_peak_bytes": 192458.66666666666,
+    "direct_peak_bytes": 73768.0,
+    "dense_peak_bytes": 5216346.666666667
+  },
+  "epsilon040_all": {
+    "mean_relative": 1.231513959410104,
+    "mean_fraction": 0.5217393525349561
+  }
+}

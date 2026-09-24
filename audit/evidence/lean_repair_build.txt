@@ -1,0 +1,5 @@
+✔ [2505/2508] Built SELLCert.Basic
+✔ [2506/2508] Built SELLCert.PeelingState
+✔ [2507/2508] Built SELLCert.Checker
+✔ [2508/2508] Built SELLCert.Soundness
+Build completed successfully.

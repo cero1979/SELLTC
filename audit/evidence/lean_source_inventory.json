@@ -1,0 +1,134 @@
+{
+  "lean4/lakefile.lean": {
+    "sha256": "b4b8bd5ed3c95eeffc46c2c6f30044801bd583e26b3a964fcbc50b0a62708ecd",
+    "lines": 13,
+    "imports": [
+      "Lake"
+    ],
+    "decls": []
+  },
+  "lean4/SELLCert.lean": {
+    "sha256": "51d29eb6c15c77d6197827af5f268e3a2e8208283b70c026be84a9d121064281",
+    "lines": 40,
+    "imports": [
+      "SELLCert.Basic",
+      "SELLCert.PeelingState",
+      "SELLCert.Rewriting",
+      "SELLCert.Checker",
+      "SELLCert.Soundness",
+      "SELLCert.Adequacy"
+    ],
+    "decls": []
+  },
+  "lean4/SELLCert/Adequacy.lean": {
+    "sha256": "4dd555f4903f8a3d6b539f684687f32f18fc75d7f1a25d25693928e6d8538ee9",
+    "lines": 143,
+    "imports": [
+      "SELLCert.Rewriting",
+      "SELLCert.Checker"
+    ],
+    "decls": [
+      "step",
+      "RewStep",
+      "RewStar",
+      "extractedTrace",
+      "adequacy_one_step",
+      "adequacy_completeness",
+      "adequacy_soundness",
+      "thm_adequacy_complete"
+    ]
+  },
+  "lean4/SELLCert/Soundness.lean": {
+    "sha256": "a1bef048c0e7505c678de27ea48b9d2eafef02dcc2456b080f1be0cf911a58bd",
+    "lines": 214,
+    "imports": [
+      "SELLCert.Checker",
+      "Mathlib.LinearAlgebra.Matrix.DotProduct"
+    ],
+    "decls": [
+      "innerProd",
+      "inner_mulVec",
+      "inner_mulVec_zero",
+      "lem_unsat_witness_sound",
+      "lem_unsat_witness_complete",
+      "thm_sound_success",
+      "thm_sound_failure",
+      "bec_equal_likelihood",
+      "thm_ml"
+    ]
+  },
+  "lean4/SELLCert/Rewriting.lean": {
+    "sha256": "b4b2f5be0019b20499d35f8e3b4674054b63ba643bd25fde9f3c7ccb95016f4b",
+    "lines": 279,
+    "imports": [
+      "SELLCert.PeelingState"
+    ],
+    "decls": [
+      "Atom",
+      "Context",
+      "encodeState",
+      "propagate",
+      "solve",
+      "WFContext",
+      "propagate_wf",
+      "solve_wf"
+    ]
+  },
+  "lean4/SELLCert/Basic.lean": {
+    "sha256": "2416c8ded95d76574f9aa156c21ab32700af8cc8f3d6bb79f155d699626ab14e",
+    "lines": 61,
+    "imports": [
+      "Mathlib.Data.ZMod.Basic",
+      "Mathlib.Data.Matrix.Basic",
+      "Mathlib.LinearAlgebra.Matrix.DotProduct",
+      "Mathlib.Algebra.BigOperators.Group.Finset"
+    ],
+    "decls": [
+      "add_self_zmod2",
+      "one_ne_zero_zmod2",
+      "PCMatrix",
+      "ReceivedWord",
+      "parityBit",
+      "isCW",
+      "isConsistent",
+      "isCW_iff_parityBit",
+      "dotProduct_zero_left"
+    ]
+  },
+  "lean4/SELLCert/Checker.lean": {
+    "sha256": "323c3a4c71cbd5a4ded504bd305b9806e7cf0e5c1800ffae046d8f07b5d939c3",
+    "lines": 103,
+    "imports": [
+      "SELLCert.PeelingState"
+    ],
+    "decls": [
+      "CheckResult",
+      "replayStep",
+      "replayFull",
+      "checkResidualParity",
+      "checkChannel",
+      "checkSuccess",
+      "checkFailure"
+    ]
+  },
+  "lean4/SELLCert/PeelingState.lean": {
+    "sha256": "19afbc79ac8be556ac2d26e7bd58befdf8e8038e7b70e3d7d9b594f7e49bc316",
+    "lines": 154,
+    "imports": [
+      "SELLCert.Basic"
+    ],
+    "decls": [
+      "PeelingState",
+      "StepTriple",
+      "initState",
+      "applyStep",
+      "ValidStep",
+      "ValidTrace",
+      "foldTrace",
+      "SyndromeInv",
+      "initState_syndrome_inv",
+      "applyStep_syndrome_inv",
+      "syndrome_invariant"
+    ]
+  }
+}

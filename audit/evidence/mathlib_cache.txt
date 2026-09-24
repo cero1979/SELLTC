@@ -1,0 +1,11 @@
+✔ [2/10] Built Cache.IO
+✔ [3/10] Built Cache.Hashing
+✔ [4/10] Built Cache.Requests
+✔ [5/10] Built Cache.Main
+✔ [6/10] Built Cache.Main:c.o
+✔ [7/10] Built Cache.Hashing:c.o
+✔ [8/10] Built Cache.Requests:c.o
+✔ [9/10] Built Cache.IO:c.o
+✔ [10/10] Built cache
+dyld[2682]: __DATA_CONST segment missing SG_READ_ONLY flag in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/audit/build-original/lean4/.lake/packages/mathlib/.lake/build/bin/cache
+dyld[2682]: __DATA_CONST segment missing SG_READ_ONLY flag

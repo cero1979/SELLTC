@@ -1,0 +1,2 @@
+✔ [2507/2507] Built SELLCert.Rewriting
+Build completed successfully.

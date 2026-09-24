@@ -1,0 +1,17 @@
+\begin{table}
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Mean certified runtime stages in milliseconds at erasure probability 0.40, pooled equally over the two named families: six matrices and 60 trials per size. Witness is final vector extraction; row-transform tracking is included in GE. Other includes parsing, output reconstruction and timing overhead; Check includes comparing checker and producer words.}
+\label{tab:runtime-stages}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+n & Init & Peel & Residual & GE & Witness & Backsub & Other & Check \\
+\midrule
+128 & 0.0134 & 0.0137 & 0.0113 & 0.0494 & 0.0001 & 0.0026 & 0.0440 & 0.1187 \\
+256 & 0.0266 & 0.0310 & 0.0200 & 0.1019 & 0.0001 & 0.0029 & 0.0872 & 0.2441 \\
+512 & 0.0576 & 0.0774 & 0.0380 & 0.2269 & 0.0001 & 0.0035 & 0.1714 & 0.5285 \\
+1024 & 0.1229 & 0.1867 & 0.0726 & 0.6213 & 0.0001 & 0.0047 & 0.3375 & 1.1054 \\
+\bottomrule
+\end{tabular}
+\end{table}

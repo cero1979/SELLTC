@@ -1,0 +1,13 @@
+$ /usr/bin/git rev-parse HEAD
+4bbdccd9c5f862bf90ff12f0a9e2c8be032b9a84
+exit=0
+$ rg -n exists_dual_map_eq_bot_of_nmem Mathlib/LinearAlgebra/Dual.lean
+739:theorem exists_dual_map_eq_bot_of_nmem {x : M} (hx : x ∉ p) (hp' : Free R (M ⧸ p)) :
+749:  obtain ⟨f, hf, hf'⟩ := p.exists_dual_map_eq_bot_of_nmem hx hp'
+774:  rcases exists_dual_map_eq_bot_of_nmem hK inferInstance with ⟨φ, φne, hφ⟩
+exit=0
+$ rg -n orthogonal_orthogonal Mathlib/LinearAlgebra/BilinearForm/Orthogonal.lean
+148:theorem le_orthogonal_orthogonal (b : B.IsRefl) : N ≤ B.orthogonal (B.orthogonal N) :=
+327:lemma orthogonal_orthogonal (hB : B.Nondegenerate) (hB₀ : B.IsRefl) (W : Submodule K V) :
+329:  apply (eq_of_le_of_finrank_le (LinearMap.BilinForm.le_orthogonal_orthogonal hB₀) _).symm
+exit=0

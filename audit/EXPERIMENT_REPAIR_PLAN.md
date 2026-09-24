@@ -1,0 +1,9 @@
+# Experimental repair implementation plan
+
+Initial-audit gate cleared after commit f9beafa. Original SELLTCFULL_outputs are immutable.
+
+1. Reproduce the binary-domain defect with a failing test against preserved source, then implement validated immutable sparse graph, strict certificate parsing/replay, an independent direct checker and shared exact bitset elimination. Test against brute force and adversarial certificates, including valid alternate/partial traces.
+2. Build matrix generators with degree checks, shared comparator engine and random kernel codeword sampling. Keep graph construction outside per-input decoding, record its cost separately. Capture initialization, peeling, residual materialization, elimination, witness extraction, solution reconstruction and checks. Compare five algorithms on identical inputs and solver policies; retain dense reference-checker and direct-checker measurements.
+3. Before execution, persist bounded campaign configuration and deterministic stream identifiers. Execute 720 clean trials and 480 robustness trials as proposed in initial audit, plus independent checker scaling. Regenerate all new figures/tables from raw files. Do not overwrite original data. Report exact recovery, nullity, realized flips, algebraic compatibility and acceptance separately.
+4. Record runtime/hardware/package versions and code/data hashes; statistical summaries distinguish matrix clusters and trials. Use a bootstrap over matrix identities for finite-size slope uncertainty, and state its small sample limitations. Tracemalloc records Python-tracked peak allocation, separately from timings.
+5. Replace duplicated notebook with direct API orchestration that executes the declared bounded campaign and analysis on Run All. Pin dependencies and execute tests plus notebook. Deliver audit/EXPERIMENT_REPORT.md with limitations and actual outputs.

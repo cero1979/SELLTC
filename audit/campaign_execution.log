@@ -1,0 +1,91 @@
+Matrix campaign_random_regular_n128_r0 generated in 0.002 s
+Completed 30 clean and 0 corruption trials
+Matrix campaign_random_regular_n128_r1 generated in 0.001 s
+Completed 60 clean and 0 corruption trials
+Matrix campaign_random_regular_n128_r2 generated in 0.005 s
+Completed 90 clean and 0 corruption trials
+Matrix campaign_random_regular_n256_r0 generated in 0.003 s
+Completed 120 clean and 40 corruption trials
+Matrix campaign_random_regular_n256_r1 generated in 0.002 s
+Completed 150 clean and 80 corruption trials
+Matrix campaign_random_regular_n256_r2 generated in 0.002 s
+Completed 180 clean and 120 corruption trials
+Matrix campaign_random_regular_n512_r0 generated in 0.005 s
+Completed 210 clean and 160 corruption trials
+Matrix campaign_random_regular_n512_r1 generated in 0.024 s
+Completed 240 clean and 200 corruption trials
+Matrix campaign_random_regular_n512_r2 generated in 0.029 s
+Completed 270 clean and 240 corruption trials
+Matrix campaign_random_regular_n1024_r0 generated in 0.006 s
+Completed 300 clean and 240 corruption trials
+Matrix campaign_random_regular_n1024_r1 generated in 0.025 s
+Completed 330 clean and 240 corruption trials
+Matrix campaign_random_regular_n1024_r2 generated in 0.073 s
+Completed 360 clean and 240 corruption trials
+Matrix campaign_peg_n128_r0 generated in 0.007 s
+Completed 390 clean and 240 corruption trials
+Matrix campaign_peg_n128_r1 generated in 0.007 s
+Completed 420 clean and 240 corruption trials
+Matrix campaign_peg_n128_r2 generated in 0.007 s
+Completed 450 clean and 240 corruption trials
+Matrix campaign_peg_n256_r0 generated in 0.024 s
+Completed 480 clean and 280 corruption trials
+Matrix campaign_peg_n256_r1 generated in 0.024 s
+Completed 510 clean and 320 corruption trials
+Matrix campaign_peg_n256_r2 generated in 0.024 s
+Completed 540 clean and 360 corruption trials
+Matrix campaign_peg_n512_r0 generated in 0.088 s
+Completed 570 clean and 400 corruption trials
+Matrix campaign_peg_n512_r1 generated in 0.088 s
+Completed 600 clean and 440 corruption trials
+Matrix campaign_peg_n512_r2 generated in 0.09 s
+Completed 630 clean and 480 corruption trials
+Matrix campaign_peg_n1024_r0 generated in 0.39 s
+Completed 660 clean and 480 corruption trials
+Matrix campaign_peg_n1024_r1 generated in 0.396 s
+Completed 690 clean and 480 corruption trials
+Matrix campaign_peg_n1024_r2 generated in 0.404 s
+Completed 720 clean and 480 corruption trials
+Scaling completed scaling_random_regular_n256_r0
+Scaling completed scaling_random_regular_n256_r1
+Scaling completed scaling_random_regular_n256_r2
+Scaling completed scaling_random_regular_n512_r0
+Scaling completed scaling_random_regular_n512_r1
+Scaling completed scaling_random_regular_n512_r2
+Scaling completed scaling_random_regular_n1024_r0
+Scaling completed scaling_random_regular_n1024_r1
+Scaling completed scaling_random_regular_n1024_r2
+Scaling completed scaling_random_regular_n2048_r0
+Scaling completed scaling_random_regular_n2048_r1
+Scaling completed scaling_random_regular_n2048_r2
+Scaling completed scaling_random_regular_n4096_r0
+Scaling completed scaling_random_regular_n4096_r1
+Scaling completed scaling_random_regular_n4096_r2
+Traceback (most recent call last):
+  File "/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/publication_experiments.py", line 382, in <module>
+    print(json.dumps(analyze(args.output) if args.analyze_only else run_campaign(args.output),indent=2))
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/publication_experiments.py", line 372, in run_campaign
+    facts=analyze(out)
+          ^^^^^^^^^^^^
+  File "/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/publication_experiments.py", line 262, in analyze
+    cluster_intervals(pd.concat([clean,rob],ignore_index=True)).to_csv(out/'matrix_cluster_intervals.csv',index=False)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/publication_experiments.py", line 228, in cluster_intervals
+    rng=np.random.default_rng(seed_for('bootstrap',*key,metric))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/publication_experiments.py", line 65, in seed_for
+    payload = json.dumps([CONFIG['base_seed'], *labels], separators=(',', ':')).encode()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/cero/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/Users/cero/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/cero/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/Users/cero/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type int64 is not JSON serializable

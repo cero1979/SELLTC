@@ -1,0 +1,2 @@
+Installed kernelspec selltc-publication in /Users/cero/Downloads/Articulos/SELLTeoCod/SELLTCFULL_bundle/.venv-publication/share/jupyter/kernels/selltc-publication
+All 5 code cells executed using the explicitly registered project kernel.
